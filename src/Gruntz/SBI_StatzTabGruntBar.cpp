@@ -19,22 +19,22 @@
 
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
-    m_statusGlyphLatched = NULL;
-    m_abilityGlyphLatched = NULL;
-    m_overrideGlyphLatched = NULL;
-    m_selectGlyph = NULL;
-    m_statusGlyph = NULL;
-    m_abilityGlyph = NULL;
-    m_overrideGlyph = NULL;
-    m_selectKey = NULL;
-    m_glyphMap = NULL;
-    m_timerGlyphMap = NULL;
-    m_timerGlyph = NULL;
+    m_healthIconImage = NULL;
+    m_toolIconImage = NULL;
+    m_toyIconImage = NULL;
+    m_groupIconImage = NULL;
+    m_healthBackgroundImage = NULL;
+    m_toolBackgroundImage = NULL;
+    m_toyBackgroundImage = NULL;
+    m_groupBackgroundImage = NULL;
+    m_iconFrames = NULL;
+    m_selectionFrames = NULL;
+    m_selectionImage = NULL;
 }
 
 RVA(0x000ea4b0, 0x1c)
 i32 CSBI_StatzTabGruntBar::Refresh(i32 deltaMs) {
-    if (Update()) {
+    if (UpdateIcons()) {
         RequestRedraw();
     }
     return 1;
@@ -42,77 +42,77 @@ i32 CSBI_StatzTabGruntBar::Refresh(i32 deltaMs) {
 
 RVA(0x000ea4e0, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
-    CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
+    CDDrawSurfacePair* backPair = g_gameReg->World()->GetDrawTarget()->GetBackPair();
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
-        m_statusGlyph->RenderFrame(
-            ctx,
-            m_rect.left + m_statusGlyph->GetAnchorX(),
-            m_rect.top + m_statusGlyph->GetAnchorY(),
+        m_healthBackgroundImage->RenderFrame(
+            backPair,
+            m_rect.left + m_healthBackgroundImage->GetAnchorX(),
+            m_rect.top + m_healthBackgroundImage->GetAnchorY(),
             0
         );
-        m_abilityGlyph->RenderFrame(
-            ctx,
-            m_rect.left + m_abilityGlyph->GetAnchorX() + 0x14,
-            m_rect.top + m_abilityGlyph->GetAnchorY(),
+        m_toolBackgroundImage->RenderFrame(
+            backPair,
+            m_rect.left + m_toolBackgroundImage->GetAnchorX() + 0x14,
+            m_rect.top + m_toolBackgroundImage->GetAnchorY(),
             0
         );
-        m_overrideGlyph->RenderFrame(
-            ctx,
-            m_rect.left + m_overrideGlyph->GetAnchorX() + 0x28,
-            m_rect.top + m_overrideGlyph->GetAnchorY(),
+        m_toyBackgroundImage->RenderFrame(
+            backPair,
+            m_rect.left + m_toyBackgroundImage->GetAnchorX() + 0x28,
+            m_rect.top + m_toyBackgroundImage->GetAnchorY(),
             0
         );
-        if (m_selectKey != NULL) {
-            m_selectKey->RenderFrame(
-                ctx,
-                m_rect.left + m_selectKey->GetAnchorX() + 0x3c,
-                m_rect.top + m_selectKey->GetAnchorY(),
+        if (m_groupBackgroundImage != NULL) {
+            m_groupBackgroundImage->RenderFrame(
+                backPair,
+                m_rect.left + m_groupBackgroundImage->GetAnchorX() + 0x3c,
+                m_rect.top + m_groupBackgroundImage->GetAnchorY(),
                 0
             );
         }
-        if (m_statusGlyphLatched != NULL) {
-            m_statusGlyphLatched->RenderFrame(
-                ctx,
-                m_rect.left + m_statusGlyph->GetAnchorX() + 1,
-                m_rect.top + m_statusGlyph->GetAnchorY(),
+        if (m_healthIconImage != NULL) {
+            m_healthIconImage->RenderFrame(
+                backPair,
+                m_rect.left + m_healthBackgroundImage->GetAnchorX() + 1,
+                m_rect.top + m_healthBackgroundImage->GetAnchorY(),
                 0
             );
         }
-        if (m_abilityGlyphLatched != NULL) {
-            m_abilityGlyphLatched->RenderFrame(
-                ctx,
-                m_rect.left + m_abilityGlyph->GetAnchorX() + 0x14,
-                m_rect.top + m_abilityGlyph->GetAnchorY(),
+        if (m_toolIconImage != NULL) {
+            m_toolIconImage->RenderFrame(
+                backPair,
+                m_rect.left + m_toolBackgroundImage->GetAnchorX() + 0x14,
+                m_rect.top + m_toolBackgroundImage->GetAnchorY(),
                 0
             );
         }
-        i32 adj = -1;
-        if (m_selectKey != NULL) {
-            adj = 0;
+        i32 toyIconOffsetX = -1;
+        if (m_groupBackgroundImage != NULL) {
+            toyIconOffsetX = 0;
         }
-        if (m_overrideGlyphLatched != NULL) {
-            m_overrideGlyphLatched->RenderFrame(
-                ctx,
-                m_rect.left + m_overrideGlyph->GetAnchorX() + 0x28 + adj,
-                m_rect.top + m_overrideGlyph->GetAnchorY(),
+        if (m_toyIconImage != NULL) {
+            m_toyIconImage->RenderFrame(
+                backPair,
+                m_rect.left + m_toyBackgroundImage->GetAnchorX() + 0x28 + toyIconOffsetX,
+                m_rect.top + m_toyBackgroundImage->GetAnchorY(),
                 0
             );
         }
-        if (m_selectGlyph != NULL) {
-            m_selectGlyph->RenderFrame(
-                ctx,
-                m_rect.left + m_selectKey->GetAnchorX() + 0x3b,
-                m_rect.top + m_selectKey->GetAnchorY(),
+        if (m_groupIconImage != NULL) {
+            m_groupIconImage->RenderFrame(
+                backPair,
+                m_rect.left + m_groupBackgroundImage->GetAnchorX() + 0x3b,
+                m_rect.top + m_groupBackgroundImage->GetAnchorY(),
                 0
             );
         }
     }
-    if (m_timerGlyph != NULL) {
-        m_timerGlyph->RenderFrame(
-            ctx,
-            m_rect.left + m_timerGlyph->GetAnchorX(),
-            m_rect.top + m_timerGlyph->GetAnchorY(),
+    if (m_selectionImage != NULL) {
+        m_selectionImage->RenderFrame(
+            backPair,
+            m_rect.left + m_selectionImage->GetAnchorX(),
+            m_rect.top + m_selectionImage->GetAnchorY(),
             0
         );
     }
@@ -121,112 +121,112 @@ i32 CSBI_StatzTabGruntBar::Render() {
 
 // @early-stop
 RVA(0x000ea6c0, 0x237)
-i32 CSBI_StatzTabGruntBar::Update() {
-    i32 dirty = 0;
+i32 CSBI_StatzTabGruntBar::UpdateIcons() {
+    i32 iconsChanged = 0;
     i32 playerIndex = m_playerIndex;
     i32 unitIndex = m_unitIndex;
-    CTriggerMgr* table = g_gameReg->GetTriggerMgr();
-    CGrunt* unit = table->UnitAt(playerIndex, unitIndex);
+    CTriggerMgr* triggerMgr = g_gameReg->GetTriggerMgr();
+    CGrunt* unit = triggerMgr->UnitAt(playerIndex, unitIndex);
 
-    i32 statusVal;
-    i32 abilityVal;
-    i32 selectVal;
-    i32 overrideVal;
-    i32 timerVal;
+    i32 healthIconIndex;
+    i32 toolIconIndex;
+    i32 groupMarker;
+    i32 toyIconIndex;
+    i32 selectionFrameIndex;
 
     if (unit == NULL) {
-        statusVal = -1;
-        abilityVal = -1;
-        overrideVal = -1;
-        selectVal = 0;
-        timerVal = -1;
+        healthIconIndex = -1;
+        toolIconIndex = -1;
+        toyIconIndex = -1;
+        groupMarker = 0;
+        selectionFrameIndex = -1;
     } else {
 
-        statusVal = HealthGlyphIndex(unit->GetHealth());
+        healthIconIndex = HealthGlyphIndex(unit->GetHealth());
 
-        PickupType level = unit->GetActivePickupType();
-        abilityVal = -1;
-        overrideVal = -1;
-        selectVal = 0;
+        PickupType activePickupType = unit->GetActivePickupType();
+        toolIconIndex = -1;
+        toyIconIndex = -1;
+        groupMarker = 0;
 
-        PickupType cap = unit->ResolveEquippedToolType(level);
-        if (cap != PICKUP_NONE) {
-            abilityVal = IDX(level);
-            if (level > PICKUP_EQUIPPABLE_LAST) {
-                abilityVal = IDX(unit->GetSavedToolType());
+        PickupType equippedToolType = unit->ResolveEquippedToolType(activePickupType);
+        if (equippedToolType != PICKUP_NONE) {
+            toolIconIndex = IDX(activePickupType);
+            if (activePickupType > PICKUP_EQUIPPABLE_LAST) {
+                toolIconIndex = IDX(unit->GetSavedToolType());
             }
-            if (abilityVal == IDX(PICKUP_BRICK)) {
-                abilityVal = IDX(unit->GetBrickPickupType()) + 0x11;
+            if (toolIconIndex == IDX(PICKUP_BRICK)) {
+                toolIconIndex = IDX(unit->GetBrickPickupType()) + 0x11;
             }
         }
-        PickupType badge = unit->GetCarriedToyType();
-        if (badge != PICKUP_NONE) {
-            overrideVal = IDX(badge);
+        PickupType carriedToyType = unit->GetCarriedToyType();
+        if (carriedToyType != PICKUP_NONE) {
+            toyIconIndex = IDX(carriedToyType);
         }
 
-        if (m_selectKey != NULL) {
-            selectVal = table->GetUnitSelectionGroupMarker(playerIndex, unitIndex);
+        if (m_groupBackgroundImage != NULL) {
+            groupMarker = triggerMgr->GetUnitSelectionGroupMarker(playerIndex, unitIndex);
         }
 
-        timerVal = m_timerValue;
+        selectionFrameIndex = m_selectionFrameIndex;
         if (unit->IsSelected() != false) {
-            if (m_timerTiming.Expired()) {
-                if (timerVal > 0) {
-                    timerVal++;
-                    if (timerVal > 0xa) {
-                        timerVal = 1;
+            if (m_selectionAnimationClock.Expired()) {
+                if (selectionFrameIndex > 0) {
+                    selectionFrameIndex++;
+                    if (selectionFrameIndex > 0xa) {
+                        selectionFrameIndex = 1;
                     }
                 } else {
-                    timerVal = 1;
+                    selectionFrameIndex = 1;
                 }
-                m_timerTiming.Start(0x32);
+                m_selectionAnimationClock.Start(0x32);
             }
         } else {
-            timerVal = -1;
+            selectionFrameIndex = -1;
         }
     }
 
-    if (m_statusValue != statusVal) {
-        CDDrawWorker* gm = m_glyphMap;
-        m_statusGlyphLatched = gm->GetAt(statusVal);
-        m_statusValue = statusVal;
-        dirty = 1;
+    if (m_healthIconIndex != healthIconIndex) {
+        CDDrawWorker* frames = m_iconFrames;
+        m_healthIconImage = frames->GetAt(healthIconIndex);
+        m_healthIconIndex = healthIconIndex;
+        iconsChanged = 1;
     }
 
-    if (m_abilityValue != abilityVal) {
-        CDDrawWorker* gm = m_glyphMap;
-        m_abilityGlyphLatched = gm->GetAt(abilityVal);
-        m_abilityValue = abilityVal;
-        dirty = 1;
+    if (m_toolIconIndex != toolIconIndex) {
+        CDDrawWorker* frames = m_iconFrames;
+        m_toolIconImage = frames->GetAt(toolIconIndex);
+        m_toolIconIndex = toolIconIndex;
+        iconsChanged = 1;
     }
 
-    if (m_overrideValue != overrideVal) {
-        CDDrawWorker* gm = m_glyphMap;
-        m_overrideGlyphLatched = gm->GetAt(overrideVal);
-        m_overrideValue = overrideVal;
-        dirty = 1;
+    if (m_toyIconIndex != toyIconIndex) {
+        CDDrawWorker* frames = m_iconFrames;
+        m_toyIconImage = frames->GetAt(toyIconIndex);
+        m_toyIconIndex = toyIconIndex;
+        iconsChanged = 1;
     }
 
-    if (m_selectValue != selectVal) {
-        if (selectVal == 0) {
+    if (m_groupMarker != groupMarker) {
+        if (groupMarker == 0) {
 
-            m_selectGlyph = NULL;
+            m_groupIconImage = NULL;
         } else {
-            CDDrawWorker* gm = m_glyphMap;
-            i32 key = selectVal + 0x28;
-            m_selectGlyph = gm->GetAt(key);
+            CDDrawWorker* frames = m_iconFrames;
+            i32 groupIconIndex = groupMarker + 0x28;
+            m_groupIconImage = frames->GetAt(groupIconIndex);
         }
-        m_selectValue = selectVal;
-        dirty = 1;
+        m_groupMarker = groupMarker;
+        iconsChanged = 1;
     }
 
-    if (m_timerValue != timerVal) {
-        CDDrawWorker* gm = m_timerGlyphMap;
-        m_timerGlyph = gm->GetAt(timerVal);
-        m_timerValue = timerVal;
-        dirty = 1;
+    if (m_selectionFrameIndex != selectionFrameIndex) {
+        CDDrawWorker* frames = m_selectionFrames;
+        m_selectionImage = frames->GetAt(selectionFrameIndex);
+        m_selectionFrameIndex = selectionFrameIndex;
+        iconsChanged = 1;
     }
-    return dirty;
+    return iconsChanged;
 }
 
 RVA_COMPGEN(0x00104ad0, 0x1e, ??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z)

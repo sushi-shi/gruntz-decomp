@@ -2088,7 +2088,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 i32 y = by + 0xd9;
                 for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
                     bar = new CSBI_StatzTabGruntBar;
-                    if (!bar->BuildMultiplayerTabStatusBar(
+                    if (!bar->Initialize(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
@@ -2160,7 +2160,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         arrow->SetUnsampledDirection(m_position, false);
                     }
                     bar = new CSBI_StatzTabGruntBar;
-                    if (!bar->BuildMultiplayerTabStatusBar(
+                    if (!bar->Initialize(
                             this,
                             code,
                             id,

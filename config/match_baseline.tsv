@@ -3864,7 +3864,7 @@ sbi_sidetab	?Refresh@CSBI_SideTab@@UAEHH@Z	100.0000	100.0000	1	359b97a7b4d7	0xe9
 sbi_sidetab	?Render@CSBI_SideTab@@UAEHXZ	100.0000	100.0000	3	fbce6832dfd3	0xe99c0	100.0000	
 sbi_sidetab	?Reset@CSBI_SideTab@@UAEXXZ	100.0000	100.0000	1	f132d568c3b6	0xe9800	100.0000	
 sbi_sidetab	?SerializeFields@CSBI_SideTab@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	8	9b1289cccd1b	0xe9a30	100.0000	
-sbi_statztabarrow	?BuildMultiplayerTabStatusBar@CSBI_StatzTabGruntBar@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHH@Z	99.0608	99.0608	13	9f95103f884a	0xea1f0	99.0608	
+sbi_statztabarrow	?Initialize@CSBI_StatzTabGruntBar@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHH@Z	99.0608	99.0608	13	9f95103f884a	0xea1f0	99.0608	
 sbi_statztabarrow	?SetSampledDirection@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	3	149e60034936	0xea170	100.0000	
 sbi_statztabarrow	?SetUnsampledDirection@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	3	1c75d2866f02	0xea0f0	100.0000	
 sbi_statztabgruntbar	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	526d272501bb	0x104b00	100.0000	
@@ -3872,7 +3872,7 @@ sbi_statztabgruntbar	??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z	100.0000	100.0000	1	cp
 sbi_statztabgruntbar	?Refresh@CSBI_StatzTabGruntBar@@UAEHH@Z	100.0000	100.0000	2	e78ee6e51b90	0xea4b0	100.0000	
 sbi_statztabgruntbar	?Render@CSBI_StatzTabGruntBar@@UAEHXZ	100.0000	100.0000	5	4f851ebb24ca	0xea4e0	100.0000	
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@UAEXXZ	100.0000	100.0000	1	284b303a57de	0xea470	100.0000	
-sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.3681	36	14f8017d04b4	0xea6c0	91.3681	
+sbi_statztabgruntbar	?UpdateIcons@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.3681	36	14f8017d04b4	0xea6c0	91.3681	
 sbi_warlordhead	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	1	2aa1860e9670	0x104a00	100.0000	
 sbi_warlordhead	??_GCSBI_WarlordHead@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e2d9750e993e	0x1049d0	100.0000	
 sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	100.0000	96.5811	7	80588450cb8e	0xeb880	100.0000	
