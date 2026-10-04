@@ -4324,7 +4324,7 @@ triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	97.6185	97.6185	29	0ce157a
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	100.0000	100.0000	10	5306ab4317c4	0x78960	100.0000	
 triggermgr	?LoseLevelWarpStone@CTriggerMgr@@QAEXXZ	100.0000	100.0000	13	56197f92ccd0	0x79d90	100.0000	
 triggermgr	?NearestOtherPlayerUnitDistSq@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	7	0ca1bb338796	0x7d1d0	100.0000	
-triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	96.7910	96.7910	15	c065330ba223	0x798d0	100.0000	
+triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.7910	15	c065330ba223	0x798d0	100.0000	
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	13	859de83796f0	0x7a240	100.0000	
 triggermgr	?RecallSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	14	3410e4746741	0x7cd40	100.0000	
 triggermgr	?RemoveUnitFromSelection@CTriggerMgr@@QAEHHHH@Z	95.8400	95.8400	15	54002c483bd6	0x78260	95.8400	
