@@ -112,7 +112,7 @@ public:
     void DeactivateObjectAt(POSITION pos, CGameObject* obj);
     void RegisterObjectId(CWwdGameObject* obj);
     void PruneList();
-    i32 CountActive();
+    i32 CountSerializableObjects();
 
     i32 DispatchSerializationToObjects(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId);
     i32 WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId);

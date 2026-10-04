@@ -105,7 +105,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     o->SetSortKey(SORTKEY_GRUNT_VOICE);
     m_stream = NULL;
     m_playbackTiming.Clear();
-    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_KEEP_ACTIVE);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_SERIALIZATION_KEEP_ACTIVE);
     Hide();
     m_priority = 0;
     SET_ANIMATION_ACT("A");

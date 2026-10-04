@@ -78,7 +78,7 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
             0,
             0xdbba1,
             "GruntVoice",
-            WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_WORLD_SPRITE
+            WWD_GAME_OBJECT_FLAGS_SKIP_SERIALIZATION_WORLD_SPRITE
         );
         spr->GetLogicRecord()->Dispatch(spr);
         CGruntVoice* got = static_cast<CGruntVoice*>(spr->GetLogicRecord()->UserLogic());

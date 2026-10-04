@@ -1017,24 +1017,24 @@ void CDDrawChildGroup::RegisterObjectId(CWwdGameObject* obj) {
 }
 
 RVA(0x0015abc0, 0x5e)
-i32 CDDrawChildGroup::CountActive() {
-    i32 n = 0;
+i32 CDDrawChildGroup::CountSerializableObjects() {
+    i32 objectCount = 0;
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
             void* key = NULL;
-            CWwdGameObject* val = NULL;
-            MapGetNext(m_registeredGameObjectsById, pos, key, val);
-            if (val != NULL
+            CWwdGameObject* object = NULL;
+            MapGetNext(m_registeredGameObjectsById, pos, key, object);
+            if (object != NULL
                 && !HAS(
-                    static_cast<WwdGameObjectFlags>(val->m_flags),
-                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                    static_cast<WwdGameObjectFlags>(object->m_flags),
+                    WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
                 )) {
-                ++n;
+                ++objectCount;
             }
         } while (pos != NULL);
     }
-    return n;
+    return objectCount;
 }
 
 RVA(0x0015ac20, 0x81)
@@ -1055,7 +1055,7 @@ i32 CDDrawChildGroup::DispatchSerializationToObjects(
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
-                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                    WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
                 )) {
                 val->SerializeDispatch(ar, mode, typeId, val);
             }
@@ -1078,7 +1078,7 @@ i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId)
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
-                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                    WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
                 )) {
 
                 val->WriteSnapshot(ar, typeId);
@@ -1231,7 +1231,7 @@ i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
         if (val != NULL
             && !HAS(
                 static_cast<WwdGameObjectFlags>(val->m_flags),
-                WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
             )) {
             i32 objectId = val->GetObjectId();
             ar->Write(&objectId, sizeof(objectId));

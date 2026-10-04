@@ -238,7 +238,7 @@ i32 CDDrawSurfaceMgr::SaveSnapshot(
     header.m_day = now.GetDay();
     header.m_year = now.GetYear();
     strcpy(header.m_name, snapshotName);
-    header.m_childCount = ChildGroup()->CountActive();
+    header.m_childCount = ChildGroup()->CountSerializableObjects();
     header.m_objIdCounter = g_wwdObjIdCounter;
     archive.Write(&header, sizeof(header));
 
