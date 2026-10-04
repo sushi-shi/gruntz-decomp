@@ -63,7 +63,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
     m_drawTarget = new CDDrawSubMgrPages(this);
     m_childGroup = new CDDrawChildGroup(this);
-    m_workerList = new CDDrawWorkerList(this);
+    m_workerList = new CTransientDrawList(this);
     m_imageRegistry = new CImageSetRegistry(this);
     m_logicRegistry = new CLogicRecordRegistry(this);
     m_paletteRegistry = new CDDrawPaletteRegistry(this);

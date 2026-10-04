@@ -11,11 +11,12 @@
 
 class CImageSet;
 
-class CDDrawWorkerList : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CTransientDrawList : public CWapObj {
 public:
-    CDDrawWorkerList(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {}
+    CTransientDrawList(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {}
 
-    virtual ~CDDrawWorkerList() OVERRIDE;
+    virtual ~CTransientDrawList() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
 
@@ -24,12 +25,12 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual CDDrawPixelWorker* CreatePixelWorker(i32 x, i32 y, i32 pixelValue);
-    virtual CDDrawFrameWorker*
+    virtual CTransientPixel* CreatePixelWorker(i32 x, i32 y, i32 pixelValue);
+    virtual CTransientImage*
     CreateFrameWorker(i32 x, i32 y, const char* workerName, i32 frameIndex, i32 addHead);
-    virtual CDDrawFrameWorker*
+    virtual CTransientImage*
     CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIndex, i32 addHead);
-    virtual CDDrawFrameWorker* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
+    virtual CTransientImage* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
 
     virtual void RenderAndPruneWorkers(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 

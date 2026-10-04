@@ -1497,7 +1497,7 @@ void CPlay::ClearLevelState() {
     triggerManager->m_levelWarpStoneCollected = false;
     m_mgr->GetTriggerMgr()->m_puddles.RemoveAll();
     m_mgr->GetTriggerMgr()->SetLocalWarlord(NULL);
-    (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
+    (static_cast<CTransientDrawList*>(m_world->m_workerList))->ClearWorkers();
     FreeStartMarkers();
     for (k = 0; k < 4; k++) {
         FreePlacedObjectCells(k);

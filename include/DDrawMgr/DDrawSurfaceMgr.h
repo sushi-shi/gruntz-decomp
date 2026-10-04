@@ -33,7 +33,7 @@ struct CSnapshotHeader {
 
 class CWapObj;
 class CDDrawSubMgrPages;
-class CDDrawWorkerList;
+class CTransientDrawList;
 class CImageSet;
 class CDDrawChildGroup;
 class CImageSetRegistry;
@@ -150,7 +150,7 @@ public:
     CDDrawSubMgrPages* m_drawTarget;
 
     CDDrawChildGroup* m_childGroup;
-    CDDrawWorkerList* m_workerList;
+    CTransientDrawList* m_workerList;
     CImageSetRegistry* m_imageRegistry;
 
     CLogicRecordRegistry* m_logicRegistry;
