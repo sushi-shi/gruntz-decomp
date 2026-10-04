@@ -4326,10 +4326,10 @@ triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	96.7910	96.7910	12	2c2
 triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.3955	42	c24e9c915e14	0x78a50	91.3955	
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	12	1b6d1311c719	0x7a240	100.0000	
 triggermgr	?RecallSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	12	f78c6d640be2	0x7cd40	100.0000	
-triggermgr	?ReinitGroup@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	11	a77bb1d7e257	0x79b80	100.0000	
+triggermgr	?CollectLevelWarpStone@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	11	a77bb1d7e257	0x79b80	100.0000	
 triggermgr	?RemoveUnitFromSelection@CTriggerMgr@@QAEHHHH@Z	95.8400	95.8400	13	a92f3072b96c	0x78260	95.8400	
 triggermgr	?RenderActionOptionsMenu@CTriggerMgr@@QAEHXZ	100.0000	100.0000	2	c8953eb8de33	0x79b00	100.0000	
-triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e16f35292a79	0x79d90	100.0000	
+triggermgr	?LoseLevelWarpStone@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e16f35292a79	0x79d90	100.0000	
 triggermgr	?ResurrectGruntsInArea@CTriggerMgr@@QAEHHHH@Z	91.9724	91.9724	28	a44004469767	0x7be60	91.9724	
 triggermgr	?SaveSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	7	9c10c9090368	0x7cc60	100.0000	
 triggermgr	?Save@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	14	f46a6cb736c5	0x7a760	99.1927	

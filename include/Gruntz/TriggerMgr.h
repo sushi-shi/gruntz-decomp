@@ -186,7 +186,7 @@ public:
 
     i32 OpenActionOptionsMenu(i32 selectedWorldX, i32 selectedWorldY, i32 pointerX, i32 pointerY);
 
-    void ReinitGroup(i32 col, i32 row);
+    void CollectLevelWarpStone(i32 worldX, i32 worldY);
 
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId unusedTypeId, i32 unusedPayload);
 
@@ -196,7 +196,7 @@ public:
 
     i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
 
-    void ResetSpawnState();
+    void LoseLevelWarpStone();
 
     i32 CycleMoveIcons(i32 skipPlayerIndex, b32 enable);
 
@@ -316,7 +316,7 @@ public:
     // @identity-TODO: Save and Load transfer this complete span; no trigger
     // operation accesses its components to prove a scalar array or aggregate type.
     char m_reserved274[0x10];
-    b32 m_groupInitialized;
+    b32 m_levelWarpStoneCollected;
 
     FinishLevelState m_phase;
 

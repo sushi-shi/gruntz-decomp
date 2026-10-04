@@ -891,26 +891,26 @@ i32 CTriggerMgr::HasWarpStoneFragment(WarpStoneFragment fragment) {
 }
 
 RVA(0x00079b80, 0x194)
-void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (m_groupInitialized != false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
+    if (m_levelWarpStoneCollected != false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         return;
     }
-    CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
     CString name;
-    name.Format("Level%i", lvl->m_levelIndex);
+    name.Format("Level%i", play->m_levelIndex);
     WarpStoneFragment fragment = static_cast<WarpStoneFragment>(
         g_buteMgr.GetInt("WarpStone", const_cast<char*>(static_cast<const char*>(name)))
     );
-    if (col >= g_gameReg->m_viewBounds.right || col < g_gameReg->m_viewBounds.left
-        || row >= g_gameReg->m_viewBounds.bottom || row < g_gameReg->m_viewBounds.top) {
-        lvl->ResetGoals(col, row);
+    if (worldX >= g_gameReg->m_viewBounds.right || worldX < g_gameReg->m_viewBounds.left
+        || worldY >= g_gameReg->m_viewBounds.bottom || worldY < g_gameReg->m_viewBounds.top) {
+        play->ResetGoals(worldX, worldY);
     }
 
-    CGameLevel* plane = g_gameReg->World()->GetLevel();
-    LONG outR = col;
-    LONG outC = row;
-    plane->m_mainPlane->WorldToViewport(&outR, &outC);
-    CStatusBarMgr* sbi = lvl->m_statusBar;
+    CGameLevel* level = g_gameReg->World()->GetLevel();
+    LONG viewportX = worldX;
+    LONG viewportY = worldY;
+    level->m_mainPlane->WorldToViewport(&viewportX, &viewportY);
+    CStatusBarMgr* sbi = play->m_statusBar;
     if (sbi->m_hlBusy == false) {
         if (sbi->GetState() == STATUSBAR_HIDDEN) {
             sbi->RestoreStatusBar();
@@ -921,20 +921,20 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         sbi->SetTab(GAME_TAB_MENU, true);
         sbi->Deactivate();
     }
-    if (lvl->m_statusBar->StartWarpStoneFly(outR, outC, fragment) != 0) {
-        lvl->m_statusBar->m_hlBusy = true;
+    if (play->m_statusBar->StartWarpStoneFly(viewportX, viewportY, fragment) != 0) {
+        play->m_statusBar->m_hlBusy = true;
     } else {
         m_collectedWarpStoneFragments.Add(static_cast<u8>(IDX(fragment)));
     }
-    m_groupInitialized = true;
+    m_levelWarpStoneCollected = true;
 }
 
 RVA(0x00079d90, 0xc5)
-void CTriggerMgr::ResetSpawnState() {
+void CTriggerMgr::LoseLevelWarpStone() {
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         return;
     }
-    if (m_groupInitialized == false) {
+    if (m_levelWarpStoneCollected == false) {
         return;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1022,7 +1022,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
         }
     } else {
         if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
-            this->ResetSpawnState();
+            this->LoseLevelWarpStone();
         }
         m_gruntzLostByPlayer[playerIndex] += 1;
     }
@@ -1288,7 +1288,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         }
     }
     ar->Write(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
-    ar->Write(&m_groupInitialized, sizeof(m_groupInitialized));
+    ar->Write(&m_levelWarpStoneCollected, sizeof(m_levelWarpStoneCollected));
     ar->Write(&m_phase, sizeof(m_phase));
     ar->Write(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Write(&m_countdownActive, sizeof(m_countdownActive));
@@ -1454,7 +1454,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     }
 
     ar->Read(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
-    ar->Read(&m_groupInitialized, sizeof(m_groupInitialized));
+    ar->Read(&m_levelWarpStoneCollected, sizeof(m_levelWarpStoneCollected));
     ar->Read(&m_phase, sizeof(m_phase));
     ar->Read(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Read(&m_countdownActive, sizeof(m_countdownActive));

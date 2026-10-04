@@ -1506,7 +1506,7 @@ void CPlay::FreeListTeardown() {
     CTriggerMgr* triggerManager = m_mgr->GetTriggerMgr();
 
     triggerManager->m_collectedWarpStoneFragments.RemoveAll();
-    triggerManager->m_groupInitialized = false;
+    triggerManager->m_levelWarpStoneCollected = false;
     m_mgr->GetTriggerMgr()->m_baseList.RemoveAll();
     m_mgr->GetTriggerMgr()->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();

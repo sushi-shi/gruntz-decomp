@@ -2429,7 +2429,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
         }
     }
     if (pickupType == PICKUP_WARPSTONE) {
-        m_triggerMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
+        m_triggerMgr->CollectLevelWarpStone(m_object->m_screenX, m_object->m_screenY);
     }
     return 1;
 fail:
