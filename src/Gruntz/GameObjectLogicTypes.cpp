@@ -12,148 +12,154 @@
 
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectLogicTypes(CDDrawSurfaceMgr* ctx) {
-    ctx->m_logicRegistry->RegisterLogicType(DispatchAniCycleLogic, "AniCycle", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchAniCycleLogic, "AniCycle", 2);
     CAniCycle::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchDoNothingNormalLogic, "DoNothingNormal", 0);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchDoNothingLogic, "DoNothing", 2);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchSimpleAnimationLogic, "SimpleAnimation", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchDoNothingNormalLogic, "DoNothingNormal", 0);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchDoNothingLogic, "DoNothing", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchSimpleAnimationLogic, "SimpleAnimation", 2);
     RegisterSimpleAnimLogic();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchMenuSparkleLogic, "MenuSparkle", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchMenuSparkleLogic, "MenuSparkle", 2);
     RegisterMenuSparkleActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchFrontCandyLogic, "FrontCandy", 2);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchBehindCandyLogic, "BehindCandy", 2);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchFrontCandyAniLogic, "FrontCandyAni", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchFrontCandyLogic, "FrontCandy", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchBehindCandyLogic, "BehindCandy", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchFrontCandyAniLogic, "FrontCandyAni", 2);
     CFrontCandyAni::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchBehindCandyAniLogic, "BehindCandyAni", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchBehindCandyAniLogic, "BehindCandyAni", 2);
     CBehindCandyAni::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchEyeCandyLogic, "EyeCandy", 2);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchEyeCandyAniLogic, "EyeCandyAni", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchEyeCandyLogic, "EyeCandy", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchEyeCandyAniLogic, "EyeCandyAni", 2);
     CEyeCandyAni::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGruntLogic, "Grunt", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchGruntLogic, "Grunt", 4);
     RegisterGruntActions();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGlobalAmbientSoundLogic, "GlobalAmbientSound", 4);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchAmbientSoundLogic, "AmbientSound", 1);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchAmbientPosSoundLogic, "AmbientPosSound", 0);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchSpotAmbientSoundLogic, "SpotAmbientSound", 0);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchActionAreaLogic, "ActionArea", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchAmbientSoundLogic, "AmbientSound", 1);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchAmbientPosSoundLogic, "AmbientPosSound", 0);
+    ctx->GetLogicRegistry()
+        ->RegisterLogicType(DispatchSpotAmbientSoundLogic, "SpotAmbientSound", 0);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchActionAreaLogic, "ActionArea", 4);
     CProjActObj::RegisterType();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchStatusBarSpriteLogic, "StatusBarSprite", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchStatusBarSpriteLogic, "StatusBarSprite", 2);
     CStatusBarSprite::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchParticlezLogic, "Particlez", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchParticlezLogic, "Particlez", 4);
     CParticlez::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchExplosionLogic, "Explosion", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchExplosionLogic, "Explosion", 4);
     RegisterExplosionActions();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntSelectedSpriteLogic, "GruntSelectedSprite", 2);
     CGruntSelectedSprite::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGruntHealthSpriteLogic, "GruntHealthSprite", 2);
+    ctx->GetLogicRegistry()
+        ->RegisterLogicType(DispatchGruntHealthSpriteLogic, "GruntHealthSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntStaminaSpriteLogic, "GruntStaminaSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGruntToySpriteLogic, "GruntToySprite", 2);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchGruntToySpriteLogic, "GruntToySprite", 2);
     CGruntToySprite::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntToyTimeSpriteLogic, "GruntToyTimeSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntWingzTimeSpriteLogic, "GruntWingzTimeSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntPowerupSpriteLogic, "GruntPowerupSprite", 2);
     CGruntPowerupSprite::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchToyPeekLogic, "ToyPeek", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchToyPeekLogic, "ToyPeek", 4);
     RegisterIconState();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchTileTriggerSwitchLogic, "TileTriggerSwitch", 4);
+    ctx->GetLogicRegistry()
+        ->RegisterLogicType(DispatchTileTriggerSwitchLogic, "TileTriggerSwitch", 4);
     CTileTriggerSwitch::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchTileTriggerLogic, "TileTrigger", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchTileTriggerLogic, "TileTrigger", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchTileSecretTriggerLogic, "TileSecretTrigger", 4);
+    ctx->GetLogicRegistry()
+        ->RegisterLogicType(DispatchTileSecretTriggerLogic, "TileSecretTrigger", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchBrickzLogic, "Brickz", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchBrickzLogic, "Brickz", 4);
     CBrickz::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchTileTriggerTransitionLogic, "TileTriggerTransition", 4);
     CTileTriggerTransition::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntStartingPointLogic, "GruntStartingPoint", 4);
     RegisterGruntStartingPointActions();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchGruntCreationPointLogic, "GruntCreationPoint", 4);
     CGruntCreationPoint::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchFortressFlagLogic, "FortressFlag", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchFortressFlagLogic, "FortressFlag", 4);
     CFortressFlag::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchExitTriggerLogic, "ExitTrigger", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchExitTriggerLogic, "ExitTrigger", 4);
     CExitTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGiantRockLogic, "GiantRock", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchGiantRockLogic, "GiantRock", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchCoveredPowerupLogic, "CoveredPowerup", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchCoveredPowerupLogic, "CoveredPowerup", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchInGameIconLogic, "InGameIcon", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchInGameIconLogic, "InGameIcon", 4);
     RegisterIconActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchInGameTextLogic, "InGameText", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchInGameTextLogic, "InGameText", 4);
     RegisterTextLogic();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchWormholeLogic, "Wormhole", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchWormholeLogic, "Wormhole", 4);
     RegisterWormholeLogic();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGruntPuddleLogic, "GruntPuddle", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchGruntPuddleLogic, "GruntPuddle", 4);
     RegisterLogic();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchRollingBallLogic, "RollingBall", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchRollingBallLogic, "RollingBall", 4);
     CRollingBall::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchObjectDropperLogic, "ObjectDropper", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchObjectDropperLogic, "ObjectDropper", 4);
     CObjectDropper::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchDroppedObjectLogic, "DroppedObject", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchDroppedObjectLogic, "DroppedObject", 4);
     CDroppedObject::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchDroppedObjectShadowLogic, "DroppedObjectShadow", 4);
     CDroppedObjectShadow::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchCheckpointTriggerLogic, "CheckpointTrigger", 4);
+    ctx->GetLogicRegistry()
+        ->RegisterLogicType(DispatchCheckpointTriggerLogic, "CheckpointTrigger", 4);
     CCheckpointTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchTeleporterLogic, "Teleporter", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchTeleporterLogic, "Teleporter", 4);
     CTeleporter_RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchSecretTeleporterTriggerLogic, "SecretTeleporterTrigger", 4);
     CSecretTeleporterTrigger::RegisterActs();
-    ctx->m_logicRegistry
+    ctx->GetLogicRegistry()
         ->RegisterLogicType(DispatchSecretLevelTriggerLogic, "SecretLevelTrigger", 4);
     CSecretLevelTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchProjectileLogic, "Projectile", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchProjectileLogic, "Projectile", 4);
     CProjectile::RegisterType();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchBoomerangLogic, "Boomerang", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchBoomerangLogic, "Boomerang", 4);
     CProjectile::RegisterType();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchStaticHazardLogic, "StaticHazard", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchStaticHazardLogic, "StaticHazard", 4);
     CStaticHazard::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchToobSpikezLogic, "ToobSpikez", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchToobSpikezLogic, "ToobSpikez", 4);
     CToobSpikez::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchTimeBombLogic, "TimeBomb", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchTimeBombLogic, "TimeBomb", 4);
     CTimeBomb::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchSpotLightLogic, "SpotLight", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchSpotLightLogic, "SpotLight", 4);
     RegisterSpotLightActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchKitchenSlimeLogic, "KitchenSlime", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchKitchenSlimeLogic, "KitchenSlime", 4);
     CKitchenSlime::RegisterType();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchSingleAnimationLogic, "SingleAnimation", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchSingleAnimationLogic, "SingleAnimation", 4);
     CSingleAnimation::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchWayPointLogic, "WayPoint", 4);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchWarlordLogic, "Warlord", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchWayPointLogic, "WayPoint", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchWarlordLogic, "Warlord", 4);
     RegisterWarlordActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchPathHazardLogic, "PathHazard", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchPathHazardLogic, "PathHazard", 4);
     RegisterPathHazardActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchRainCloudLogic, "RainCloud", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchRainCloudLogic, "RainCloud", 4);
     RegisterPathHazardActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchUFOLogic, "UFO", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchUFOLogic, "UFO", 4);
     RegisterPathHazardActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGruntVoiceLogic, "GruntVoice", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchGruntVoiceLogic, "GruntVoice", 4);
     RegisterGruntVoiceActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchWarpStonePadLogic, "WarpStonePad", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchWarpStonePadLogic, "WarpStonePad", 4);
     CWarpStonePad::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchGuardPointLogic, "GuardPoint", 4);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchVoiceTriggerLogic, "VoiceTrigger", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchGuardPointLogic, "GuardPoint", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchVoiceTriggerLogic, "VoiceTrigger", 4);
     CVoiceTrigger::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchLevelTimeLogic, "LevelTime", 4);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchCursorSnapSpriteLogic, "CursorSnapSprite", 1);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchLevelTimeLogic, "LevelTime", 4);
+    ctx->GetLogicRegistry()
+        ->RegisterLogicType(DispatchCursorSnapSpriteLogic, "CursorSnapSprite", 1);
     RegisterCursorSnapActions();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchLightFxLogic, "LightFx", 4);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchLightFxLogic, "LightFx", 4);
     CLightFx::RegisterActs();
-    ctx->m_logicRegistry->RegisterLogicType(DispatchDemoMoverLogic, "DemoMover", 0);
-    ctx->m_logicRegistry->RegisterLogicType(DispatchDemoSignLogic, "DemoSign", 0);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchDemoMoverLogic, "DemoMover", 0);
+    ctx->GetLogicRegistry()->RegisterLogicType(DispatchDemoSignLogic, "DemoSign", 0);
 }

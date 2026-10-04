@@ -343,8 +343,8 @@ i32 CBattlezMapConfig::StepBoard() {
     for (i32 s = TM_UNITS_PER_PLAYER; s != 0; s--) {
         CGrunt* u = *units;
         if (u != NULL && u->GetDefenderState() == AISTATE_RETURN
-            && u->m_defenderQueuePosition < mn) {
-            mn = u->m_defenderQueuePosition;
+            && u->GetDefenderQueuePosition() < mn) {
+            mn = u->GetDefenderQueuePosition();
         }
         units++;
     }
@@ -352,7 +352,7 @@ i32 CBattlezMapConfig::StepBoard() {
         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
             CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, k);
             if (u != NULL && u->GetDefenderState() == AISTATE_RETURN) {
-                u->m_defenderQueuePosition -= mn;
+                u->SetDefenderQueuePosition(u->GetDefenderQueuePosition() - mn);
             }
         }
     }
@@ -365,7 +365,7 @@ i32 CBattlezMapConfig::StepBoard() {
         forcedUnit = u;
         forced = 0;
         if (u != NULL && u->GetDefenderState() == AISTATE_RETURN
-            && u->m_defenderQueuePosition == 0) {
+            && u->GetDefenderQueuePosition() == 0) {
             forced = 1;
         }
         if (!forced && rand() % 10 != 0) {
@@ -431,7 +431,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->GetDefenderState() != AISTATE_RETURN) {
                     continue;
                 }
-                if (unit->m_defenderQueuePosition != 0) {
+                if (unit->GetDefenderQueuePosition() != 0) {
                     continue;
                 }
 
@@ -461,11 +461,11 @@ i32 CBattlezMapConfig::StepBoard() {
                 for (i32 c = 0; c < TM_UNITS_PER_PLAYER; c++) {
                     CGrunt* mate = m_triggerMgr->UnitAt(m_playerIndex, c);
                     if (mate != NULL && mate->GetDefenderState() == AISTATE_RETURN) {
-                        i32 q = unit->m_defenderQueuePosition - 1;
+                        i32 q = unit->GetDefenderQueuePosition() - 1;
                         if (q < 0) {
                             q = 0;
                         }
-                        unit->m_defenderQueuePosition = q;
+                        unit->SetDefenderQueuePosition(q);
                     }
                 }
                 return 1;
@@ -591,7 +591,7 @@ candidateFound:
     UNSET_COORD(unit->m_defenderPx);
     unit->SetTargetTeam(-1);
     unit->m_defenderPickupType = PICKUP_NONE;
-    unit->m_defenderQueuePosition = 0;
+    unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
     unit->m_blockedVoicePending = true;
     return 1;
@@ -1978,7 +1978,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
             count++;
         }
     }
-    unit->m_defenderQueuePosition = count;
+    unit->SetDefenderQueuePosition(count);
     return 1;
 }
 
@@ -3397,7 +3397,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->SetDefenderState(AISTATE_SEEK);
     UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderPickupType = PICKUP_NONE;
-    unit->m_defenderQueuePosition = 0;
+    unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
     unit->m_blockedVoicePending = true;
     unit->SetBattlezTask(BZTASK_ADVANCE);

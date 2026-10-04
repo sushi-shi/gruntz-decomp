@@ -617,7 +617,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     }
 
     CLogicRecord* logicTemplate =
-        OwnerMgr()->m_logicRegistry->FindTemplate(static_cast<const char*>(logic));
+        OwnerMgr()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logic));
     if (logicTemplate == NULL) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;

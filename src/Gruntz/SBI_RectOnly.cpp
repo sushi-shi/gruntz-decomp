@@ -2031,7 +2031,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 do {
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
-                    if (p->HasJoinedRound() != false && p->m_doneFlag == false) {
+                    if (p->HasJoinedRound() != false && p->HasDropped() == false) {
                         sel = g_gameReg->SpriteTable()->GetSel(IDX(p->GetColor()), 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
@@ -4006,9 +4006,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 cx;
     i32 cy;
     {
-        RECT src = w->m_level->m_viewportRect;
-        RECT dst;
-        CopyRect(&dst, &src);
+        CRect dst(w->m_level->GetViewportRect());
         cx = dst.left + (dst.right - dst.left) / 2;
         cy = dst.top + (dst.bottom - dst.top) / 2;
     }
@@ -4225,7 +4223,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].HasJoinedRound() != false && g_gameReg->m_players[i].m_doneFlag == false
+        if (g_gameReg->m_players[i].HasJoinedRound() != false && g_gameReg->m_players[i].HasDropped() == false
             && g_gameReg->m_players[i].IsEliminated() == false) {
             count++;
         }

@@ -365,7 +365,7 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
-    EnsureHitLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+    EnsureHitLogic(MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key));
 }
 
 RVA(0x00150f90, 0x98)
@@ -387,7 +387,9 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
-    EnsureAttackLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+    EnsureAttackLogic(
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key)
+    );
 }
 
 RVA(0x00151070, 0x98)
@@ -409,7 +411,7 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
-    EnsureBumpLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+    EnsureBumpLogic(MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key));
 }
 
 // @early-stop
@@ -553,19 +555,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_hitLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic));
+        strcpy(tmp, OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_hitLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_attackLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic));
+        strcpy(tmp, OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_attackLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collisionLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic));
+        strcpy(tmp, OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_collisionLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -632,7 +634,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        OwnerMgr()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
         if (this->EnsureHitLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -641,7 +643,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        OwnerMgr()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
         if (this->EnsureAttackLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -650,7 +652,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        OwnerMgr()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
         if (this->EnsureBumpLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -722,7 +724,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     {
         strcpy(
             snapshot.m_logicTypeName,
-            OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)
+            OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_logicRecord)
         );
     }
     ar->Write(&snapshot, sizeof(snapshot));
