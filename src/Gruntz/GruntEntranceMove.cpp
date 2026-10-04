@@ -692,7 +692,7 @@ i32 CGrunt::UpdateMovingDeathAnimation() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    UnregisterFromBoard(this, 0);
+    UnregisterFromBoard(0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }

@@ -965,7 +965,7 @@ i32 CGrunt::StepWarpExit() {
                 PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
             }
         }
-        UnregisterFromBoard(this, 1);
+        UnregisterFromBoard(1);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;

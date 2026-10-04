@@ -43,7 +43,7 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (mode == DEATH_NORMAL || mode == DEATH_SQUASH || mode == DEATH_EXPLODE
         || mode == DEATH_SHATTER) {
         SET_ANIMATION_ACT("R");
-        UnregisterFromBoard(this, 0);
+        UnregisterFromBoard(0);
         i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
         ClockInterval* clock = &m_idleWindowTiming;
@@ -65,7 +65,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
         return 0;
     }
-    UnregisterFromBoard(this, 0);
+    UnregisterFromBoard(0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
@@ -75,7 +75,7 @@ i32 CGrunt::UpdateDecayFade() {
     if (m_idleWindowTiming.Expired()) {
         Hide();
         m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
-        UnregisterFromBoard(this, 0);
+        UnregisterFromBoard(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }

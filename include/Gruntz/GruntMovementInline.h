@@ -24,10 +24,9 @@ inline void CGrunt::ClearMoveTileFx() {
     );
 }
 
-inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
-    if (grunt->IsUnregisteredFromBoard() == false) {
-        grunt->m_triggerMgr
-            ->UnregisterUnit(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), exitedLevel);
+inline void CGrunt::UnregisterFromBoard(i32 exitedLevel) {
+    if (IsUnregisteredFromBoard() == false) {
+        m_triggerMgr->UnregisterUnit(GetPlayerIndex(), GetUnitIndex(), exitedLevel);
     }
 }
 

@@ -177,6 +177,7 @@ public:
     inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
     inline PickupType GetEquippedToolType() const;
     inline void ClearMoveTileFx();
+    inline void UnregisterFromBoard(i32 exitedLevel);
 
     PickupType GetPowerupType() const {
         return m_powerupType;
