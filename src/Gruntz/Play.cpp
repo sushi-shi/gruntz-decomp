@@ -4959,7 +4959,7 @@ i32 CPlay::ValidateLevelTiles() {
                         0,
                         obj->m_damage,
                         obj->GetPoints(),
-                        obj->m_health
+                        obj->GetHealth()
                     )) {
                     MODAL_REPORT_AT(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",
@@ -5190,7 +5190,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                     buf,
                     object->m_powerup,
                     object->GetPoints(),
-                    object->m_faceDirection
+                    object->GetFaceDirection()
                 )
                 == NULL) {
                 MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", object->m_screenX, object->m_screenY);
@@ -5244,7 +5244,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                     object->GetSmarts(),
                     object->m_powerup,
                     object->GetPoints(),
-                    object->m_faceDirection
+                    object->GetFaceDirection()
                 )
                 == NULL) {
                 MODAL_REPORT_AT(

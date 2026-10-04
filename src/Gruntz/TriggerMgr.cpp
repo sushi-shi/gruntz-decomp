@@ -2218,7 +2218,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
                     ->ChildGroup()
                     ->CreateSprite(0, x, y, 0xf, "TimeBomb", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
             if (tb) {
-                tb->m_damage = g_buteMgr.GetDword("Powerupz", "CoveredTimeBombTime", 0x7d0);
+                tb->SetDamage(g_buteMgr.GetDword("Powerupz", "CoveredTimeBombTime", 0x7d0));
             }
             return tb != NULL;
         }
@@ -2234,7 +2234,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
         return 0;
     }
     spr->SetImageSetByName(name);
-    spr->m_damage = damage;
+    spr->SetDamage(damage);
     spr->SetScore(0);
     spr->SetPoints(0);
     spr->SetSmarts(0);

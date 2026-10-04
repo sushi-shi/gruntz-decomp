@@ -129,7 +129,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
     if (m_titleCue == NULL) {
         return 1;
     }
-    if (!m_titleCue->GetSound()->IsPlaying()) {
+    if (!m_titleCue->IsPlaying()) {
         return 1;
     }
     m_titleCue->GetSound()->RampVolumeTo(0, 0x1f4, true);
@@ -138,7 +138,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
     }
     do {
         (menuRoot()->SoundRegistry())->TickVolumeRamps();
-    } while (m_titleCue->GetSound()->IsPlaying());
+    } while (m_titleCue->IsPlaying());
     return 1;
 }
 

@@ -7,6 +7,10 @@
 #include <Gruntz/SoundState.h>
 #include <Rez/FrameClock.h>
 
+inline i32 SoundCue::IsPlaying() const {
+    return m_sound->IsPlaying();
+}
+
 inline i32 PlaySoundCueIfElapsed(
     SoundCue* cue,
     i32 volumePercent,

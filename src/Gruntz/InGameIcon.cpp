@@ -399,7 +399,7 @@ i32 CInGameIcon::HandleInput() {
         }
     } else if (cmd == PICKUP_SCROLL || cmd == PICKUP_WAND) {
         i32 icon;
-        switch (static_cast<SpellId>(obj->m_faceDirection)) {
+        switch (static_cast<SpellId>(obj->GetFaceDirection())) {
             case SPELL_FREEZE:
                 icon = IDX(TINT_WHITE);
                 break;
@@ -522,7 +522,7 @@ i32 CInGameIcon::PeekCycle() {
     if (cmd != PICKUP_WAND && cmd != PICKUP_SCROLL) {
         return 0;
     }
-    if (obj->m_faceDirection != 0) {
+    if (obj->GetFaceDirection() != 0) {
         return 0;
     }
     if (m_peekTiming.Expired()) {
@@ -770,7 +770,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetImageSetByName("GAME_HELPBOX");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
-    InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
+    InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->GetHealth());
     if (vis == INGAME_TEXT_EASY_ONLY) {
 
         if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {

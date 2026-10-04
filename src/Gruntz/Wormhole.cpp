@@ -316,23 +316,23 @@ void CTeleporter::LoadColors() {
 
     if (kind == TELEPORTER_SECRET) {
 
-        if (m_object->m_health == 0) {
+        if (m_object->GetHealth() == 0) {
             m_object->m_health = g_buteMgr.GetInt("Wormhole", "SecretColor", 1);
         }
     } else if (kind == TELEPORTER_SINGLE_USE) {
 
-        if (m_object->m_health == 0) {
+        if (m_object->GetHealth() == 0) {
             m_object->m_health = g_buteMgr.GetInt("Wormhole", "SingleUseColor", 2);
         }
     } else {
 
-        if (m_object->m_health == 0) {
+        if (m_object->GetHealth() == 0) {
             m_object->m_health = g_buteMgr.GetInt("Wormhole", "NormalColor", 4);
         }
     }
 
     CWwdSpriteObject* s = m_object;
-    CShadeTable* colorEntry = g_gameReg->GetLightFxMgr()->GetShadeTable(s->m_health);
+    CShadeTable* colorEntry = g_gameReg->GetLightFxMgr()->GetShadeTable(s->GetHealth());
     s->SetDrawFill(SHADE_DST_BY_SRC_16, colorEntry);
 }
 
@@ -461,7 +461,7 @@ i32 CTeleporter::Update() {
         );
         if (spawned != NULL) {
             spawned->SetSmarts(IDX(TELEPORTER_SINGLE_USE));
-            spawned->m_health = m_object->m_health;
+            spawned->m_health = m_object->GetHealth();
             spawned->SetSpeedX(m_object->GetScore());
             spawned->SetSpeedY(m_object->GetPoints());
             spawned->GetLogicRecord()->SetSpeed(0);
@@ -478,7 +478,7 @@ i32 CTeleporter::Update() {
         );
         spawned->SetSpeedX(m_object->m_screenX);
         spawned->SetSpeedY(m_object->m_screenY);
-        spawned->SetSmarts(m_object->m_health);
+        spawned->SetSmarts(m_object->GetHealth());
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, false, false);
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
     }

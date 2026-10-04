@@ -99,8 +99,15 @@ public:
         m_moveMode = mode;
     }
 
+    i32 GetFaceDirection() const {
+        return m_faceDirection;
+    }
+
     i32 GetDamage() const {
         return m_damage;
+    }
+    void SetDamage(i32 damage) {
+        m_damage = damage;
     }
 
     i32 GetScore() const {
@@ -247,6 +254,10 @@ public:
     }
 
     i32 m_smarts;
+    i32 GetHealth() const {
+        return m_health;
+    }
+
     i32 m_health;
 
     i32 m_direction;

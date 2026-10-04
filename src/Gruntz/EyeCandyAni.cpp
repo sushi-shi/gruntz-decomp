@@ -40,7 +40,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey == 0 && o->GetFrameImage() != NULL) {
         i32 v = o->GetFrameImage()->GetAnchorY() + o->m_screenY + 0x186a0;
-        o->SetSortKey(v);
+        m_object->SetSortKey(v);
     }
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }
