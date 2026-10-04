@@ -64,6 +64,10 @@ public:
         m_owner = owner;
     }
 
+    TrigLogicId GetType() const {
+        return m_typeId;
+    }
+
     void SetType(TrigLogicId type) {
         m_typeId = type;
     }

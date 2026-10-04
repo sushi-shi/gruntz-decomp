@@ -184,7 +184,7 @@ i32 CTileTriggerContainer::RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType)
         POSITION cur = pos;
         CTileTriggerSwitchLogic* logic =
             static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
-        if (logic->m_typeId == logicType && logic->m_cellKey == cellKey) {
+        if (logic->GetType() == logicType && logic->m_cellKey == cellKey) {
 
             delete logic;
             m_switchLogics.RemoveAt(cur);
@@ -441,7 +441,7 @@ CTileTriggerContainer::FindSwitchLogic(i32 cellKey, TrigLogicId logicType) {
         CTileTriggerSwitchLogic* logic =
             static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
         if (logic->m_cellKey == cellKey) {
-            if (logicType == TRIGID_ANY || logic->m_typeId == logicType) {
+            if (logicType == TRIGID_ANY || logic->GetType() == logicType) {
                 return logic;
             }
         }
@@ -691,7 +691,7 @@ i32 CTileTriggerContainer::SerializeSwitchLogic(
     if (logic == NULL) {
         return 0;
     }
-    TrigLogicId tag = logic->m_typeId;
+    TrigLogicId tag = logic->GetType();
     archive->Write(&tag, sizeof(tag));
 
     switch (tag) {

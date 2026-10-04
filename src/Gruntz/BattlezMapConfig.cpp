@@ -1296,7 +1296,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 ry = pt2.m_y;
             CTileTriggerSwitchLogic* rec =
                 m_cellQuery->FindSwitchLogic(CellKey(rx, ry), TRIGID_ANY);
-            if (rec->m_typeId == TRIGID_SWITCH_2) {
+            if (rec->GetType() == TRIGID_SWITCH_2) {
                 unit->SetDefenderState(AISTATE_SEEK);
                 unit->RecycleCoords();
                 unit->SetBattlezTask(BZTASK_SEEK_SWITCH);
@@ -2189,7 +2189,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         g->GetScreenTile(&tp);
         i32 key = CellKey(keyHi, tp.m_y);
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
-        if (r->m_typeId == TRIGID_SWITCH_2) {
+        if (r->GetType() == TRIGID_SWITCH_2) {
             g->SetDefenderState(AISTATE_SEEK);
             g->RecycleCoords();
             g->SetBattlezTask(BZTASK_SEEK_SWITCH);
