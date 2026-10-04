@@ -295,6 +295,14 @@ public:
         m_defenderState = state;
     }
 
+    PickupType GetDefenderPickupType() const {
+        return m_defenderPickupType;
+    }
+
+    void SetDefenderPickupType(PickupType type) {
+        m_defenderPickupType = type;
+    }
+
     i32 GetDefenderQueuePosition() const {
         return m_defenderQueuePosition;
     }
