@@ -61,7 +61,6 @@ DATA(0x0020e158)
 static char s_deathzSquash[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_normalgruntDeath[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
-// @early-stop
 RVA(0x00060150, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
     if (m_deathAnimStarted != false) {
@@ -169,9 +168,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL: {
             CMapMgr* grid = g_gameReg->GetTileGrid();
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
-                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
-            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            TileCollisionKind attr = grid->CellTypeAt(
+                m_object->m_screenX >> TILE_SHIFT_PX,
+                m_object->m_screenY >> TILE_SHIFT_PX
+            );
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(
@@ -197,9 +197,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL2: {
             CMapMgr* grid = g_gameReg->GetTileGrid();
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
-                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
-            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            TileCollisionKind attr = grid->CellTypeAt(
+                m_object->m_screenX >> TILE_SHIFT_PX,
+                m_object->m_screenY >> TILE_SHIFT_PX
+            );
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(
