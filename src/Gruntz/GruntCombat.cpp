@@ -239,8 +239,7 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
-        SoundCue* out = NULL;                                                                      \
-        MapLookup(reg->m_world->SoundRegistry()->m_cues, (key), out);                              \
+        SoundCue* out = reg->m_world->SoundRegistry()->FindCue(key);                               \
         cue = out;                                                                                 \
     } while (0)
 

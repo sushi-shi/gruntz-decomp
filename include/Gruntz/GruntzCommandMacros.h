@@ -12,8 +12,7 @@
     {                                                                                              \
         SoundCueRegistry* _reg = m_world->SoundRegistry();                                         \
         if (_reg->m_silentMode == false) {                                                         \
-            VAR = 0;                                                                               \
-            MapLookup(_reg->m_cues, TAG, VAR);                                                     \
+            VAR = _reg->FindCue(TAG);                                                              \
             if (VAR)                                                                               \
                 VAR->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                 \
         }                                                                                          \

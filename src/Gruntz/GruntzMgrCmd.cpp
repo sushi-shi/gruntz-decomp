@@ -470,8 +470,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         g_explosionz ^= 1;
                         SoundCueRegistry* _reg = m_world->SoundRegistry();
                         if (_reg->m_silentMode == false) {
-                            _c = NULL;
-                            MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
+                            _c = _reg->FindCue("GAME_MAJORCHEAT");
                             if (_c) {
                                 PlaySoundCueIfElapsed(_c, g_soundVolumePercent, 0, 0, false);
                             }
