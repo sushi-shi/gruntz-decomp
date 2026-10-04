@@ -138,8 +138,8 @@ public:
 
     virtual void UpdateWorldFrame();
     virtual i32 UpdateWorldFixedSteps();
-    virtual i32 BuildMusicCategoryTable(i32);
-    virtual i32 BuildWorldLevelPath(i32);
+    virtual i32 LoadMusicSequences(i32);
+    virtual i32 LoadLevelWorld(i32);
 
     Coord* StartMarkerAt(i32 index) {
         return static_cast<Coord*>(m_startMarkers.GetAt(index));
@@ -168,8 +168,8 @@ public:
 
     i32 RestoreCursorSaveUnder();
 
-    void PlayCueAt(
-        i32 cueId,
+    void DrawMessageText(
+        i32 messageId,
         i32 fontSel,
         i32 toFrontPage,
         i32 r,
@@ -179,11 +179,11 @@ public:
         RECT* rectSrc
     );
 
-    i32 PostActionCue(i32 cueId);
+    i32 ShowHelpMessage(i32 messageId);
 
     void DrawMessageFrame(i32 index, b32 useFront);
 
-    void LoadSBITextEdges(i32 msgId);
+    void DrawSaveMessage(i32 messageId);
     i32 LoadGruntAssetNamespaces(CMulti* multiplayerSession);
 
     i32 StepViewportResize();
@@ -219,14 +219,14 @@ public:
         b32 tintForPlayer
     );
     i32 AdvanceCursorAnimation(i32 elapsedMs);
-    i32 ResetGoals(i32, i32);
+    i32 SetCameraPosition(i32 worldX, i32 worldY);
 
-    i32 PositionBridgeToggle(StatusBarDock mode, StatusBarDock unused);
+    i32 OnStatusBarDockChanged(StatusBarDock dock, StatusBarDock unused);
 
     b32 PlaceStartGruntz();
     i32 ValidateLevelTiles();
 
-    i32 BuildHelpReveal(b32 final);
+    i32 AdvanceLoadingBar(b32 final);
     i32 RegisterInputBindings();
 
     i32 LoadLevelAnims(i32 force);
@@ -240,7 +240,7 @@ public:
 
     i32 QuitToMenu();
 
-    i32 SetCursorFrame(i32 item);
+    i32 SelectCursor(i32 cursorId);
 
     i32 ExecuteCommand(
         u8 playerIndex,
@@ -255,7 +255,7 @@ public:
 
     i32 CloseLevelOverlay(i32 unused);
     i32 ClearPlacedObjects();
-    i32 FlushPendingOps();
+    i32 CancelCursorAction();
 
     i32 SetDefeatCountdown(b32 active, i32 durationMs);
     inline void CancelDefeatCountdown();
@@ -283,11 +283,11 @@ public:
 
     i32 AddLevelGruntz();
 
-    i32 SetEffectSpriteDurations();
+    i32 ConfigureSoundReplayDelays();
 
     i32 UnloadGruntAndWarlordAssets(CMulti* multiplayerSession);
 
-    i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
+    i32 LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAssetGroups);
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
@@ -320,7 +320,7 @@ public:
     b32 m_dragInProgress;
     // @identity-TODO: initialized and save-streamed, but never used by play logic.
     i32 m_reserved2f0;
-    i32 m_cursorFrame;
+    i32 m_selectedCursorId;
     i32 m_cursorId;
     Coord m_cursorOffset;
     i32 m_selectionAnchorX;
@@ -329,14 +329,14 @@ public:
     RECT m_selectionRect;
 
     CMinimap* m_minimap;
-    ClockInterval m_bootyTiming;
+    ClockInterval m_carriedGruntVoiceTimer;
 
     ClockInterval m_ambientTiming;
     b32 m_ambientInitDone;
     ClockInterval m_syncTiming;
     Coord m_tileClick;
-    b32 m_dragInhibit1;
-    b32 m_dragInhibit2;
+    b32 m_gruntPlacementActive;
+    b32 m_pickupPlacementActive;
 
     CPtrArray m_startMarkers;
 
@@ -347,11 +347,11 @@ public:
     Anchor m_anchors[4];
 
     CPtrArray m_placedObjectCells[4];
-    CTimer* m_levelTimer;
-    ClockInterval m_cueTiming;
-    b32 m_cueToggle;
-    i32 m_lastCueId;
-    CString m_cueText;
+    CLevelTimer* m_levelTimer;
+    ClockInterval m_messageBlinkTimer;
+    b32 m_messageBlinkVisible;
+    i32 m_lastMessageId;
+    CString m_messageText;
     b32 m_drewThisFrame;
 
     POINT m_pathPreviewSource;
@@ -375,9 +375,9 @@ public:
     b32 m_defeatCountdownActive;
     i32 m_scrollEdgeActive;
     i32 m_scrollEdgeLock;
-    i32 m_revealFrame;
+    i32 m_loadingBarStep;
 
-    CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
+    CImage *m_loadingBarFill, *m_loadingBarEnd, *m_loadingBarStart;
 
     CDDrawWorker* m_cursorSprite;
     CImage* m_cursorImage;
@@ -411,8 +411,8 @@ public:
         CMulti* multiplayerSession
     );
 
-    i32 ScanBuildTiles();
-    i32 ScanShuffleQuads();
+    i32 BuildRockAndCoveredPowerupLogics();
+    i32 RandomizePlayerAssignments();
 };
 
 ColorTint FindAvailablePlayerColor();
@@ -473,7 +473,7 @@ inline CPlay::CPlay() {
     m_reserved2f0 = 0;
     m_packetsRcvd = 0;
     m_packetsSent = 0;
-    m_cursorFrame = 0;
+    m_selectedCursorId = 0;
     m_cursorId = -1;
     m_minimap = NULL;
     m_cursorUsesPlayerTint = false;
@@ -484,8 +484,8 @@ inline CPlay::CPlay() {
     m_selectionDragActive = false;
     m_statusBarDragActive = false;
     m_playerCommandPending = false;
-    m_dragInhibit1 = false;
-    m_dragInhibit2 = false;
+    m_gruntPlacementActive = false;
+    m_pickupPlacementActive = false;
     m_dragInProgress = false;
     m_cursorTargetValid = false;
 }

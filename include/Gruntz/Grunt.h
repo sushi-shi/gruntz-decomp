@@ -404,7 +404,7 @@ public:
     i32 BeginPickupAnimation(
         PickupType type,
         i32 forced,
-        i32 helpCueId,
+        i32 helpMessageId,
         i32 pickupParam,
         i32 countStats
     );
@@ -442,7 +442,7 @@ public:
     PickupType m_carriedToyType;
     PickupType m_savedToolType;
     PickupType m_pendingPickupType;
-    i32 m_helpCueId;
+    i32 m_helpMessageId;
     i32 m_reserved1a8;
     i32 m_reserved1ac;
     i32 m_reserved1b0;

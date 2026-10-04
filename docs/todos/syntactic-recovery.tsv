@@ -71,9 +71,10 @@ rva	unit	function	lost_max	cur
 0x183b60	menupage	?Draw@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9806
 0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4662	96.3919
 0x0d0db0	play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	93.5785
-0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.2827
+0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.5834
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.0368
+0x0d9290	play	?RandomizePlayerAssignments@CPlay@@QAEHXZ	100.0000	99.8477
 0x0d0b30	play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755
 0x0d1ac0	play	?StepScroll@CPlay@@QAEXXZ	100.0000	78.2069
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
@@ -84,7 +85,7 @@ rva	unit	function	lost_max	cur
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
-0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
+0x09c0e0	spriteloaders	?AddTime@CLevelTimer@@QAEXHH@Z	100.0000	99.8214
 0x0e2df0	spriteref	?Build@CGruntPalette@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	100.0000	83.1877
 0x0e8cb0	statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	95.7692
 0x075e90	terraintileloader	?HandleToolAnimationCue@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	86.1938	85.7626

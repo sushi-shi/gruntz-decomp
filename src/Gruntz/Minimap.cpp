@@ -1010,7 +1010,7 @@ i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
 
     CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
     if (play != NULL) {
-        play->ResetGoals(
+        play->SetCameraPosition(
             cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
             cell[1] * TILE_SIZE_PX + TILE_HALF_PX
         );
@@ -1064,7 +1064,7 @@ i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
     }
     CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
     if (play != NULL) {
-        play->ResetGoals(
+        play->SetCameraPosition(
             cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
             cell[1] * TILE_SIZE_PX + TILE_HALF_PX
         );

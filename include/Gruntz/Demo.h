@@ -16,7 +16,7 @@ public:
     virtual GameStateId Update() OVERRIDE;
     virtual i32 Render() OVERRIDE;
     virtual i32 CompleteLevel() OVERRIDE;
-    virtual i32 BuildWorldLevelPath(i32) OVERRIDE;
+    virtual i32 LoadLevelWorld(i32) OVERRIDE;
 
     i32 m_demoCountdown;
 };

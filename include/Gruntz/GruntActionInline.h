@@ -46,7 +46,7 @@ inline void CGrunt::ApplyPendingPickup() {
     if (mode >= PICKUP_POWERUPZ_FIRST) {
         ApplyPickup(mode, 1, 0, 1);
         m_pendingPickupType = PICKUP_INVALID;
-        m_helpCueId = 0;
+        m_helpMessageId = 0;
         return;
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {

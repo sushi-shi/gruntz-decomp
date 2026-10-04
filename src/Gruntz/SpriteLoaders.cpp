@@ -28,13 +28,13 @@
 #include <string.h>
 
 RVA(0x0009bab0, 0x35)
-CTimer::CTimer() {
+CLevelTimer::CLevelTimer() {
     RESET_TIMER_SPRITES;
     m_running = false;
 }
 
 RVA(0x0009bb00, 0x119)
-i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
+i32 CLevelTimer::LoadTimerSprite(i32 originX, i32 originY) {
     CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_TIMER");
     m_sprite = spr;
     if (!spr) {
@@ -70,12 +70,12 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
 }
 
 RVA(0x0009bc70, 0x18)
-void CTimer::Reset() {
+void CLevelTimer::Reset() {
     RESET_TIMER_SPRITES;
 }
 
 RVA(0x0009bca0, 0x25d)
-i32 CTimer::Tick(i32 elapsedMs) {
+i32 CLevelTimer::Tick(i32 elapsedMs) {
     static_cast<void>(elapsedMs);
     if (!m_running) {
         return 1;
@@ -84,14 +84,14 @@ i32 CTimer::Tick(i32 elapsedMs) {
     // Preserve subtraction before the start addition; Remaining reassociates this caller.
     i64 rem = m_countdown.m_interval - static_cast<u32>(g_frameTime) + m_countdown.m_start;
     i32 v = static_cast<i32>(max(0, rem));
-    m_currentMs = v;
+    m_remainingMs = v;
 
     if (v == 0) {
 
         Stop();
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = true;
-        ls->m_cueTiming.Start(0x1f4);
+        ls->m_messageBlinkTimer.Start(0x1f4);
         g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
@@ -133,7 +133,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
         }
     }
 
-    u32 t = static_cast<u32>(m_currentMs);
+    u32 t = static_cast<u32>(m_remainingMs);
     i32 d10min = t / (MILLIS_PER_MINUTE * 10);
     i32 d1min = t / MILLIS_PER_MINUTE % 10;
     if (d1min == 0 && d10min != 0) {
@@ -158,11 +158,11 @@ i32 CTimer::Tick(i32 elapsedMs) {
 }
 
 RVA(0x0009bfa0, 0xb4)
-i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
+i32 CLevelTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
     if (!m_running) {
         return 1;
     }
-    if (forceVisible == false && static_cast<u32>(m_currentMs) < 0x2710
+    if (forceVisible == false && static_cast<u32>(m_remainingMs) < 0x2710
         && static_cast<u32>(g_period500CountdownMs) >= 0xfa) {
         return 1;
     }
@@ -185,16 +185,16 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
 }
 
 RVA(0x0009c090, 0x37)
-void CTimer::SetTime(i32 minutes, i32 seconds) {
+void CLevelTimer::SetTime(i32 minutes, i32 seconds) {
     u32 clampedMinutes = static_cast<u32>(minutes);
     clampedMinutes = min(0x63, clampedMinutes);
     u32 clampedSeconds = static_cast<u32>(seconds);
     clampedSeconds = min(0x3b, clampedSeconds);
-    m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
+    m_remainingMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
 }
 
 RVA(0x0009c0e0, 0xa3)
-void CTimer::AddTime(i32 minutes, i32 seconds) {
+void CLevelTimer::AddTime(i32 minutes, i32 seconds) {
     if (!m_running) {
         return;
     }
@@ -202,7 +202,7 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
     secs = min(0x3b, secs);
     u32 mins = static_cast<u32>(minutes);
     mins = min(0x63, mins);
-    u32 cur = static_cast<u32>(m_currentMs);
+    u32 cur = static_cast<u32>(m_remainingMs);
     u32 carry = 0;
     u32 onClock;
     if (cur % MILLIS_PER_MINUTE / MILLIS_PER_SECOND + secs > 0x3b) {
@@ -219,7 +219,12 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
 
 // @early-stop
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CLevelTimer::SerializeDispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -247,7 +252,7 @@ i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typ
 }
 
 RVA(0x0009c2e0, 0x2b6)
-i32 CTimer::Serialize(CFileMemBase* ar) {
+i32 CLevelTimer::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -291,6 +296,6 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
     }
 
     ar->Write(&m_running, sizeof(m_running));
-    ar->Write(&m_currentMs, sizeof(m_currentMs));
+    ar->Write(&m_remainingMs, sizeof(m_remainingMs));
     return 1;
 }

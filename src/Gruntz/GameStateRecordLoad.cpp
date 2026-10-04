@@ -79,7 +79,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_carriedToyType, sizeof(m_carriedToyType));
     ar->Read(&m_savedToolType, sizeof(m_savedToolType));
     ar->Read(&m_pendingPickupType, sizeof(m_pendingPickupType));
-    ar->Read(&m_helpCueId, sizeof(m_helpCueId));
+    ar->Read(&m_helpMessageId, sizeof(m_helpMessageId));
     ar->Read(&m_reserved1a8, sizeof(m_reserved1a8));
     ar->Read(&m_reserved1ac, sizeof(m_reserved1ac));
     ar->Read(&m_reserved1b0, sizeof(m_reserved1b0));

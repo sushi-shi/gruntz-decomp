@@ -1631,7 +1631,7 @@ i32 CGrunt::Place(
     m_scrollSpell = 0;
     m_wandSpellOverride = 0;
     m_activeSpell = 0;
-    m_helpCueId = 0;
+    m_helpMessageId = 0;
     m_aiType = aiType;
     m_brickPickupType = PICKUP_BROWNBRICK;
     m_playerIndex = playerIndex;
@@ -2345,7 +2345,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             return 1;
         }
         case PICKUP_HELPBOX: {
-            (static_cast<CPlay*>(g_gameReg->m_curState))->PostActionCue(m_helpCueId);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->ShowHelpMessage(m_helpMessageId);
             return 1;
         }
         case PICKUP_COIN: {

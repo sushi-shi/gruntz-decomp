@@ -261,7 +261,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTimer* levelTimer = new CTimer;
+        CLevelTimer* levelTimer = new CLevelTimer;
         m_levelTimer = levelTimer;
         if (levelTimer == NULL) {
             return 0;
@@ -373,8 +373,8 @@ i32 CPlay::EnterState(GameStateId previousState) {
     }
     m_statusBarDragActive = false;
     m_dragInProgress = false;
-    m_dragInhibit1 = false;
-    m_dragInhibit2 = false;
+    m_gruntPlacementActive = false;
+    m_pickupPlacementActive = false;
     m_cursorTargetValid = false;
     m_selectionDragActive = false;
     if (m_renderDisabled == false) {
@@ -448,12 +448,12 @@ i32 CPlay::Render() {
         m_statusBar->LoadMainStatusBarSprite();
 
         {
-            if (m_cueTiming.Expired()) {
-                m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.Start(CUE_INTERVAL_MS);
+            if (m_messageBlinkTimer.Expired()) {
+                m_messageBlinkVisible = (m_messageBlinkVisible == false);
+                m_messageBlinkTimer.Start(MESSAGE_BLINK_INTERVAL_MS);
             }
-            if (m_cueToggle != false) {
-                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+            if (m_messageBlinkVisible != false) {
+                DrawMessageText(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
         }
 
@@ -479,9 +479,9 @@ i32 CPlay::Render() {
         m_mgr->GetCommandMgr()->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (m_bootyTiming.Expired()) {
+            if (m_carriedGruntVoiceTimer.Expired()) {
                 g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-                m_bootyTiming.Start(BOOTY_INTERVAL_MS);
+                m_carriedGruntVoiceTimer.Start(CARRIED_GRUNT_VOICE_INTERVAL_MS);
             }
         }
 
@@ -603,12 +603,12 @@ i32 CPlay::Render() {
         if (m_winLoseBanner != false && m_statusBar->m_levelOverlayActive == false
             && m_statusBar->m_quitConfirmationActive == false) {
 
-            if (m_cueTiming.Expired()) {
-                m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.Start(CUE_INTERVAL_MS);
+            if (m_messageBlinkTimer.Expired()) {
+                m_messageBlinkVisible = (m_messageBlinkVisible == false);
+                m_messageBlinkTimer.Start(MESSAGE_BLINK_INTERVAL_MS);
             }
-            if (m_cueToggle != false) {
-                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+            if (m_messageBlinkVisible != false) {
+                DrawMessageText(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
         }
 
@@ -668,7 +668,7 @@ i32 CPlay::Render() {
                 DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
                 back->GetSurface()->ShadeRect(0x32, NULL);
-                PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+                DrawMessageText(m_lastMessageId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
             UpdateAmbientMusic();
@@ -678,7 +678,7 @@ i32 CPlay::Render() {
             m_statusBar->LoadMainStatusBarSprite();
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
-                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+                DrawMessageText(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
             m_levelTimer->Draw(back, true);
         }
@@ -904,7 +904,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         g_levelBias100 = true;
     }
 
-    CTimer* worker = self->m_levelTimer;
+    CLevelTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
         worker->Stop();
     }
@@ -1122,7 +1122,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
     LoadLoadingBarSprite();
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     FreeListTeardown();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
@@ -1141,13 +1141,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
         g_lastLevelNum = level;
 
-        BuildHelpReveal(false);
+        AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
         RegisterInputBindings();
 
-        BuildHelpReveal(false);
+        AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
@@ -1158,7 +1158,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1166,12 +1166,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
         UnloadGruntAndWarlordAssets(savedThis);
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     RegisterInputBindings();
     if (!LoadLevelImages(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1179,7 +1179,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGameImages(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1187,12 +1187,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGruntImageNamespaces(savedThis)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     RegisterInputBindings();
     if (!LoadLevelSounds(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1200,7 +1200,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGameSounds(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1208,12 +1208,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGruntSoundNamespaces(NULL)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    SetEffectSpriteDurations();
+    ConfigureSoundReplayDelays();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1221,7 +1221,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadLevelAnims(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1229,7 +1229,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGameAnims(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1237,15 +1237,15 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGruntAnimationNamespaces(NULL)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (!BuildWorldLevelPath(reload)) {
+    if (!LoadLevelWorld(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1260,7 +1260,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
             ->ActivateVisibleObjects();
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1299,7 +1299,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         }
         if (notTraining) {
-            ScanShuffleQuads();
+            RandomizePlayerAssignments();
         }
     }
 
@@ -1345,8 +1345,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 }
             }
             {
-                if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
-                    && ValidateLevelTiles() && AddLevelGruntz()) {
+                if (LoadRequiredCharacterAssets(savedThis, initScratch)
+                    && BuildRockAndCoveredPowerupLogics() && ValidateLevelTiles()
+                    && AddLevelGruntz()) {
                     self->m_world->ChildGroup()->TickKillCues(0);
                     self->m_statusBar->StartChipMachineCycle();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
@@ -1361,12 +1362,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                         (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
                             ->ActivateVisibleObjects();
                     }
-                    BuildHelpReveal(false);
+                    AdvanceLoadingBar(false);
                     if (modeFlag) {
                         (savedThis)->SendLobbyKeepAlive();
                     }
                     RegisterInputBindings();
-                    if (BuildMusicCategoryTable(reload)) {
+                    if (LoadMusicSequences(reload)) {
                         goto okContinue;
                     }
                 }
@@ -1375,12 +1376,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
 
     okContinue:
-        BuildHelpReveal(false);
+        AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
         RegisterInputBindings();
-        BuildHelpReveal(true);
+        AdvanceLoadingBar(true);
         ActiveWait(0x64);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
@@ -1412,10 +1413,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_paused = false;
         self->m_playerCommandPending = false;
         self->m_winLoseBanner = false;
-        self->m_cueTiming.Start(0x1f4);
-        self->m_cueToggle = true;
-        self->m_cueText = "";
-        self->m_lastCueId = 0;
+        self->m_messageBlinkTimer.Start(0x1f4);
+        self->m_messageBlinkVisible = true;
+        self->m_messageText = "";
+        self->m_lastMessageId = 0;
         self->m_tinyViewportCurseActive = false;
         self->m_darknessCurseActive = false;
         self->m_monitorCurseActive = false;
@@ -1784,12 +1785,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         triggerManager->StopCameraTracking();
         CChatBox* rec = this->m_chatBox;
         if (rec->IsInputActive() != false) {
-            this->FlushPendingOps();
+            this->CancelCursorAction();
             this->m_chatBox->m_gameText->EndInput();
             this->m_chatBox->SetInputActive(false);
             return 1;
         }
-        if (this->FlushPendingOps() != 0) {
+        if (this->CancelCursorAction() != 0) {
             return 1;
         }
         g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -1850,7 +1851,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (area->HasJoinedRound() != false && area->HasDropped() == false
             && area->IsEliminated() == false) {
             this->m_focusPlayerIndex = pick;
-            this->ResetGoals(area->m_focusX, area->m_focusY);
+            this->SetCameraPosition(area->m_focusX, area->m_focusY);
         }
     }
 
@@ -1859,7 +1860,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        this->ResetGoals(a->m_focusX, a->m_focusY);
+        this->SetCameraPosition(a->m_focusX, a->m_focusY);
         return 1;
     }
 
@@ -1889,13 +1890,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'T') {
-        this->FlushPendingOps();
+        this->CancelCursorAction();
         g_gameReg->GetTriggerMgr()->ToggleToolTargeting();
         return 1;
     }
 
     if (vk == 'Y') {
-        this->FlushPendingOps();
+        this->CancelCursorAction();
         g_gameReg->GetTriggerMgr()->ToggleToyTargeting();
         return 1;
     }
@@ -1939,7 +1940,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
         }
         Coord* e = this->CameraBookmarkAt(this->m_cameraBookmarkIndex);
-        this->ResetGoals(e->m_x, e->m_y);
+        this->SetCameraPosition(e->m_x, e->m_y);
         return 1;
     }
 
@@ -2272,19 +2273,19 @@ recorder_place:
     if (this->m_playerCommandPending != false) {
         return 1;
     }
-    if (this->m_dragInhibit1 != false) {
-        this->m_dragInhibit1 = false;
+    if (this->m_gruntPlacementActive != false) {
+        this->m_gruntPlacementActive = false;
         this->m_statusBar->CommitSlot(false);
-        this->SetCursorFrame(0);
+        this->SelectCursor(0);
         if (vk != VK_INSERT) {
             goto tail_default;
         }
         return 1;
     }
-    if (this->m_dragInhibit2 == false) {
+    if (this->m_pickupPlacementActive == false) {
         goto tail_default2;
     }
-    i32 st = this->m_cursorFrame;
+    i32 st = this->m_selectedCursorId;
     StatusBarHighlightRow ph = this->m_statusBar->m_pendingHlRow;
     i32 lvl;
     if (st >= 0x22) {
@@ -2292,14 +2293,14 @@ recorder_place:
     } else {
         lvl = (st >= 0x17);
     }
-    this->m_dragInhibit2 = false;
+    this->m_pickupPlacementActive = false;
     if (vk == VK_DELETE || vk == VK_DECIMAL) {
         statusBar->ReportTab(st);
-        this->SetCursorFrame(0);
+        this->SelectCursor(0);
         return 1;
     }
     statusBar->EnterHlRow(0, st);
-    this->SetCursorFrame(0);
+    this->SelectCursor(0);
     if (lvl == 0) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
             if (vk != VK_NUMLOCK) {
@@ -2528,7 +2529,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         sx = view->left - geom->m_viewportRect.left + xr;
         sy = view->top - geom->m_viewportRect.top + y;
 
-        if (m_dragInhibit1 != false && m_playerCommandPending == false) {
+        if (m_gruntPlacementActive != false && m_playerCommandPending == false) {
             eventArg = 0;
             const RECT* gr = m_statusBar->GetBarRect();
             if (::PtInRect(gr, xr, y)) {
@@ -2554,19 +2555,19 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (eventArg == 0) {
                 g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
-            m_dragInhibit1 = false;
+            m_gruntPlacementActive = false;
             m_statusBar->CommitSlot(eventArg);
-            SetCursorFrame(0);
+            SelectCursor(0);
             return 1;
         }
 
-        if (m_dragInhibit2 != false && m_playerCommandPending == false) {
+        if (m_pickupPlacementActive != false && m_playerCommandPending == false) {
             {
                 const RECT* gr = m_statusBar->GetBarRect();
                 if (::PtInRect(gr, xr, y)) {
-                    if (m_statusBar->DropFallingItemAt(xr, y, m_cursorFrame)) {
-                        m_dragInhibit2 = false;
-                        SetCursorFrame(0);
+                    if (m_statusBar->DropFallingItemAt(xr, y, m_selectedCursorId)) {
+                        m_pickupPlacementActive = false;
+                        SelectCursor(0);
                         return 1;
                     }
                     goto waypoint_cancel;
@@ -2590,7 +2591,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                         static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                         0,
                         0,
-                        static_cast<char>(m_cursorFrame),
+                        static_cast<char>(m_selectedCursorId),
                         0
                     );
                     m_playerCommandPending = true;
@@ -2616,16 +2617,16 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                     0,
                     0,
-                    static_cast<char>(m_cursorFrame),
+                    static_cast<char>(m_selectedCursorId),
                     0
                 );
                 return 1;
             }
 
         waypoint_cancel:
-            m_dragInhibit2 = false;
-            m_statusBar->EnterHlRow(0, m_cursorFrame);
-            SetCursorFrame(0);
+            m_pickupPlacementActive = false;
+            m_statusBar->EnterHlRow(0, m_selectedCursorId);
+            SelectCursor(0);
             return 1;
         }
     } else {
@@ -2661,7 +2662,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         const RECT* gr = m_statusBar->GetBarRect();
         if (::PtInRect(gr, xr, y)) {
-            FlushPendingOps();
+            CancelCursorAction();
             return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
         }
         if (m_chatBox->HitTest(xr, y)) {
@@ -2787,7 +2788,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         || g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
-    if (m_dragInhibit1 != false || m_dragInhibit2 != false) {
+    if (m_gruntPlacementActive != false || m_pickupPlacementActive != false) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
@@ -2825,7 +2826,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         }
     }
 
-    if (m_dragInhibit1 != false) {
+    if (m_gruntPlacementActive != false) {
         return 1;
     }
     CGameLevel* h;
@@ -2986,7 +2987,7 @@ i32 CPlay::ForwardReady() {
 
 RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
-    FlushPendingOps();
+    CancelCursorAction();
     if (m_paused) {
         m_statusBar->BuildGameTabResumeButton(false);
     } else {
@@ -3394,7 +3395,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
-        this->m_dragInhibit2 = true;
+        this->m_pickupPlacementActive = true;
         this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
         return 1;
@@ -3421,13 +3422,13 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
-        this->m_dragInhibit1 = true;
+        this->m_gruntPlacementActive = true;
         this->m_cursorTargetValid = false;
         g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-        this->m_bootyTiming.m_intervalLo = BOOTY_INTERVAL_MS;
-        this->m_bootyTiming.m_intervalHi = 0;
-        this->m_bootyTiming.m_startLo = g_frameTime;
-        this->m_bootyTiming.m_startHi = 0;
+        this->m_carriedGruntVoiceTimer.m_intervalLo = CARRIED_GRUNT_VOICE_INTERVAL_MS;
+        this->m_carriedGruntVoiceTimer.m_intervalHi = 0;
+        this->m_carriedGruntVoiceTimer.m_startLo = g_frameTime;
+        this->m_carriedGruntVoiceTimer.m_startHi = 0;
         this->m_cursorId = cursorId;
         return 1;
     }
@@ -3824,7 +3825,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         }
 
         if (m_chatBox->HitTest(x, y) == 0 && m_mgr->GetFrameGate() == false && m_inGame == false
-            && m_dragInhibit1 == false && m_dragInhibit2 == false) {
+            && m_gruntPlacementActive == false && m_pickupPlacementActive == false) {
 
             if (m_cursorId != 0) {
                 if (m_cursorSnapSprite != NULL) {
@@ -3865,7 +3866,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_selectionRect.bottom = max(m_selectionRect.bottom, m_selectionAnchorY);
     }
     if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->IsTargeting() == false) {
-        FlushPendingOps();
+        CancelCursorAction();
     }
     return 1;
 }
@@ -4004,7 +4005,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     if (changed) {
-        self->ResetGoals(sx, sy);
+        self->SetCameraPosition(sx, sy);
     }
     return 1;
 }
@@ -4026,9 +4027,9 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
 }
 
 RVA(0x000d1710, 0x122)
-void CPlay::LoadSBITextEdges(i32 msgId) {
+void CPlay::DrawSaveMessage(i32 messageId) {
     CString s;
-    s.LoadString(msgId);
+    s.LoadString(messageId);
 
     RECT rect;
 
@@ -4040,8 +4041,8 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
 }
 
 RVA(0x000d1890, 0x1ba)
-void CPlay::PlayCueAt(
-    i32 cueId,
+void CPlay::DrawMessageText(
+    i32 messageId,
     i32 fontSel,
     i32 toFrontPage,
     i32 r,
@@ -4052,12 +4053,12 @@ void CPlay::PlayCueAt(
 ) {
     RECT rect;
 
-    if (cueId != m_lastCueId) {
+    if (messageId != m_lastMessageId) {
 
-        if (m_cueText.LoadString(cueId) == false) {
+        if (m_messageText.LoadString(messageId) == false) {
             return;
         }
-        m_lastCueId = cueId;
+        m_lastMessageId = messageId;
     }
 
     if (rectSrc != NULL) {
@@ -4069,9 +4070,9 @@ void CPlay::PlayCueAt(
     }
 
     if (toFrontPage != 0) {
-        DrawTextToFrontSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToFrontSurface(m_world, &m_messageText, &rect, fontSel, 1, r, g, b, flag);
     } else {
-        DrawTextToBackSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToBackSurface(m_world, &m_messageText, &rect, fontSel, 1, r, g, b, flag);
     }
 }
 
@@ -4091,9 +4092,9 @@ void CPlay::StepScroll() {
 }
 
 RVA(0x000d1b30, 0x20)
-i32 CPlay::SetCursorFrame(i32 item) {
-    LoadCursorSprites(item, false);
-    m_cursorFrame = item;
+i32 CPlay::SelectCursor(i32 cursorId) {
+    LoadCursorSprites(cursorId, false);
+    m_selectedCursorId = cursorId;
     return 1;
 }
 
@@ -4465,9 +4466,9 @@ i32 CPlay::ExecuteCommand(
                 sel = 1;
             }
             if (player == static_cast<u32>(g_curPlayer)) {
-                m_dragInhibit2 = false;
-                m_statusBar->EnterHlRow(sel, m_cursorFrame);
-                SetCursorFrame(0);
+                m_pickupPlacementActive = false;
+                m_statusBar->EnterHlRow(sel, m_selectedCursorId);
+                SelectCursor(0);
             }
             return r;
         }
@@ -5146,62 +5147,62 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
 
 // @early-stop
 RVA(0x000d53d0, 0x466)
-i32 CPlay::ScanBuildTiles() {
-    CObList* pl = m_world->ChildGroup()->GetList();
-    if (pl == NULL) {
+i32 CPlay::BuildRockAndCoveredPowerupLogics() {
+    CObList* objects = m_world->ChildGroup()->GetList();
+    if (objects == NULL) {
         return 0;
     }
-    POSITION pos = pl->GetHeadPosition();
+    POSITION pos = objects->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* p = m_world->ChildGroup()->NextChild(pos);
-        if (p == NULL) {
+        CGameObject* object = m_world->ChildGroup()->NextChild(pos);
+        if (object == NULL) {
             continue;
         }
-        if (!p->HasMovementBounds()) {
-            p->m_extent.left = 0;
+        if (!object->HasMovementBounds()) {
+            object->m_extent.left = 0;
         }
-        if (!p->HasHitBounds()) {
-            p->m_area.left = 0;
+        if (!object->HasHitBounds()) {
+            object->m_area.left = 0;
         }
-        if (!p->HasAttackBounds()) {
-            p->m_switchRect.left = 0;
+        if (!object->HasAttackBounds()) {
+            object->m_switchRect.left = 0;
         }
-        if (p->m_clip.left == COORD_UNSET) {
-            p->m_clip.left = 0;
+        if (object->m_clip.left == COORD_UNSET) {
+            object->m_clip.left = 0;
         }
-        LogicRecordDispatchFn dispatch = p->GetLogicRecord()->GetDispatch();
+        LogicRecordDispatchFn dispatch = object->GetLogicRecord()->GetDispatch();
         if (dispatch == DispatchGiantRockLogic) {
             i32 buf[9];
-            buf[0] = p->m_extent.left;
-            buf[1] = p->m_extent.top;
-            buf[2] = p->m_extent.right;
-            buf[3] = p->m_area.left;
-            buf[4] = p->m_area.top;
-            buf[5] = p->m_area.right;
-            buf[6] = p->m_switchRect.left;
-            buf[7] = p->m_switchRect.top;
-            buf[8] = p->m_switchRect.right;
+            buf[0] = object->m_extent.left;
+            buf[1] = object->m_extent.top;
+            buf[2] = object->m_extent.right;
+            buf[3] = object->m_area.left;
+            buf[4] = object->m_area.top;
+            buf[5] = object->m_area.right;
+            buf[6] = object->m_switchRect.left;
+            buf[7] = object->m_switchRect.top;
+            buf[8] = object->m_switchRect.right;
             if (m_tileTriggers->AddGiantRockLogic(
-                    p->m_speedX,
-                    p->m_speedY,
-                    p->m_id,
+                    object->m_speedX,
+                    object->m_speedY,
+                    object->m_id,
                     buf,
-                    p->m_powerup,
-                    p->GetPoints(),
-                    p->m_faceDirection
+                    object->m_powerup,
+                    object->GetPoints(),
+                    object->m_faceDirection
                 )
                 == NULL) {
-                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", object->m_screenX, object->m_screenY);
                 return 0;
             }
-            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->GetPoints(), p->GetScore());
+            if (object->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+                m_statusBar->QueuePickupReward(object->GetPoints(), object->GetScore());
             }
-            p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->GetLevel();
-            i32 x = p->m_screenX;
-            i32 y = p->m_screenY;
+            i32 x = object->m_screenX;
+            i32 y = object->m_screenY;
             if (x < 0) {
                 x = 0;
             } else {
@@ -5230,28 +5231,32 @@ i32 CPlay::ScanBuildTiles() {
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
-                    p->m_speedX,
-                    p->m_speedY,
-                    p->m_id,
-                    p->m_extent,
-                    p->m_area,
-                    p->m_switchRect,
-                    p->m_clip,
-                    p->GetLogicRecord()->GetUserRect1(),
-                    p->GetLogicRecord()->GetUserRect2(),
-                    p->GetSmarts(),
-                    p->m_powerup,
-                    p->GetPoints(),
-                    p->m_faceDirection
+                    object->m_speedX,
+                    object->m_speedY,
+                    object->m_id,
+                    object->m_extent,
+                    object->m_area,
+                    object->m_switchRect,
+                    object->m_clip,
+                    object->GetLogicRecord()->GetUserRect1(),
+                    object->GetLogicRecord()->GetUserRect2(),
+                    object->GetSmarts(),
+                    object->m_powerup,
+                    object->GetPoints(),
+                    object->m_faceDirection
                 )
                 == NULL) {
-                MODAL_REPORT_AT("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                MODAL_REPORT_AT(
+                    "Bad covered powerup at: x=%d, y=%d",
+                    object->m_screenX,
+                    object->m_screenY
+                );
                 return 0;
             }
-            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->GetPoints(), p->GetScore());
+            if (object->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+                m_statusBar->QueuePickupReward(object->GetPoints(), object->GetScore());
             }
-            p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     return 1;
@@ -5307,43 +5312,43 @@ i32 CPlay::AddLevelGruntz() {
 
 // @early-stop
 RVA(0x000d5b20, 0xbb)
-i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
-    CGruntzMgr* w = m_mgr;
-    i32 ex = w->m_modeSize.cx;
-    i32 ey = w->m_modeSize.cy;
-    CTimer* pt;
-    if (mode == STATUSBAR_DOCK_LEFT) {
+i32 CPlay::OnStatusBarDockChanged(StatusBarDock dock, StatusBarDock) {
+    CGruntzMgr* gameManager = m_mgr;
+    i32 timerX = gameManager->m_modeSize.cx;
+    i32 timerY = gameManager->m_modeSize.cy;
+    CLevelTimer* timer;
+    if (dock == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
-        pt = m_levelTimer;
-        if (pt != NULL) {
-            ex -= 0x37;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+        timer = m_levelTimer;
+        if (timer != NULL) {
+            timerX -= 0x37;
+            timerY -= 0x16;
+            timer->m_baseX = timerX;
+            timer->m_baseY = timerY;
         }
-    } else if (mode == STATUSBAR_DOCK_RIGHT) {
+    } else if (dock == STATUSBAR_DOCK_RIGHT) {
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
-        pt = m_levelTimer;
-        if (pt != NULL) {
-            ex -= 0xd7;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+        timer = m_levelTimer;
+        if (timer != NULL) {
+            timerX -= 0xd7;
+            timerY -= 0x16;
+            timer->m_baseX = timerX;
+            timer->m_baseY = timerY;
         }
     } else {
         m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
-        pt = m_levelTimer;
-        if (pt != NULL) {
-            ex -= 0x37;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+        timer = m_levelTimer;
+        if (timer != NULL) {
+            timerX -= 0x37;
+            timerY -= 0x16;
+            timer->m_baseX = timerX;
+            timer->m_baseY = timerY;
         }
     }
 
     if (m_mgr->GetTriggerMgr()->m_cameraSprite != NULL) {
-        CTriggerMgr* g = m_mgr->GetTriggerMgr();
-        g->ClearCameraSprite();
+        CTriggerMgr* triggerManager = m_mgr->GetTriggerMgr();
+        triggerManager->ClearCameraSprite();
         m_mgr->GetTriggerMgr()->LoadCameraSprite();
     }
     return 1;
@@ -5379,12 +5384,12 @@ RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
 RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
 
 RVA(0x000d5f00, 0x69)
-i32 CPlay::ResetGoals(i32 x, i32 y) {
-    CGruntzMgr* w = m_mgr;
-    CTriggerMgr* g = w->GetTriggerMgr();
-    g->StopCameraTracking();
-    CDDrawWorkerHost* pg = m_mgr->World()->GetLevel()->m_mainPlane;
-    pg->SetScrollPosition(x, y);
+i32 CPlay::SetCameraPosition(i32 worldX, i32 worldY) {
+    CGruntzMgr* gameManager = m_mgr;
+    CTriggerMgr* triggerManager = gameManager->GetTriggerMgr();
+    triggerManager->StopCameraTracking();
+    CDDrawWorkerHost* mainPlane = m_mgr->World()->GetLevel()->m_mainPlane;
+    mainPlane->SetScrollPosition(worldX, worldY);
     return 1;
 }
 
@@ -5456,14 +5461,14 @@ i32 CPlay::ResetPlayState() {
             (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->World()->GetLevel();
-        ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
+        SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
-            ResetGoals(slot->m_focusX, slot->m_focusY);
+            SetCameraPosition(slot->m_focusX, slot->m_focusY);
         } else {
             CGameLevel* g = m_mgr->World()->GetLevel();
-            ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
+            SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);
         }
     }
     if (m_cursorSnapSprite != NULL) {
@@ -5477,7 +5482,7 @@ i32 CPlay::ResetPlayState() {
         g_gameReg->GetPlayer(i).GetBattlezConfig()->StepAllRowSpawns();
     }
     m_winLoseBanner = false;
-    CTimer* fm = m_levelTimer;
+    CLevelTimer* fm = m_levelTimer;
     if (fm != NULL) {
         fm->Start();
     }
@@ -5502,7 +5507,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     m_levelOverlayOpen = true;
     m_selectionDragActive = false;
     m_statusBarDragActive = false;
-    FlushPendingOps();
+    CancelCursorAction();
     if (showQuitConfirmation == false) {
         CStatusBarMgr* g = m_statusBar;
         if (g->GetState() == STATUSBAR_HIDDEN) {
@@ -5542,54 +5547,54 @@ i32 CPlay::CloseLevelOverlay(i32) {
 // @early-stop
 
 RVA(0x000d65d0, 0x7cc)
-i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
+i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAssetGroups) {
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
-            if (loaded[id] == 0) {
-                BuildHelpReveal(false);
-                loaded[id] = 1;
+            if (loadedAssetGroups[id] == 0) {
+                AdvanceLoadingBar(false);
+                loadedAssetGroups[id] = 1;
             }
-            if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, ctx)) {
+            if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, multiplayerSession)) {
                 return 0;
             }
         }
-        if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x21] == 0) {
-            BuildHelpReveal(false);
-            loaded[0x21] = 1;
+        if (loadedAssetGroups[0x21] == 0) {
+            AdvanceLoadingBar(false);
+            loadedAssetGroups[0x21] = 1;
         }
-        if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x22] == 0) {
-            BuildHelpReveal(false);
-            loaded[0x22] = 1;
+        if (loadedAssetGroups[0x22] == 0) {
+            AdvanceLoadingBar(false);
+            loadedAssetGroups[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
-        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x23] == 0) {
-            BuildHelpReveal(false);
-            loaded[0x23] = 1;
+        if (loadedAssetGroups[0x23] == 0) {
+            AdvanceLoadingBar(false);
+            loadedAssetGroups[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
-        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x24] == 0) {
-            BuildHelpReveal(false);
-            loaded[0x24] = 1;
+        if (loadedAssetGroups[0x24] == 0) {
+            AdvanceLoadingBar(false);
+            loadedAssetGroups[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
-        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x25] == 0) {
-            BuildHelpReveal(false);
-            loaded[0x25] = 1;
+        if (loadedAssetGroups[0x25] == 0) {
+            AdvanceLoadingBar(false);
+            loadedAssetGroups[0x25] = 1;
         }
         return 1;
     }
@@ -5603,96 +5608,106 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 v = obj->m_powerup;
                 if (v) {
-                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(
+                            static_cast<PickupType>(v),
+                            1,
+                            0,
+                            multiplayerSession
+                        )) {
                         return 0;
                     }
-                    if (loaded[v] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[v] = 1;
+                    if (loadedAssetGroups[v] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[v] = 1;
                     }
                 }
                 v = obj->m_damage;
                 if (v) {
-                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(
+                            static_cast<PickupType>(v),
+                            1,
+                            0,
+                            multiplayerSession
+                        )) {
                         return 0;
                     }
-                    if (loaded[v] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[v] = 1;
+                    if (loadedAssetGroups[v] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[v] = 1;
                     }
                 }
                 EnemyAiType aiType = static_cast<EnemyAiType>(obj->GetPoints());
                 switch (aiType) {
                     case AI_BOMBER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_BOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BOMB, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[1] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[1] = 1;
+                        if (loadedAssetGroups[1] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[1] = 1;
                         }
                         break;
                     case AI_BRICKLAYER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_BRICK, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BRICK, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[3] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[3] = 1;
+                        if (loadedAssetGroups[3] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[3] = 1;
                         }
                         break;
                     case AI_GAUNTLETZGRUNT:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GAUNTLETZ, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[5] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[5] = 1;
+                        if (loadedAssetGroups[5] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[5] = 1;
                         }
                         break;
                     case AI_GOOSUCKER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_GOOBER, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GOOBER, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[7] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[7] = 1;
+                        if (loadedAssetGroups[7] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[7] = 1;
                         }
                         break;
                     case AI_DIGGER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_SHOVEL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SHOVEL, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0xd] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[0xd] = 1;
+                        if (loadedAssetGroups[0xd] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[0xd] = 1;
                         }
                         break;
                     case AI_TIMEBOMBER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_TIMEBOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_TIMEBOMB, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0x11] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[0x11] = 1;
+                        if (loadedAssetGroups[0x11] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[0x11] = 1;
                         }
                         break;
                     case AI_MAGICWANDGRUNT:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_WAND, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_WAND, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0x13] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[0x13] = 1;
+                        if (loadedAssetGroups[0x13] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[0x13] = 1;
                         }
                         break;
                     case AI_SCROLLGRUNT:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_SCROLL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SCROLL, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0x1e] == 0) {
-                            BuildHelpReveal(false);
-                            loaded[0x1e] = 1;
+                        if (loadedAssetGroups[0x1e] == 0) {
+                            AdvanceLoadingBar(false);
+                            loadedAssetGroups[0x1e] = 1;
                         }
                         break;
                 }
@@ -5713,54 +5728,54 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 d = obj->GetSmarts();
                 PickupType item = static_cast<PickupType>(d);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[obj->GetSmarts()] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[obj->GetSmarts()] = 1;
+                    if (loadedAssetGroups[obj->GetSmarts()] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[obj->GetSmarts()] = 1;
                     }
                 } else if (d == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x21] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[0x21] = 1;
+                    if (loadedAssetGroups[0x21] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[0x21] = 1;
                     }
                 } else if (d == IDX(GRUNT_REAPER)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x22] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[0x22] = 1;
+                    if (loadedAssetGroups[0x22] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[obj->GetPoints()] = 1;
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[obj->GetPoints()] = 1;
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 }
             } else if (dispatch == DispatchCoveredPowerupLogic
@@ -5782,54 +5797,54 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 e = obj->m_powerup;
                 PickupType item = static_cast<PickupType>(e);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[obj->m_powerup] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[obj->m_powerup] = 1;
+                    if (loadedAssetGroups[obj->m_powerup] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[obj->m_powerup] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x21] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[0x21] = 1;
+                    if (loadedAssetGroups[0x21] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[0x21] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_REAPER)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x22] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[0x22] = 1;
+                    if (loadedAssetGroups[0x22] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[obj->GetPoints()] = 1;
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
-                        loaded[obj->GetPoints()] = 1;
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
+                        AdvanceLoadingBar(false);
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 }
             }
@@ -5890,14 +5905,14 @@ i32 CPlay::EnterMode(GameStateId mode) {
 }
 
 RVA(0x000d7220, 0x7b)
-i32 CPlay::PostActionCue(i32 cueId) {
+i32 CPlay::ShowHelpMessage(i32 messageId) {
     if (m_paused) {
         return 0;
     }
-    if (!m_cueText.LoadStringA(cueId)) {
+    if (!m_messageText.LoadStringA(messageId)) {
         return 0;
     }
-    m_lastCueId = cueId;
+    m_lastMessageId = messageId;
     m_stepCountdown = 2;
     m_paused = true;
 
@@ -5909,29 +5924,29 @@ i32 CPlay::PostActionCue(i32 cueId) {
 }
 
 RVA(0x000d72c0, 0x128)
-i32 CPlay::BuildHelpReveal(b32 final) {
+i32 CPlay::AdvanceLoadingBar(b32 final) {
     CDDrawSurfacePair* view = m_world->GetDrawTarget()->GetBackPair();
     if (view == NULL) {
         return 0;
     }
-    if (m_revealFrame == 1) {
+    if (m_loadingBarStep == 1) {
         LayerBlitFrame(
             m_world,
-            static_cast<CImage*>(m_revealCapStart),
+            static_cast<CImage*>(m_loadingBarStart),
             SCREEN_HALF_W_PX,
             0x1a6,
             true,
             false
         );
-        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), 0xe0, 0x1a6, true, false);
+        LayerBlitFrame(m_world, static_cast<CImage*>(m_loadingBarFill), 0xe0, 0x1a6, true, false);
     }
 
-    i32 counter = m_revealFrame;
+    i32 counter = m_loadingBarStep;
     i32 col = static_cast<i32>((static_cast<float>(counter) * 3.7857143878936768f));
     if (counter < 0x37 && final != true) {
         LayerBlitFrame(
             m_world,
-            static_cast<CImage*>(m_revealCapMid),
+            static_cast<CImage*>(m_loadingBarFill),
             col + 0xe0,
             0x1a6,
             true,
@@ -5943,7 +5958,7 @@ i32 CPlay::BuildHelpReveal(b32 final) {
                 i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
                 LayerBlitFrame(
                     m_world,
-                    static_cast<CImage*>(m_revealCapMid),
+                    static_cast<CImage*>(m_loadingBarFill),
                     x,
                     0x1a6,
                     true,
@@ -5951,9 +5966,9 @@ i32 CPlay::BuildHelpReveal(b32 final) {
                 );
             }
         }
-        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, true, false);
+        LayerBlitFrame(m_world, static_cast<CImage*>(m_loadingBarEnd), 0x1b4, 0x1a6, true, false);
     }
-    m_revealFrame = m_revealFrame + 1;
+    m_loadingBarStep = m_loadingBarStep + 1;
     return 1;
 }
 
@@ -5964,10 +5979,10 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart = spr->GetAt(1);
-    m_revealCapMid = spr->GetAt(2);
-    m_revealCapEnd = spr->GetAt(3);
-    m_revealFrame = 1;
+    m_loadingBarStart = spr->GetAt(1);
+    m_loadingBarFill = spr->GetAt(2);
+    m_loadingBarEnd = spr->GetAt(3);
+    m_loadingBarStep = 1;
     return 1;
 }
 
@@ -6021,7 +6036,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    SerializeClockPair(ar, mode, &m_cueTiming);
+    SerializeClockPair(ar, mode, &m_messageBlinkTimer);
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
@@ -6030,7 +6045,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
     SerializeClockPair(ar, mode, &m_monitorCurseTimer);
     SerializeClockPair(ar, mode, &m_randomColorsCurseTimer);
-    SerializeClockPair(ar, mode, &m_bootyTiming);
+    SerializeClockPair(ar, mode, &m_carriedGruntVoiceTimer);
     return 1;
 }
 
@@ -6052,12 +6067,12 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_rngSeed, sizeof(m_rngSeed));
     s->Write(&m_dragInProgress, sizeof(m_dragInProgress));
     s->Write(&m_reserved2f0, sizeof(m_reserved2f0));
-    s->Write(&m_cursorFrame, sizeof(m_cursorFrame));
+    s->Write(&m_selectedCursorId, sizeof(m_selectedCursorId));
     s->Write(&m_cursorId, sizeof(m_cursorId));
     s->Write(&m_cursorOffset, sizeof(m_cursorOffset));
     s->Write(&m_tileClick, sizeof(m_tileClick));
-    s->Write(&m_dragInhibit1, sizeof(m_dragInhibit1));
-    s->Write(&m_dragInhibit2, sizeof(m_dragInhibit2));
+    s->Write(&m_gruntPlacementActive, sizeof(m_gruntPlacementActive));
+    s->Write(&m_pickupPlacementActive, sizeof(m_pickupPlacementActive));
 
     count = StartMarkerCount();
     s->Write(&count, sizeof(count));
@@ -6079,17 +6094,17 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         }
     }
 
-    s->Write(&m_cueToggle, sizeof(m_cueToggle));
+    s->Write(&m_messageBlinkVisible, sizeof(m_messageBlinkVisible));
 
     g_serialCounter++;
     {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, static_cast<const char*>(m_cueText));
+        strcpy(buf, static_cast<const char*>(m_messageText));
         s->Write(buf, 0x200);
     }
 
-    s->Write(&m_lastCueId, sizeof(m_lastCueId));
+    s->Write(&m_lastMessageId, sizeof(m_lastMessageId));
     s->Write(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     g_serialCounter++;
@@ -6183,12 +6198,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_rngSeed, sizeof(m_rngSeed));
     ar->Read(&m_dragInProgress, sizeof(m_dragInProgress));
     ar->Read(&m_reserved2f0, sizeof(m_reserved2f0));
-    ar->Read(&m_cursorFrame, sizeof(m_cursorFrame));
+    ar->Read(&m_selectedCursorId, sizeof(m_selectedCursorId));
     ar->Read(&m_cursorId, sizeof(m_cursorId));
     ar->Read(&m_cursorOffset, sizeof(m_cursorOffset));
     ar->Read(&m_tileClick, sizeof(m_tileClick));
-    ar->Read(&m_dragInhibit1, sizeof(m_dragInhibit1));
-    ar->Read(&m_dragInhibit2, sizeof(m_dragInhibit2));
+    ar->Read(&m_gruntPlacementActive, sizeof(m_gruntPlacementActive));
+    ar->Read(&m_pickupPlacementActive, sizeof(m_pickupPlacementActive));
 
     {
 
@@ -6225,14 +6240,14 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(&m_cueToggle, sizeof(m_cueToggle));
+    ar->Read(&m_messageBlinkVisible, sizeof(m_messageBlinkVisible));
     g_serialCounter++;
     {
-        char cueTextBuffer[0x200];
-        ar->Read(cueTextBuffer, 0x200);
-        m_cueText = cueTextBuffer;
+        char messageTextBuffer[0x200];
+        ar->Read(messageTextBuffer, 0x200);
+        m_messageText = messageTextBuffer;
     }
-    ar->Read(&m_lastCueId, sizeof(m_lastCueId));
+    ar->Read(&m_lastMessageId, sizeof(m_lastMessageId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     char nameBuf[SERIAL_NAME_LEN];
@@ -6574,64 +6589,70 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
 }
 
 RVA(0x000d9290, 0x2a7)
-i32 CPlay::ScanShuffleQuads() {
-    CDDrawSurfaceMgr* v = m_world;
+i32 CPlay::RandomizePlayerAssignments() {
+    CDDrawSurfaceMgr* world = m_world;
 
-    CObList* pl = v->ChildGroup()->GetList();
-    if (pl == NULL) {
+    CObList* objects = world->ChildGroup()->GetList();
+    if (objects == NULL) {
         return 0;
     }
-    POSITION pos = pl->GetHeadPosition();
+    POSITION pos = objects->GetHeadPosition();
 
-    i32 perm[4];
-    CByteArray arr;
-    arr.Add(0);
-    arr.Add(1);
-    arr.Add(2);
-    arr.Add(3);
-    i32 r;
-    r = GetRandom(0, arr.GetUpperBound());
-    perm[0] = arr.GetAt(r);
-    arr.RemoveAt(r, 1);
-    r = GetRandom(0, arr.GetUpperBound());
-    perm[1] = arr.GetAt(r);
-    arr.RemoveAt(r, 1);
-    r = GetRandom(0, arr.GetUpperBound());
-    perm[2] = arr.GetAt(r);
-    arr.RemoveAt(r, 1);
-    perm[3] = arr.GetAt(0);
-    arr.RemoveAt(0, 1);
+    i32 playerPermutation[4];
+    CByteArray remainingPlayerSlots;
+    remainingPlayerSlots.Add(0);
+    remainingPlayerSlots.Add(1);
+    remainingPlayerSlots.Add(2);
+    remainingPlayerSlots.Add(3);
+    i32 randomIndex;
+    randomIndex = GetRandom(0, remainingPlayerSlots.GetUpperBound());
+    playerPermutation[0] = remainingPlayerSlots.GetAt(randomIndex);
+    remainingPlayerSlots.RemoveAt(randomIndex, 1);
+    randomIndex = GetRandom(0, remainingPlayerSlots.GetUpperBound());
+    playerPermutation[1] = remainingPlayerSlots.GetAt(randomIndex);
+    remainingPlayerSlots.RemoveAt(randomIndex, 1);
+    randomIndex = GetRandom(0, remainingPlayerSlots.GetUpperBound());
+    playerPermutation[2] = remainingPlayerSlots.GetAt(randomIndex);
+    remainingPlayerSlots.RemoveAt(randomIndex, 1);
+    playerPermutation[3] = remainingPlayerSlots.GetAt(0);
+    remainingPlayerSlots.RemoveAt(0, 1);
 
     while (pos != NULL) {
-        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
-        if (p == NULL) {
+        CGameObject* object = static_cast<CGameObject*>(objects->GetNext(pos));
+        if (object == NULL) {
             continue;
         }
-        LogicRecordDispatchFn dispatch = p->GetLogicRecord()->m_dispatch;
+        LogicRecordDispatchFn dispatch = object->GetLogicRecord()->m_dispatch;
         if (dispatch == DispatchGruntCreationPointLogic || dispatch == DispatchExitTriggerLogic
             || dispatch == DispatchFortressFlagLogic || dispatch == DispatchWayPointLogic
             || dispatch == DispatchGuardPointLogic) {
-            p->m_smarts = perm[p->m_smarts];
+            object->m_smarts = playerPermutation[object->m_smarts];
         } else if (dispatch == DispatchBrickzLogic) {
-            if (p->m_extent.left == COORD_UNSET) {
-                p->m_extent.left = 0;
+            if (object->m_extent.left == COORD_UNSET) {
+                object->m_extent.left = 0;
             }
-            if (p->m_area.left == COORD_UNSET) {
-                p->m_area.left = 0;
+            if (object->m_area.left == COORD_UNSET) {
+                object->m_area.left = 0;
             }
-            if (p->m_switchRect.left == COORD_UNSET) {
-                p->m_switchRect.left = 0;
+            if (object->m_switchRect.left == COORD_UNSET) {
+                object->m_switchRect.left = 0;
             }
-            if (p->m_clip.left == COORD_UNSET) {
-                p->m_clip.left = 0;
+            if (object->m_clip.left == COORD_UNSET) {
+                object->m_clip.left = 0;
             }
 
-            i32 scatter[4];
-            scatter[perm[0]] = p->m_extent.left;
-            scatter[perm[1]] = p->m_extent.top;
-            scatter[perm[2]] = p->m_extent.right;
-            scatter[perm[3]] = p->m_extent.bottom;
-            SET_RECT_COMPONENTS(p->m_extent, scatter[0], scatter[1], scatter[2], scatter[3]);
+            i32 permutedPlayerFlags[4];
+            permutedPlayerFlags[playerPermutation[0]] = object->m_extent.left;
+            permutedPlayerFlags[playerPermutation[1]] = object->m_extent.top;
+            permutedPlayerFlags[playerPermutation[2]] = object->m_extent.right;
+            permutedPlayerFlags[playerPermutation[3]] = object->m_extent.bottom;
+            SET_RECT_COMPONENTS(
+                object->m_extent,
+                permutedPlayerFlags[0],
+                permutedPlayerFlags[1],
+                permutedPlayerFlags[2],
+                permutedPlayerFlags[3]
+            );
         }
     }
     return 1;
@@ -6916,31 +6937,31 @@ i32 CPlay::GetAmbientId() {
 }
 
 RVA(0x000da2d0, 0xa5)
-i32 CPlay::FlushPendingOps() {
+i32 CPlay::CancelCursorAction() {
     if (m_playerCommandPending != false) {
         return 0;
     }
     b32 changed = false;
-    if (m_dragInhibit1 != false) {
-        CStatusBarMgr* worker = m_statusBar;
-        m_dragInhibit1 = false;
-        worker->CommitSlot(false);
-        SetCursorFrame(0);
+    if (m_gruntPlacementActive != false) {
+        CStatusBarMgr* statusBar = m_statusBar;
+        m_gruntPlacementActive = false;
+        statusBar->CommitSlot(false);
+        SelectCursor(0);
         changed = true;
     }
-    if (m_dragInhibit2 != false) {
-        i32 spr = m_cursorFrame;
-        CStatusBarMgr* worker = m_statusBar;
-        m_dragInhibit2 = false;
-        worker->EnterHlRow(0, spr);
-        SetCursorFrame(0);
+    if (m_pickupPlacementActive != false) {
+        i32 cursorId = m_selectedCursorId;
+        CStatusBarMgr* statusBar = m_statusBar;
+        m_pickupPlacementActive = false;
+        statusBar->EnterHlRow(0, cursorId);
+        SelectCursor(0);
         changed = true;
     }
-    CTriggerMgr* fx = g_gameReg->GetTriggerMgr();
-    if (fx->IsTargeting() != false) {
+    CTriggerMgr* triggerManager = g_gameReg->GetTriggerMgr();
+    if (triggerManager->IsTargeting() != false) {
         changed = true;
     }
-    fx->m_targetingCursorId = 0;
+    triggerManager->m_targetingCursorId = 0;
     LoadCursorSprites(0, false);
     return changed;
 }

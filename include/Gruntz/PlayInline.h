@@ -34,7 +34,7 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
 }
 
 inline void CPlay::FreeLevelTimer() {
-    CTimer* timer = m_levelTimer;
+    CLevelTimer* timer = m_levelTimer;
     if (timer != NULL) {
         timer->Reset();
         delete timer;
