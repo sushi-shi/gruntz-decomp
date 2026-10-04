@@ -76,13 +76,13 @@ const float g_diffScale = 0.01f;
 DATA(0x0020ccc0)
 i32 g_battlezRouteBlockedMask = 0x98f;
 DATA(0x0022b6dc)
-b32 g_stepRun;
+b32 g_battlezClaimSearchActive;
 DATA(0x0022b730)
-i32 g_stepCol;
+i32 g_battlezClaimTargetCol;
 DATA(0x0022b734)
-i32 g_stepRow;
+i32 g_battlezClaimTargetRow;
 DATA(0x0022b738)
-i32 g_diffTier;
+i32 g_battlezWandUseChanceDenominator;
 
 RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
 RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
@@ -201,12 +201,12 @@ i32 CBattlezAiController::LoadConfig(
     switch (difficulty) {
         case BZDIFF_EASY: {
             g_buteMgr.GetInt("Battlez", "EasyDifficulty", 100);
-            g_diffTier = 20;
+            g_battlezWandUseChanceDenominator = 20;
             break;
         }
         case BZDIFF_NORMAL: {
             i32 r = g_buteMgr.GetInt("Battlez", "NormalDifficulty", 50);
-            g_diffTier = 10;
+            g_battlezWandUseChanceDenominator = 10;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
                  * (static_cast<double>(static_cast<u32>(m_gruntCreationTime)) * g_diffScale))
@@ -219,7 +219,7 @@ i32 CBattlezAiController::LoadConfig(
         }
         case BZDIFF_HARD: {
             i32 r = g_buteMgr.GetInt("Battlez", "HardDifficulty", 25);
-            g_diffTier = 5;
+            g_battlezWandUseChanceDenominator = 5;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
                  * (static_cast<double>(static_cast<u32>(m_gruntCreationTime)) * g_diffScale))
@@ -874,7 +874,7 @@ i32 CBattlezAiController::UpdateUnits() {
                         {
                             PickupType st3 = unit->GetEquippedToolType();
                             if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
-                                if (rand() % g_diffTier == 0) {
+                                if (rand() % g_battlezWandUseChanceDenominator == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
                                     RECT spell;
                                     i32 px = unit->m_object->m_screenX;
@@ -1645,7 +1645,7 @@ CGrunt* CBattlezAiController::PickRandomIdleUnit(i32) {
 }
 
 RVA(0x0002ade0, 0x7)
-void CBattlezAiController::Clear() {
+void CBattlezAiController::Deactivate() {
     m_active = false;
 }
 
@@ -2412,14 +2412,14 @@ i32 CBattlezAiController::ResolveArrival(CGrunt* g) {
 }
 
 inline void CBattlezAiController::SetClaimTarget(i32 col, i32 row) {
-    g_stepRun = false;
-    g_stepCol = col;
-    g_stepRow = row;
+    g_battlezClaimSearchActive = false;
+    g_battlezClaimTargetCol = col;
+    g_battlezClaimTargetRow = row;
 }
 
 RVA(0x0002d800, 0x605)
 void CBattlezAiController::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
-    if (g_stepRun == false) {
+    if (g_battlezClaimSearchActive == false) {
         return;
     }
     i32 word = m_tileGrid->CellFlagsAtUnchecked(col, row);
@@ -2561,7 +2561,7 @@ void CBattlezAiController::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 
 
 RVA(0x0002dfa0, 0x325)
 i32 CBattlezAiController::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
-    g_stepRun = true;
+    g_battlezClaimSearchActive = true;
 
     i32 bottom;
     i32 right;
@@ -2588,7 +2588,7 @@ i32 CBattlezAiController::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 r
         board->Clip(&box);
     }
     ClaimTilesAround(unit, col, row, requireUnoccupied);
-    if (g_stepRun == false) {
+    if (g_battlezClaimSearchActive == false) {
         Coord saved = unit->EntrancePx();
         i32 col = saved.m_x >> TILE_SHIFT_PX;
         i32 row = saved.m_y >> TILE_SHIFT_PX;
@@ -2604,7 +2604,7 @@ i32 CBattlezAiController::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 r
                 flag = true;
             }
         }
-        unit->MoveToTile(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
+        unit->MoveToTile(g_battlezClaimTargetCol, g_battlezClaimTargetRow, 0, 0x9c3, 1, 0);
         if (flag != false) {
             unit->SetEntrancePx(saved);
         }
@@ -2723,8 +2723,9 @@ i32 CBattlezAiController::RouteToNearbyEnemy(CGrunt* unit) {
                     unit->SetRoutePassableMask(0);
                 }
                 if (unit->IsBlockedVoicePending() != false) {
-                    __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeTiming.m_start;
-                    if (elapsed >= m_routeTiming.m_interval) {
+                    __int64 elapsed =
+                        static_cast<__int64>(g_frameTime) - m_routeTiming.GetStartTime();
+                    if (elapsed >= m_routeTiming.GetInterval()) {
                         unit->SetBlockedVoicePending(false);
                         CGameObject* lvl = unit->m_object;
 

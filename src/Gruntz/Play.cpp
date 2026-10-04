@@ -1512,7 +1512,7 @@ void CPlay::ClearLevelState() {
     m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
         m_mgr->GetPlayer(i).GetBattlezAiController()->FreeArrays();
-        m_mgr->GetPlayer(i).GetBattlezAiController()->Clear();
+        m_mgr->GetPlayer(i).GetBattlezAiController()->Deactivate();
     }
     m_cameraBookmarkIndex = -1;
 }

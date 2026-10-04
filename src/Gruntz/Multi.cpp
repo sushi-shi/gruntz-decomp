@@ -477,7 +477,7 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
             return 0;
         }
         if (e->IsHumanControlled() && e->IsActive()) {
-            e->GetBattlezAiController()->Clear();
+            e->GetBattlezAiController()->Deactivate();
         }
     }
     StartLevelPlay();

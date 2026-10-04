@@ -2428,7 +2428,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     i32 n = 5;
     do {
         if (tab->m_state == GRUNT_OVEN_COOKING) {
-            i64 d = static_cast<i64>(g_frameTime) - tab->m_cookingClock.m_start;
+            i64 d = static_cast<i64>(g_frameTime) - tab->m_cookingClock.GetStartTime();
 
             i32 elapsed = static_cast<i32>(max(0, d));
             u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
@@ -3216,8 +3216,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         }
 
         ClockInterval* clock = &m_grinderClock;
-        i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
-        if (d >= clock->m_interval) {
+        i64 d = static_cast<i64>(g_frameTime) - clock->GetStartTime();
+        if (d >= clock->GetInterval()) {
             OFFSET_RECT_Y_EDGES(m_grinderItemRect, speed, speed);
             CSBI_ImageSet* w = m_grinderItemDisplay;
             if (w) {
@@ -4347,8 +4347,8 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
     switch (m_destructWarningState) {
         case DESTRUCT_WARNING_FORWARD: {
             ClockInterval* clock = &m_destructWarningClock;
-            i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
-            if (d >= clock->m_interval) {
+            i64 d = static_cast<i64>(g_frameTime) - clock->GetStartTime();
+            if (d >= clock->GetInterval()) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame + 1);
                 if (m_destructButtonFrame >= DESTRUCT_FRAME_WARNING_LAST) {
                     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_LAST;
@@ -4364,8 +4364,8 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
         }
         case DESTRUCT_WARNING_REVERSE: {
             ClockInterval* clock = &m_destructWarningClock;
-            i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
-            if (d >= clock->m_interval) {
+            i64 d = static_cast<i64>(g_frameTime) - clock->GetStartTime();
+            if (d >= clock->GetInterval()) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame - 1);
                 if (m_destructButtonFrame <= DESTRUCT_FRAME_WARNING_FIRST) {
                     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;

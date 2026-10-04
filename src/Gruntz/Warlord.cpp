@@ -205,22 +205,24 @@ i32 CWarlord::SerializeDispatch(
             m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
             m_ownerLogicRecord = obj->GetLogicRecord();
             if (strlen(hdr) == 0) {
-                m_value = NULL;
+                m_previousAnimation = NULL;
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
-                CAniElement* v = MapFind<CAniElement>(*map, hdr);
-                m_value = v;
+                CAniElement* previousAnimation = MapFind<CAniElement>(*map, hdr);
+                m_previousAnimation = previousAnimation;
             }
             break;
         }
         case SERIAL_SAVE: {
             memset(buf, 0, sizeof(buf));
-            if (m_value != NULL) {
+            if (m_previousAnimation != NULL) {
                 strcpy(
                     buf,
                     static_cast<const char*>(
-                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(m_value)
+                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(
+                            m_previousAnimation
+                        )
                     )
                 );
             }

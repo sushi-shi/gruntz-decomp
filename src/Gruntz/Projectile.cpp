@@ -809,7 +809,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
     i32 damage = m_object->m_damage;
-    m_value = m_wwdObject->m_animationCursor.GetAnimation();
+    m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
     if (damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
         m_timing.Start(m_object->m_damage);
