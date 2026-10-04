@@ -60,7 +60,7 @@ CRezItm::CRezItm() {
 RVA(0x00139710, 0x8d)
 void CRezItm::InitRezItm(
     CRezDir* directory,
-    const char* name,
+    REZNAME name,
     REZID resourceId,
     CRezTyp* type,
     REZDESC comment,
@@ -78,7 +78,7 @@ void CRezItm::InitRezItm(
     m_pRezFile = storage;
     m_pParentDir = directory;
     if (name == NULL) {
-        m_sName = const_cast<char*>(name);
+        m_sName = NULL;
     } else {
         m_sName = new char[strlen(name) + 1];
         if (m_sName) {
@@ -588,7 +588,7 @@ CRezDir* CRezDir::CreateDir(const char* name) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a400, 0xa9)
-CRezItm* CRezDir::CreateRez(REZID resourceId, const char* name, REZTYPE typeTag) {
+CRezItm* CRezDir::CreateRez(REZID resourceId, REZNAME name, REZTYPE typeTag) {
     CRezTyp* type = GetOrMakeTyp(typeTag);
     if (type->m_haName.Find(name, m_pRezMgr->m_bLowerCaseUsed == false) != NULL) {
         return NULL;
@@ -619,12 +619,8 @@ CRezItm* CRezDir::CreateRez(REZID resourceId, const char* name, REZTYPE typeTag)
 }
 
 RVA(0x0013a4b0, 0x75)
-CRezItm* CRezDir::CreateRezInternal(
-    REZID resourceId,
-    const char* name,
-    CRezTyp* type,
-    CBaseRezFile* storage
-) {
+CRezItm*
+CRezDir::CreateRezInternal(REZID resourceId, REZNAME name, CRezTyp* type, CBaseRezFile* storage) {
     CRezItm* entry = m_pRezMgr->AllocateRezItm();
     if (entry == NULL) {
         return entry;

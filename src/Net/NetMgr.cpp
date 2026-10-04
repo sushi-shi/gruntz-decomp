@@ -514,7 +514,7 @@ CNetMgr::JoinSessionAndCreatePlayer(
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, NULL);
         return NULL;
     }
-    return CreatePlayer(const_cast<char*>(shortName), longName, eventHandle);
+    return CreatePlayer(shortName, longName, eventHandle);
 }
 
 // @dead-code
@@ -636,12 +636,13 @@ void CNetMgr::ClearPlayers() {
 
 RVA(0x00178cb0, 0x8b)
 CNetPlayerNode*
-CNetMgr::CreatePlayer(char* shortName, const char* longName, HANDLE eventHandle) {
+CNetMgr::CreatePlayer(const char* shortName, const char* longName, HANDLE eventHandle) {
     DPID playerId;
     DPNAME name;
     memset(&name, 0, sizeof(name));
     name.dwSize = sizeof(name);
-    name.lpszShortNameA = shortName;
+    // DirectPlay's input record uses mutable string fields.
+    name.lpszShortNameA = const_cast<char*>(shortName);
     name.lpszLongNameA = const_cast<char*>(longName);
 
     IDirectPlay4A* directPlay = m_directPlay;

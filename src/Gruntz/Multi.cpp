@@ -988,7 +988,7 @@ ret_false:
 }
 
 RVA(0x000b7e30, 0x63)
-void CMulti::ShowNetworkMessage(char* message, i32 code) {
+void CMulti::ShowNetworkMessage(const char* message, i32 code) {
     char formattedMessage[512];
     if (message && *message && Mgr()) {
         if (code > 0) {
@@ -2908,11 +2908,9 @@ i32 CMulti::SetupTcpIpConfig() {
     hostPlayer->m_name = PlayerName();
     hostPlayer->m_color = TINT_ORANGE;
 
-    m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(hostPlayer->GetName())),
-        "",
-        NULL
-    ));
+    m_localPlayer = static_cast<CNetPlayerNode*>(
+        Network()->CreatePlayer(static_cast<const char*>(hostPlayer->GetName()), "", NULL)
+    );
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -2931,11 +2929,9 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(PlayerName())),
-            "",
-            NULL
-        ));
+        m_localPlayer = static_cast<CNetPlayerNode*>(
+            Network()->CreatePlayer(static_cast<const char*>(PlayerName()), "", NULL)
+        );
     }
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
@@ -2988,11 +2984,7 @@ i32 CMulti::CreateHostPlayer(
     m_resendInterval = resend;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_localPlayer = Network()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(PlayerName())),
-        "",
-        NULL
-    );
+    m_localPlayer = Network()->CreatePlayer(static_cast<const char*>(PlayerName()), "", NULL);
     if (m_localPlayer == NULL) {
         ReportNetError(0);
         return 0;

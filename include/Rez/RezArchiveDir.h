@@ -83,7 +83,7 @@ public:
     CRezItm* GetFirstItem(CRezTyp* type);
     CRezItm* GetNextItem(CRezItm* item);
     CRezDir* CreateDir(const char* name);
-    CRezItm* CreateRez(REZID id, const char* name, REZTYPE type);
+    CRezItm* CreateRez(REZID id, REZNAME name, REZTYPE type);
 
 private:
     friend struct CRezItm;
@@ -109,7 +109,7 @@ private:
 
     i32 ReadDirBlock(CBaseRezFile* rezFile, u32 pos, u32 size, b32 overwriteItems);
 
-    CRezItm* CreateRezInternal(REZID id, const char* name, CRezTyp* type, CBaseRezFile* rezFile);
+    CRezItm* CreateRezInternal(REZID id, REZNAME name, CRezTyp* type, CBaseRezFile* rezFile);
 
     i32 RemoveRezInternal(CRezTyp* type, CRezItm* item);
 

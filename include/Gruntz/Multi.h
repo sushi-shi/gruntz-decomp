@@ -113,7 +113,7 @@ public:
     }
     i32 GetCommandDelay();
     i32 GetResendDelay();
-    void ShowNetworkMessage(char* message, i32 code);
+    void ShowNetworkMessage(const char* message, i32 code);
 
     void ShowNetworkMessageById(u32 stringId, i32 code);
     void ReportNetError(i32 code);
