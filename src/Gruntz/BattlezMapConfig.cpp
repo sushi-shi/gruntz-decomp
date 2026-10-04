@@ -2694,16 +2694,11 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (t == PICKUP_TOOB) {
                 flags = 0x100;
             }
-            t = prim;
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                t = unit->GetSavedToolType();
-            }
+            t = unit->ResolveEquippedToolType(prim);
             if (t == PICKUP_WINGZ) {
                 flags = 0x942;
             }
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->GetSavedToolType();
-            }
+            prim = unit->ResolveEquippedToolType(prim);
             if (prim == PICKUP_SPRING) {
                 flags = 0x1000;
             }
