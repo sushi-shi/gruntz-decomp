@@ -1731,7 +1731,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined == false) {
+        if (g_gameReg->m_players[i].HasJoinedRound() == false) {
             continue;
         }
         CShadeTable* tint =
@@ -1887,7 +1887,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_flagSprites[t]->Hide();
 
         SET_SCREEN_POS(m_tabSprites[t], g_bootyTabPos[t].m_x, g_bootyTabPos[t].m_y);
-        m_tabSprites[t]->SetImageFrame((pl->m_joined != false) ? 1 : 2);
+        m_tabSprites[t]->SetImageFrame((pl->HasJoinedRound() != false) ? 1 : 2);
         m_tabSprites[t]->Show();
     }
 
@@ -2280,7 +2280,7 @@ i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     while (i < 4) {
         GruntzPlayer* p = &g_gameReg->m_players[i];
-        if (p->m_joined != false && p->IsEliminated() == false) {
+        if (p->HasJoinedRound() != false && p->IsEliminated() == false) {
             return p->m_playerIndex;
         }
         i++;
@@ -2297,7 +2297,7 @@ void CMultiBootyState::DrawBattleStats() {
     i32 c;
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined != false) {
+        if (g_gameReg->m_players[i].HasJoinedRound() != false) {
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->m_miscPickupsByPlayer[i], 4));
             rc.CopyRect(&s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2355,7 +2355,7 @@ void CMultiBootyState::DrawBattleStats() {
 
     for (i = 0; i < 4; i++) {
         GruntzPlayer* player = &g_gameReg->m_players[i];
-        if (player->m_joined != false) {
+        if (player->HasJoinedRound() != false) {
             i32 color;
             switch (player->GetColor()) {
                 case TINT_DKBLUE:

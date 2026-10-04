@@ -161,7 +161,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 return 0;
             }
             GruntzPlayer* slot = &g_gameReg->m_players[lostPlayer];
-            if (slot->m_joined == false) {
+            if (slot->HasJoinedRound() == false) {
                 return 0;
             }
             if (slot->IsEliminated() != false) {

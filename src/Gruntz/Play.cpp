@@ -1829,7 +1829,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             area = &g_gameReg->m_players[pick];
             while (pick != idx) {
-                if (area->m_joined == false
+                if (area->HasJoinedRound() == false
                     || (area->m_doneFlag == false && area->IsEliminated() == false)) {
                     break;
                 }
@@ -1846,7 +1846,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             area = &g_gameReg->m_players[pick];
             while (pick != idx) {
-                if (area->m_joined == false
+                if (area->HasJoinedRound() == false
                     || (area->m_doneFlag == false && area->IsEliminated() == false)) {
                     break;
                 }
@@ -1857,7 +1857,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 area = &g_gameReg->m_players[pick];
             }
         }
-        if (area->m_joined != false && area->m_doneFlag == false && area->IsEliminated() == false) {
+        if (area->HasJoinedRound() != false && area->m_doneFlag == false && area->IsEliminated() == false) {
             this->m_focusPlayerIndex = pick;
             this->ResetGoals(area->m_focusX, area->m_focusY);
         }
