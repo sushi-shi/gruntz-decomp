@@ -806,27 +806,27 @@ void CTimeBomb::RegisterActs() {
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
-    CWwdSpriteObject* o = m_object;
-    o->SetSortKey(SORTKEY_PROJECTILE);
+    CWwdSpriteObject* sprite = m_object;
+    sprite->SetSortKey(SORTKEY_PROJECTILE);
     SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
-    i32 damage = m_object->m_damage;
+    i32 fastPhaseDurationMs = m_object->m_damage;
     m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
-    if (damage > 0) {
+    if (fastPhaseDurationMs > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
-        m_timing.Start(m_object->m_damage);
+        m_phaseTimer.Start(m_object->m_damage);
         m_fastPhase = true;
     } else {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBSLOW", 0);
-        m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0));
+        m_phaseTimer.Start(g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0));
         m_fastPhase = false;
     }
-    Coord cell;
-    cell.Set(m_object->m_screenX, m_object->m_screenY);
-    ScreenTile(&cell);
-    CMapMgr* g = g_gameReg->GetTileGrid();
-    if (cell.m_x < g->GetWidth() && cell.m_y < g->GetHeight()) {
-        g->CellFlagsAtUnchecked(cell.m_x, cell.m_y) |= IDX(CELL_FLAG_TIME_BOMB);
+    Coord tileCoord;
+    tileCoord.Set(m_object->m_screenX, m_object->m_screenY);
+    ScreenTile(&tileCoord);
+    CMapMgr* tileGrid = g_gameReg->GetTileGrid();
+    if (tileCoord.m_x < tileGrid->GetWidth() && tileCoord.m_y < tileGrid->GetHeight()) {
+        tileGrid->CellFlagsAtUnchecked(tileCoord.m_x, tileCoord.m_y) |= IDX(CELL_FLAG_TIME_BOMB);
     }
     m_object->m_smarts = -1;
 }
@@ -834,21 +834,21 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 // @early-stop
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
-    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
+    i32 cellFlags = g_gameReg->GetTileGrid()->CellFlagsAt(
         m_object->m_screenX >> TILE_SHIFT_PX,
         m_object->m_screenY >> TILE_SHIFT_PX
     );
-    if ((cell & BRICKZ_BLOCKED_MASK) || (cell & IDX(CELL_FLAG_SPECIAL))) {
+    if ((cellFlags & BRICKZ_BLOCKED_MASK) || (cellFlags & IDX(CELL_FLAG_SPECIAL))) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         TBombGridClear(m_object);
         return 0;
     }
     m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
 
-    if (m_timing.Expired()) {
+    if (m_phaseTimer.Expired()) {
         if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
-            m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8));
+            m_phaseTimer.Start(g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8));
             m_fastPhase = true;
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -875,7 +875,7 @@ i32 CTimeBomb::SerializeDispatch(
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    m_timing.Serialize(sa, mode, typeId, object);
+    m_phaseTimer.Serialize(sa, mode, typeId, object);
     switch (mode) {
         case SERIAL_LOAD:
             sa->Read(&m_fastPhase, sizeof(m_fastPhase));
