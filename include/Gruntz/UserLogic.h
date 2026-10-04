@@ -165,10 +165,6 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define HIDE_OBJECT_INLINE() m_wwdObject->Hide()
 
-#define SET_OBJECT_FLAGS_AND_HIDE_INLINE(bits)                                                     \
-    SET_OBJECT_FLAGS_INLINE(bits);                                                                 \
-    HIDE_OBJECT_INLINE();
-
 #define INITIALIZE_DEFAULT_CYCLE_ANIMATION                                                         \
     SET_ANIMATION_ACT("A");                                                                        \
     if (m_wwdObject->m_animationCursor.GetAnimation() == NULL) {                                   \
