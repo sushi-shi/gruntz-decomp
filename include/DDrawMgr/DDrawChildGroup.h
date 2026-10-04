@@ -8,6 +8,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdGameObjectFlags.h>
 
@@ -131,6 +132,10 @@ public:
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
     CGameObject* Find(i32 id, const char* key);
+    BOOL LookupRegisteredObject(i32 objectId, CGameObject*& object) {
+        return MapLookupById(m_registeredGameObjectsById, objectId, object);
+    }
+
     CWwdGameObject* FindByObjectId(i32 objectId);
     CWwdGameObject* FindSerialRefByObjectId(i32 objectId);
     i32 IsKindUnique(i32 kind);

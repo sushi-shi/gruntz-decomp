@@ -131,8 +131,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             && !slot->IsEliminated()) {
                             slot->m_clearedRound = true;
                             CGameObject* out = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     slot->m_warlordObjectId,
                                     out
                                 )
@@ -153,8 +152,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         if (lastSlot && lastSlot->HasJoinedRound() && !lastSlot->HasDropped()
                             && !lastSlot->IsEliminated()) {
                             CGameObject* out = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     lastSlot->m_warlordObjectId,
                                     out
                                 )
