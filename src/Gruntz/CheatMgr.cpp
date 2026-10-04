@@ -51,8 +51,8 @@ DATA(0x0020c920)
 char g_cheatFps[8] = "\x8a\x8d\x83\x8d\x90";
 
 RVA(0x00022ad0, 0x1f)
-BOOL CCheatMgr::Init(HWND owner) {
-    m_owner = owner;
+BOOL CCheatMgr::Init(HWND commandWindow) {
+    m_commandWindow = commandWindow;
     m_flag = false;
     m_pendingCodeLength = 0;
     m_cheatsUsed = false;
@@ -61,19 +61,19 @@ BOOL CCheatMgr::Init(HWND owner) {
 
 RVA(0x00022b00, 0xaf)
 void CCheatMgr::Empty() {
-    POSITION pos = m_map.GetStartPosition();
+    POSITION pos = m_entries.GetStartPosition();
     CString key;
     if (pos != static_cast<POSITION>(0)) {
         do {
             CheatEntry* value = NULL;
-            MapGetNext(m_map, pos, key, value);
+            MapGetNext(m_entries, pos, key, value);
             if (value != NULL) {
                 delete value;
             }
         } while (pos != static_cast<POSITION>(0));
     }
-    m_map.RemoveAll();
-    m_owner = NULL;
+    m_entries.RemoveAll();
+    m_commandWindow = NULL;
     m_flag = false;
     m_pendingCodeLength = 0;
     m_cheatsUsed = false;
@@ -91,7 +91,7 @@ void CCheatMgr::Empty() {
 
 
 RVA(0x00022be0, 0x71)
-BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
+BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 nonCheat) {
     CheatEntry* hit = FindCheat(code);
     if (hit != NULL) {
         return false;
@@ -101,8 +101,8 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
         return false;
     }
     entry->m_commandId = cmdId;
-    entry->m_flag = flag;
-    m_map[code] = entry;
+    entry->m_nonCheat = nonCheat;
+    m_entries[code] = entry;
     return true;
 }
 
@@ -191,8 +191,8 @@ BOOL CCheatMgr::CheckCode(CString code) {
         return false;
     }
     if (found->m_commandId > 0) {
-        PostMessageA(m_owner, WM_COMMAND, found->m_commandId, 0);
-        if ((found->m_flag & 1) == 0) {
+        PostMessageA(m_commandWindow, WM_COMMAND, found->m_commandId, 0);
+        if ((found->m_nonCheat & 1) == 0) {
             m_cheatsUsed = true;
         }
         m_flag = false;
