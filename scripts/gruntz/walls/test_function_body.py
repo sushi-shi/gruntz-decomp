@@ -69,10 +69,46 @@ class FunctionBodyTests(unittest.TestCase):
         coff = self.load(code, extra=(label,), relocs=())
         self.assertEqual(function_body(coff, 1, 0, 4), code)
 
-    def test_explicit_extent_is_authoritative_even_with_terminal_nop(self):
+    def test_explicit_extent_can_still_contain_alignment_padding(self):
         aux = struct.pack('<IIIIH', 0, 2, 0, 0, 0)
         coff = self.load(b'\xc3\x90\x90\x90', relocs=(), function_aux=aux)
-        self.assertEqual(function_body(coff, 1, 0, 4), b'\xc3\x90')
+        self.assertEqual(function_body(coff, 1, 0, 4), b'\xc3')
+
+    def test_terminal_pointer_table_padding_is_not_an_instruction(self):
+        code = b'\xff\x24\x85' + struct.pack('<I', 12) + b'\xc3' + b'\x90' * 4
+        table = struct.pack('<II', 7, 7)
+        complete = code + table
+        coff = self.load(complete + b'\x90' * 4,
+                         relocs=((3, 0, 6), (12, 0, 6), (16, 0, 6)))
+        self.assertEqual(function_body(coff, 1, 0, len(complete) + 4), complete)
+
+    def test_separately_referenced_selector_tail_is_preserved(self):
+        code = b'\xb8' + struct.pack('<I', 24)
+        code += b'\xff\x24\x85' + struct.pack('<I', 16) + b'\xc3' + b'\x90' * 3
+        complete = code + struct.pack('<II', 12, 12) + b'\x90\x90'
+        coff = self.load(complete, relocs=((1, 0, 6), (8, 0, 6), (16, 0, 6), (20, 0, 6)))
+        self.assertEqual(function_body(coff, 1, 0, len(complete)), complete)
+
+    def test_sibling_handler_address_does_not_imply_inline_data(self):
+        code = b'\xb8' + struct.pack('<I', 8) + b'\xc3\x90\x90\xc3'
+        handler = ('_handler', 8, 1, 0x20, 2, b'')
+        coff = self.load(code, extra=(handler,), relocs=((1, 0, 6),))
+        self.assertEqual(function_body(coff, 1, 0, 8), code[:6])
+
+    def test_bounded_selector_retains_padding_valued_indices(self):
+        for index in (0x90, 0xcc):
+            with self.subTest(index=index):
+                entry_count = index + 1
+                selector = 32 + entry_count * 4
+                code = b'\x83\xf8\x01\x77\x0d\x8a\x80' + struct.pack('<I', selector)
+                code += b'\xff\x24\x85' + struct.pack('<I', 32) + b'\xc3'
+                code += b'\x90' * (32 - len(code))
+                table = struct.pack('<I', 18) * entry_count
+                complete = code + table + bytes((0, index))
+                relocs = ((7, 0, 6), (14, 0, 6)) + tuple(
+                    (32 + i * 4, 0, 6) for i in range(entry_count))
+                coff = self.load(complete + b'\x90\xcc', relocs=relocs)
+                self.assertEqual(function_body(coff, 1, 0, len(complete) + 2), complete)
 
     def test_invalid_extent_does_not_truncate_an_operand(self):
         aux = struct.pack('<IIIIH', 0, 99, 0, 0, 0)
