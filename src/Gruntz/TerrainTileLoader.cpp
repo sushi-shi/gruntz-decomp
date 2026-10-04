@@ -539,10 +539,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event =
                     state->m_tileTriggers->FindActionByCellKey(CellKey(tileX, tileY));
-                if (event->MorphByTool(
-                        unit->m_brickPickupType,
-                        static_cast<PlayerSlot>(playerIndex)
-                    )
+                if (event
+                        ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
                     == 0) {
                     return 0;
                 }
