@@ -1257,7 +1257,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
 
         CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);
         cell->FaceTowardPixel(destination.m_x, destination.m_y);
-        if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
+        if (cell->IsInCombat() != false && cell->IsAttackQueued() == false) {
             RESET_GRUNT_COMBAT_STATE(cell)
         }
         cell->SetCarriedToy(PICKUP_NONE);

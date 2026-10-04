@@ -687,6 +687,10 @@ public:
         return !m_arrivalRerollTiming.Expired();
     }
 
+    b32 IsAttackQueued() const {
+        return m_attackQueued;
+    }
+
     b32 IsCombatTimeoutExpired() const {
         return m_combatTiming.Expired();
     }
