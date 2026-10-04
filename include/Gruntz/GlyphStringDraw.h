@@ -12,24 +12,24 @@ typedef tagRECT RECT;
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    RECT* bounds,
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 );
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    RECT* bounds,
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 );
 
 #endif // GRUNTZ_GRUNTZ_GLYPHSTRINGDRAW_H

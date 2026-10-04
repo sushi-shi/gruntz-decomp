@@ -7,20 +7,20 @@ class Font {
 public:
     Font();
     ~Font();
-    i32 AllocateMemory(i32 count);
+    i32 AllocateMemory(i32 glyphCount);
     void FreeMemory();
     i32 LoadFont(CString szFileName);
     i32 SaveFont(CString szFileName);
 
-    u8** GetSurface(u8 c);
-    CSize& GetGlyph(CSize& out, u8 c);
-    void SetGlyph(u8 c, CSize glyph);
+    u8** GetGlyphBitmap(u8 character);
+    CSize& GetGlyphSize(CSize& sizeOut, u8 character);
+    void SetGlyphSize(u8 character, CSize glyphSize);
     i32 GetMaxHeight();
 
-    b32 m_ready;
-    i32 m_count;
-    u8** m_surfaces;
-    CSize* m_glyphs;
+    b32 m_storageAllocated;
+    i32 m_glyphCount;
+    u8** m_glyphBitmaps;
+    CSize* m_glyphSizes;
     i32 m_maxHeight;
 };
 
@@ -54,10 +54,10 @@ public:
     Font* m_font;
     COLORREF m_color;
 
-    i32 m_surface;
-    i32 m_clip;
+    i32 m_shadowEnabled;
+    i32 m_highlightEnabled;
 };
 
-#define SET_FONT_GLYPH(c, glyph) m_glyphs[c] = glyph
+#define SET_FONT_GLYPH_SIZE(character, glyphSize) m_glyphSizes[character] = glyphSize
 
 #endif // SRC_FONT_FONT_H

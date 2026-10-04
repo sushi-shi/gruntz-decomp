@@ -225,7 +225,7 @@ i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     if (HandleWindowCommand(notifyCode, cmdId, lParam)) {
         return 1;
     }
-    return m_owner->m_gameMgr
+    return m_owner->GetGameManager()
                ->HandleCommand(notifyCode, static_cast<GruntzCommandId>(cmdId), lParam)
            != 0;
 }

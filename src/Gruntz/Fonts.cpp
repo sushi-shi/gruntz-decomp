@@ -19,12 +19,12 @@ RVA_DYNINIT(0x001155d0, 0xe, g_largeFont)
 RVA_DYNINIT(0x001155f0, 0xa, g_largeFont)
 DATA(0x0024eac0)
 Font g_largeFont;
-RVA_DYNINIT(0x00115790, 0xa, g_textObj)
-RVA_DYNINIT(0x001157b0, 0xa, g_textObj)
-RVA_DYNINIT(0x001157d0, 0xe, g_textObj)
-RVA_DYNINIT(0x001157f0, 0xa, g_textObj)
+RVA_DYNINIT(0x00115790, 0xa, g_textRenderer)
+RVA_DYNINIT(0x001157b0, 0xa, g_textRenderer)
+RVA_DYNINIT(0x001157d0, 0xe, g_textRenderer)
+RVA_DYNINIT(0x001157f0, 0xa, g_textRenderer)
 DATA(0x0024ead8)
-FontRenderer g_textObj;
+FontRenderer g_textRenderer;
 RVA_DYNINIT(0x00115610, 0xa, g_mediumFont)
 RVA_DYNINIT(0x00115630, 0xa, g_mediumFont)
 RVA_DYNINIT(0x00115650, 0xe, g_mediumFont)
@@ -38,12 +38,12 @@ RVA_DYNINIT(0x001156f0, 0xa, g_smallFont)
 DATA(0x0024eb00)
 Font g_smallFont;
 DATA(0x0024eb14)
-b32 g_loadedFlag = false;
+b32 g_fontsInitialized = false;
 
 RVA(0x00115810, 0xa3)
 i32 InitializeFonts() {
 
-    if (!g_loadedFlag) {
+    if (!g_fontsInitialized) {
         if (!g_largeFont.LoadFont("large.fnt")) {
             return 0;
         }
@@ -57,7 +57,7 @@ i32 InitializeFonts() {
             return 0;
         }
 
-        g_loadedFlag = true;
+        g_fontsInitialized = true;
     }
     return 1;
 }

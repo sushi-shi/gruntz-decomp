@@ -13,31 +13,31 @@ GZ_ENUM_CONST_END(EngStrLayout)
 class CDDrawSurfaceMgr;
 
 i32 EngStr_RenderText(
-    void* self,
+    void* worldContext,
     class CString* text,
-    struct tagRECT* dst,
+    struct tagRECT* bounds,
     class CDDSurface* drawSurface,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 );
 
 i32 DrawTextToFrontSurface(
     CDDrawSurfaceMgr* surfaceMgr,
     class CString* text,
-    struct tagRECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    struct tagRECT* bounds,
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 );
 
 class FontRenderer;
-extern FontRenderer g_textObj;
+extern FontRenderer g_textRenderer;
 
 #endif // GRUNTZ_WAP32_ENGSTR_H
