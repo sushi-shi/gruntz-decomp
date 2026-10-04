@@ -1265,25 +1265,14 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         i32 tile0 = m_board->CellFlagsAt(ux, uy);
         if (static_cast<u8>(tile0) == 1) {
-            if (unit->CoordsEmpty()) {
-                goto returnZero;
-            }
-            POSITION n = unit->CoordHead();
-            while (n != NULL) {
-                POSITION cur = n;
-                unit->GetNextCoord(n);
-                if (unit->GetCoordAt(cur) != NULL) {
-                    g_coordPool.Push(unit->GetCoordAt(cur));
-                }
-            }
-            coordList->RemoveAll();
+            unit->RecycleCoords();
             return 0;
         }
 
         POSITION head = coordList->GetHeadPosition();
         Coord* firstCoord = unit->GetCoordAt(head);
         BrickzCell pathHeadCell = m_board->CellAt(firstCoord->m_x, firstCoord->m_y);
-        if (coordList->IsEmpty()) {
+        if (unit->CoordsEmpty()) {
             goto returnZero;
         }
         Coord* pathHead = unit->GetHeadCoord();
