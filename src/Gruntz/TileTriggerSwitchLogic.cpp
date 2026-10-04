@@ -792,10 +792,9 @@ RVA(0x00112590, 0x166)
 i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     i32 tok = m_tileToken;
     if (tok != 0) {
-        CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tileY;
         i32 tx = m_tileX;
-        SET_MAIN_PLANE_TILE(reg, tx, ty, tok);
+        SET_MAIN_PLANE_TILE(g_gameReg, tx, ty, tok);
     } else {
         switch (verb) {
             case TILEKIND_COVERED_POWERUP: {
@@ -810,17 +809,15 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_B: {
-                CGruntzMgr* reg = g_gameReg;
                 i32 ty = m_tileY;
                 i32 tx = m_tileX;
-                SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5b);
+                SET_MAIN_PLANE_TILE(g_gameReg, tx, ty, 0x5b);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_A: {
-                CGruntzMgr* reg = g_gameReg;
                 i32 ty = m_tileY;
                 i32 tx = m_tileX;
-                SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5a);
+                SET_MAIN_PLANE_TILE(g_gameReg, tx, ty, 0x5a);
                 break;
             }
             default:
@@ -832,8 +829,9 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     reg->GetTriggerMgr()
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
+        CGruntzMgr* registry = g_gameReg;
         CGameObject* rec =
-            g_gameReg->World()
+            registry->World()
                 ->ChildGroup()
                 ->CreateSprite(0, px, py, 95000, "InGameText", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (rec == NULL) {
