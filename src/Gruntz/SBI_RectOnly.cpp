@@ -379,12 +379,12 @@ i32 CStatusBarMgr::HitTestCollapsedSprite(i32 x, i32 y) {
 }
 
 RVA(0x000fe910, 0xc30)
-i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
-    CStatusBarItem* w = HitTestRects(x, y);
+i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
+    CStatusBarItem* w = HitTestItems(x, y);
     if (w == NULL) {
         return 1;
     }
-    w->OnPointerMove(mouseFlags, x, y);
+    w->OnClick(mouseFlags, x, y);
     SbiCommandId cmd = w->GetCommandId();
     switch (w->GetTab()) {
         case TAB_CONTROLS:
@@ -665,7 +665,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
 
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
-    CStatusBarItem* r = HitTestRects(x, y);
+    CStatusBarItem* r = HitTestItems(x, y);
     if (r == NULL) {
         return 1;
     }
@@ -683,7 +683,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
             break;
     }
 
-    return UpdateStatusBarTabHighlight(keyFlags, x, y);
+    return HandleClick(keyFlags, x, y);
 }
 
 RVA(0x000ff9d0, 0x8)
@@ -693,7 +693,7 @@ i32 CStatusBarMgr::OnPointerRelease(i32, i32, i32) {
 
 RVA(0x000ff9f0, 0xe4)
 i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
-    CStatusBarItem* r = HitTestRects(x, y);
+    CStatusBarItem* r = HitTestItems(x, y);
     if (r == NULL) {
         ClearButtonHighlights(TAB_ALL);
         return 1;
@@ -788,7 +788,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
 }
 
 RVA(0x000ffcb0, 0xe2)
-CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
+CStatusBarItem* CStatusBarMgr::HitTestItems(i32 x, i32 y) {
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
@@ -992,7 +992,7 @@ i32 CStatusBarItem::Render() {
 }
 
 RVA(0x00100530, 0x5)
-i32 CStatusBarItem::OnPointerMove(i32, i32, i32) {
+i32 CStatusBarItem::OnClick(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100550, 0x5)
@@ -3241,7 +3241,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
         return 0;
     }
-    CStatusBarItem* r = HitTestRects(screenX, screenY);
+    CStatusBarItem* r = HitTestItems(screenX, screenY);
     if (r == NULL) {
         return 0;
     }

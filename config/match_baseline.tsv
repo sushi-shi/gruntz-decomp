@@ -3788,7 +3788,7 @@ sbi_rectonly	?HandleDoubleClick@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	16	c9
 sbi_rectonly	?HandlePointerDrag@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	9	e6e132c8ecfd	0xff9f0	100.0000	
 sbi_rectonly	?HideStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	4	e040d7424501	0xfe600	100.0000	
 sbi_rectonly	?HitTestCollapsedSprite@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	6	676306045575	0xfe8a0	100.0000	
-sbi_rectonly	?HitTestRects@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z	100.0000	100.0000	6	38dfae5f56a7	0xffcb0	100.0000	
+sbi_rectonly	?HitTestItems@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z	100.0000	100.0000	6	38dfae5f56a7	0xffcb0	100.0000	
 sbi_rectonly	?HitTestSideTabs@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	9	2f25c1a6c80b	0x105280	100.0000	
 sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAVCStatusBarMgr@@HHW4WarpStoneFragment@@@Z	100.0000	100.0000	22	7d27689b4ea1	0x109bd0	100.0000	
 sbi_rectonly	?InitTabRects@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	2	be6bc86ebdda	0x106900	100.0000	
@@ -3801,7 +3801,7 @@ sbi_rectonly	?LockDestructButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	cb0c
 sbi_rectonly	?NotifyAllSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	02dcf5a9d65c	0x106a00	100.0000	
 sbi_rectonly	?OnDoubleClick@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	2	776837415b4a	0x100550	100.0000	
 sbi_rectonly	?OnPointerDrag@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	2	a8b53c727ade	0x100590	100.0000	
-sbi_rectonly	?OnPointerMove@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	c309f776922b	0x100530	100.0000	
+sbi_rectonly	?OnClick@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	c309f776922b	0x100530	100.0000	
 sbi_rectonly	?OnPointerRelease@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	1	d09bc4721d0e	0xff9d0	100.0000	
 sbi_rectonly	?PlaceCursorTarget@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	11	84713a2e64b9	0x105800	100.0000	
 sbi_rectonly	?QueuePickupReward@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	10	0014ce04bbcb	0x108410	100.0000	
@@ -3851,7 +3851,7 @@ sbi_rectonly	?UpdateRezConveyorStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	e2f270bbe2e0	0x106660	100.0000	
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	5	af77137529e7	0x107a10	100.0000	
 sbi_rectonly	?UpdateStatusBar@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	18	8c29d0d17510	0xffb20	100.0000	
-sbi_rectonly	?UpdateStatusBarTabHighlight@CStatusBarMgr@@QAEHHHH@Z	99.7111	97.6338	43	1c9250a5b7da	0xfe910	99.7111	
+sbi_rectonly	?HandleClick@CStatusBarMgr@@QAEHHHH@Z	99.7111	97.6338	43	1c9250a5b7da	0xfe910	99.7111	
 sbi_rectonly	?UpdateStatusSystems@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	9fe8ac246d90	0x1058d0	100.0000	
 sbi_rectonlybase	?Refresh@CSBI_RectOnly@@UAEHH@Z	100.0000	100.0000	1	09a4412d68bc	0xe8780	100.0000	
 sbi_rectonlybase	?Reset@CSBI_RectOnly@@UAEXXZ	100.0000	100.0000	1	e5dedd6092ab	0xe8760	100.0000	

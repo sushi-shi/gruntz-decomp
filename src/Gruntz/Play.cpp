@@ -2524,7 +2524,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
     if (m_levelOverlayOpen != false
         || g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
-        return m_statusBar->UpdateStatusBarTabHighlight(eventArg, x, y);
+        return m_statusBar->HandleClick(eventArg, x, y);
     }
 
     xr = x;
@@ -2675,7 +2675,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         const RECT* gr = m_statusBar->GetBarRect();
         if (::PtInRect(gr, xr, y)) {
             CancelCursorAction();
-            return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
+            return m_statusBar->HandleClick(eventArg, xr, y);
         }
         if (m_chatBox->HitTest(xr, y)) {
             return 1;

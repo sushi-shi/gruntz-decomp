@@ -139,7 +139,7 @@ public:
     i32 StartChipMachineCycle();
     i32 Initialize(CDDrawSurfaceMgr* world);
     i32 Render();
-    i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
+    i32 HandleClick(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
     void BuildGameTabResumeButton(b32 show);
     void BuildGameTabPauseButton();
@@ -196,7 +196,7 @@ public:
 
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
     i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
-    CStatusBarItem* HitTestRects(i32 x, i32 y);
+    CStatusBarItem* HitTestItems(i32 x, i32 y);
     void ResetWidgets(b32 keepLists);
     void ClearActiveTabContent();
     void AddTabItem(i32 tab, CStatusBarItem* item) {

@@ -37,7 +37,7 @@ public:
     virtual i32 Refresh(i32 deltaMs);
     virtual i32 Render();
 
-    virtual i32 OnPointerMove(i32 keyFlags, i32 x, i32 y);
+    virtual i32 OnClick(i32 keyFlags, i32 x, i32 y);
     virtual i32 OnDoubleClick(i32 keyFlags, i32 x, i32 y);
     virtual i32 UnusedPointerAction(i32, i32, i32);
     virtual i32 OnPointerDrag(i32 keyFlags, i32 x, i32 y);
