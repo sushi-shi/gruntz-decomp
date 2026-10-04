@@ -6,9 +6,9 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GlyphStringDraw.h>
 
-struct SecretMsgRow {
-    char m_strA[0x20];
-    char m_strB[0x80];
+struct BootyCheatMessage {
+    char m_encodedCode[0x20];
+    char m_description[0x80];
 };
 
 extern RECT g_bootyStatLabelRects[8];

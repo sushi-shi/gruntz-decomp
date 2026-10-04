@@ -144,7 +144,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 return 1;
             }
             if (o == NULL || o->IsEntranceCommitted() == false
-                || GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0
+                || GruntInRadius(o->GetPlayerIndex(), o->GetUnitIndex()) == 0
                 || GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
                 goto resetState;
             }
@@ -186,11 +186,11 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 ATTACK_GRUNT(o);
                 m_aiState = AISTATE_ATTACK;
             }
-            if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
+            if (GruntInRadius(o->GetPlayerIndex(), o->GetUnitIndex()) == 0) {
                 return 1;
             }
-            m_arrivalCell.m_x = o->m_playerIndex;
-            m_arrivalCell.m_y = o->m_unitIndex;
+            m_arrivalCell.m_x = o->GetPlayerIndex();
+            m_arrivalCell.m_y = o->GetUnitIndex();
             m_aiState = AISTATE_CHASE;
             PLAY_VOICE_IN_VIEW(0x366);
             return 1;

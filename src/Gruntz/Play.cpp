@@ -1860,7 +1860,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (area->HasJoinedRound() != false && area->HasDropped() == false
             && area->IsEliminated() == false) {
             this->m_focusPlayerIndex = pick;
-            this->SetCameraPosition(area->m_focusX, area->m_focusY);
+            this->SetCameraPosition(area->GetFocusX(), area->GetFocusY());
         }
     }
 
@@ -1869,7 +1869,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        this->SetCameraPosition(a->m_focusX, a->m_focusY);
+        this->SetCameraPosition(a->GetFocusX(), a->GetFocusY());
         return 1;
     }
 
@@ -2205,75 +2205,39 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == '1') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(1);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(1);
-        }
+        HandleSelectionGroupKey(1);
         return 1;
     }
     if (vk == '2') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(2);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(2);
-        }
+        HandleSelectionGroupKey(2);
         return 1;
     }
     if (vk == '3') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(3);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(3);
-        }
+        HandleSelectionGroupKey(3);
         return 1;
     }
     if (vk == '4') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(4);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(4);
-        }
+        HandleSelectionGroupKey(4);
         return 1;
     }
     if (vk == '5') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(5);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(5);
-        }
+        HandleSelectionGroupKey(5);
         return 1;
     }
     if (vk == '6') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(6);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(6);
-        }
+        HandleSelectionGroupKey(6);
         return 1;
     }
     if (vk == '7') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(7);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(7);
-        }
+        HandleSelectionGroupKey(7);
         return 1;
     }
     if (vk == '8') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(8);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(8);
-        }
+        HandleSelectionGroupKey(8);
         return 1;
     }
     if (vk == '9') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->GetTriggerMgr()->SaveSelectionGroup(9);
-        } else {
-            g_gameReg->GetTriggerMgr()->RecallSelectionGroup(9);
-        }
+        HandleSelectionGroupKey(9);
         return 1;
     }
     return 1;
@@ -5481,7 +5445,7 @@ i32 CPlay::StartLevelPlay() {
     } else {
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
-            SetCameraPosition(slot->m_focusX, slot->m_focusY);
+            SetCameraPosition(slot->GetFocusX(), slot->GetFocusY());
         } else {
             CGameLevel* g = m_mgr->World()->GetLevel();
             SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);

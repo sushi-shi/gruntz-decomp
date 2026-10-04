@@ -105,7 +105,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 break;
             }
             if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
-                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
+                if (GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) != 0) {
                     g->GetScreenPos(&c);
                     if (MoveToTile(
                             c.m_x >> TILE_SHIFT_PX,
@@ -158,7 +158,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             CGrunt* found = m_triggerMgr->FindNearestEnemy(this);
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->IsEntranceCommitted() == false
-                    || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
+                    || GruntInRadius(slot->GetPlayerIndex(), slot->GetUnitIndex()) == 0) {
                     this->m_aiState = AISTATE_SEEK;
                 } else {
                     MoveTo(
@@ -187,7 +187,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 break;
             }
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
-            if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
+            if (slot != NULL && GruntInRadius(slot->GetPlayerIndex(), slot->GetUnitIndex()) != 0
                 && slot->IsEntranceCommitted() != false) {
                 if (m_attackQueued != false || m_attackWindupActive != false
                     || m_stamina < STAMINA_FULL) {

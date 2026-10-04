@@ -108,7 +108,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (claimed != NULL) {
                 CGameObject* warlordObj = LookupObjectById(
                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                    claimed->m_warlordObjectId
+                    claimed->GetWarlordObjectId()
                 );
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->GetLogicRecord()->UserLogic());
                 if (wl != NULL) {

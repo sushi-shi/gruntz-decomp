@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -37,7 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepToyerBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -64,16 +64,9 @@ i32 CGrunt::StepToyerBehavior() {
     if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
-    if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
-        CGameObject* b = p->m_object;
-        MoveToTile(
-            b->m_screenX >> TILE_SHIFT_PX,
-            b->m_screenY >> TILE_SHIFT_PX,
-            0,
-            m_arrivalFlags,
-            1,
-            0
-        );
+    if (GruntInRadius(p->GetPlayerIndex(), p->GetUnitIndex())) {
+        Coord tile = ScreenTile(p);
+        MoveToTile(tile.m_x, tile.m_y, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         if (m_blockedVoicePending == false) {
             return 1;

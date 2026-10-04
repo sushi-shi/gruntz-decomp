@@ -245,7 +245,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 0;
                         }
                         m_triggerMgr->StartPlayerDefeatSequence(5);
-                        i32 _key = g_gameReg->GetPlayer(0).m_warlordObjectId;
+                        i32 _key = g_gameReg->GetPlayer(0).GetWarlordObjectId();
                         if (_key) {
                             _dr = NULL;
                             if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(_key, _dr)

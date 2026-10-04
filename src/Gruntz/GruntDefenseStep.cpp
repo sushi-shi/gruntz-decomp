@@ -50,7 +50,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 return 1;
             }
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
-            if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
+            if (occ != NULL && GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) != 0
                 && occ->IsEntranceCommitted() != false) {
                 if (m_attackQueued != false) {
                     return 1;
@@ -90,7 +90,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 return 1;
             }
             if (occ == NULL || occ->IsEntranceCommitted() == false
-                || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
+                || GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) == 0) {
                 goto seek;
             }
             RepathToward(occ);
@@ -141,7 +141,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
+                if (GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) != 0) {
                     Coord sp;
                     occ->GetScreenPos(&sp);
                     ScreenTile(&sp);

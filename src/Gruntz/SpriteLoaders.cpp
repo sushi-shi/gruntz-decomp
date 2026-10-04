@@ -98,7 +98,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
         if (slot != NULL) {
             slot->SetEliminated(true);
         }
-        i32 key = g_gameReg->GetPlayer(0).m_warlordObjectId;
+        i32 key = g_gameReg->GetPlayer(0).GetWarlordObjectId();
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
@@ -113,7 +113,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32 key = g_gameReg->GetPlayer(0).m_warlordObjectId;
+        i32 key = g_gameReg->GetPlayer(0).GetWarlordObjectId();
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;

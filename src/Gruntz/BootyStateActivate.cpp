@@ -128,28 +128,28 @@ const Coord g_bootyFlagPos[4] = {{218, 180}, {334, 180}, {450, 180}, {566, 180}}
 DATA(0x001e9158)
 const Coord g_bootyTabPos[4] = {{218, 138}, {334, 138}, {450, 138}, {566, 138}};
 DATA(0x001e9178)
-const RECT s_col1Rects[4] =
+const RECT s_curseCountRects[4] =
     {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
 DATA(0x001e91b8)
-const RECT s_col2Rects[4] =
+const RECT s_powerupCountRects[4] =
     {{200, 372, 284, 422}, {316, 372, 400, 422}, {432, 372, 516, 422}, {548, 372, 632, 422}};
 DATA(0x001e91f8)
-const RECT s_col3Rects[4] =
+const RECT s_toyCountRects[4] =
     {{200, 329, 284, 379}, {316, 329, 400, 379}, {432, 329, 516, 379}, {548, 329, 632, 379}};
 DATA(0x001e9238)
-const RECT s_col4Rects[4] =
+const RECT s_toolCountRects[4] =
     {{200, 286, 284, 336}, {316, 286, 400, 336}, {432, 286, 516, 336}, {548, 286, 632, 336}};
 DATA(0x001e9278)
-const RECT s_col5Rects[4] =
+const RECT s_gruntCountRects[4] =
     {{200, 243, 284, 293}, {316, 243, 400, 293}, {432, 243, 516, 293}, {548, 243, 632, 293}};
 DATA(0x001e92b8)
-const RECT s_col6Rects[4] =
+const RECT s_killCountRects[4] =
     {{200, 200, 284, 250}, {316, 200, 400, 250}, {432, 200, 516, 250}, {548, 200, 632, 250}};
 DATA(0x001e92f8)
-const RECT s_colorRects[4] =
+const RECT s_playerNameRects[4] =
     {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
 DATA(0x001e9338)
-const RECT s_labelRects[7] = {
+const RECT s_battleStatLabelRects[7] = {
     {45, 155, 175, 215},
     {50, 198, 180, 258},
     {34, 241, 172, 301},
@@ -213,10 +213,10 @@ CString g_bootyStatLabels[8] = {
 };
 
 DATA(0x00229f30)
-SecretMsgRow g_secretMsgRows[25];
+BootyCheatMessage g_bootyCheatMessages[25];
 
 DATA(0x0022af10)
-b32 g_bootyCheatBuilt = false;
+b32 g_bootyCheatMessagesLoaded = false;
 
 RVA(0x00018830, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
@@ -225,7 +225,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    if (g_bootyCheatBuilt == false) {
+    if (g_bootyCheatMessagesLoaded == false) {
         CString bootyCheatz("BootyCheatz");
         CString empty("");
         CString grp;
@@ -234,8 +234,10 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         i32 i = 0;
 
         // byte-evidenced: retail compares the row cursor as a signed integer.
-        i32 last = reinterpret_cast<i32>(g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow));
-        char* p = g_secretMsgRows[0].m_strB;
+        i32 last = reinterpret_cast<i32>(
+            g_bootyCheatMessages[24].m_description + sizeof(BootyCheatMessage)
+        );
+        char* p = g_bootyCheatMessages[0].m_description;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
@@ -247,7 +249,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
             i++;
             p += 0xa0;
         } while (reinterpret_cast<i32>(p) < last); // byte-evidenced: signed cursor compare
-        g_bootyCheatBuilt = true;
+        g_bootyCheatMessagesLoaded = true;
     }
 
     m_mgr->EnsureStandardVideoMode(false);
@@ -293,7 +295,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
 
-    m_secretHudHandled = false;
+    m_completionHintHandled = false;
 
     if (!BuildWarpStoneGlitterAnimation()) {
         return 0;
@@ -366,7 +368,7 @@ i32 CBootyState::LeaveState(GameStateId nextState) {
 
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
-    if (m_secretBannerOnce != false && (g_gameReg->GetGameStats())->IsCampaignPerfect()) {
+    if (m_showCampaignSecret != false && (g_gameReg->GetGameStats())->IsCampaignPerfect()) {
         CString s;
         if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
@@ -378,8 +380,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
         s.Format("The Secret of Secretz:");
         DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
-        CString s2(g_secretMsgRows[24].m_strA);
-        CString s3(g_secretMsgRows[24].m_strB);
+        CString s2(g_bootyCheatMessages[24].m_encodedCode);
+        CString s3(g_bootyCheatMessages[24].m_description);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
@@ -434,8 +436,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
                 }
             }
             i32 idx = rowBase * 3 + j;
-            CString s5(g_secretMsgRows[idx].m_strA);
-            CString s6(g_secretMsgRows[idx].m_strB);
+            CString s5(g_bootyCheatMessages[idx].m_encodedCode);
+            CString s6(g_bootyCheatMessages[idx].m_description);
             for (i32 k = 0; k < s5.GetLength(); k++) {
                 s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
             }
@@ -1370,9 +1372,9 @@ i32 CBootyState::Render() {
     }
     m_frameTiming.Start(0x21);
 
-    switch (m_activation) {
+    switch (m_sequencePhase) {
         case BOOTYSEQ_WARP_CUE: {
-            m_activation = BOOTYSEQ_GLITTER;
+            m_sequencePhase = BOOTYSEQ_GLITTER;
             SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_WARP");
         }
@@ -1382,44 +1384,45 @@ i32 CBootyState::Render() {
             if (UpdateWarpStoneGlitterAnimation() == 0) {
                 break;
             }
-            m_activation = BOOTYSEQ_LETTERS;
+            m_sequencePhase = BOOTYSEQ_STAT_REVEAL;
             SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_BOOM");
-            if (m_initOnce != false && g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false
+            if (m_showAreaSummary != false
+                && g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false
                 && g_levelBias100 == false) {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 CString s("World Completed!");
-                m_levelCompleteGate = true;
+                m_completionTitleVisible = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 CString s("Level Completed!");
-                m_levelCompleteGate = true;
+                m_completionTitleVisible = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
         // FALL THROUGH
-        case BOOTYSEQ_LETTERS:
+        case BOOTYSEQ_STAT_REVEAL:
             UpdateGruntSprintAnimation();
             if (UpdateStatRevealAnimation() == 0) {
                 break;
             }
-            m_activation = BOOTYSEQ_WALK;
+            m_sequencePhase = BOOTYSEQ_WARP_LETTER_REVEAL;
         // FALL THROUGH
-        case BOOTYSEQ_WALK:
+        case BOOTYSEQ_WARP_LETTER_REVEAL:
             UpdateStatRevealAnimation();
             if (UpdateWarpLetterRevealAnimation() == 0) {
                 break;
             }
-            m_activation = BOOTYSEQ_PERFECT_BONUS;
+            m_sequencePhase = BOOTYSEQ_PERFECT_BONUS;
             break;
         case BOOTYSEQ_PERFECT_BONUS: {
             UpdateStatRevealAnimation();
             UpdateWarpLetterRevealAnimation();
             CheckPerfectBonus();
-            if (m_secretHudHandled == false
+            if (m_completionHintHandled == false
                 && g_gameReg->GetGameStats()->IsCustomLevel() == false) {
                 CString s;
                 RECT rc;
@@ -1448,11 +1451,11 @@ i32 CBootyState::Render() {
                     }
                     SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
-                m_secretGate = true;
+                m_completionHintVisible = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
-                m_secretHudHandled = true;
+                m_completionHintHandled = true;
             } else if (g_gameReg->GetGameStats()->IsCustomLevel() != false) {
-                m_secretHudHandled = true;
+                m_completionHintHandled = true;
             }
             break;
         }
@@ -1489,11 +1492,11 @@ i32 CBootyState::RestoreGraphics() {
     if (m_world->GetImageRegistry()->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
-    if (m_activation != BOOTYSEQ_DONE) {
+    if (m_sequencePhase != BOOTYSEQ_DONE) {
         if (LoadTitlePage("bg", 0, 0, 0, 0, true) == 0) {
             return 0;
         }
-        ShowLevelCompleteMessage();
+        DrawCompletionOverlay();
     } else {
         ShowSecretBonusMessage();
     }
@@ -1503,7 +1506,7 @@ i32 CBootyState::RestoreGraphics() {
 }
 
 RVA(0x0001c9d0, 0x351)
-void CBootyState::ShowLevelCompleteMessage() {
+void CBootyState::DrawCompletionOverlay() {
     for (i32 i = 0; i < 8; i++) {
         if (m_statLabelVisible[i]) {
             CRect r1(g_bootyStatLabelRects[i]);
@@ -1518,7 +1521,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    if (m_levelCompleteGate) {
+    if (m_completionTitleVisible) {
         if (g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
@@ -1530,7 +1533,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    if (g_gameReg->GetGameStats()->IsCustomLevel() == false && m_secretGate != false) {
+    if (g_gameReg->GetGameStats()->IsCustomLevel() == false && m_completionHintVisible != false) {
         CString s;
         RECT r;
         CGameStats* gameStats = g_gameReg->GetGameStats();
@@ -1577,7 +1580,7 @@ i32 CBootyState::OnPaint() {
 // @early-stop
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::HandleContinueInput() {
-    BootySeqPhase state = m_activation;
+    BootySeqPhase state = m_sequencePhase;
     if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
         m_skipAnimations = true;
         return 1;
@@ -1586,9 +1589,9 @@ i32 CBootyState::HandleContinueInput() {
     if (gameStats->IsCustomLevel() != false) {
         PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        if (m_initOnce == false) {
+        if (m_showAreaSummary == false) {
             if (gameStats->IsCurrentAreaComplete() != false) {
-                m_initOnce = true;
+                m_showAreaSummary = true;
                 SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
                 ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
                 if (g_gameReg->GetGameStats()->GetLevelNumber() < 0x24) {
@@ -1637,7 +1640,7 @@ i32 CBootyState::HandleContinueInput() {
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
-                ShowLevelCompleteMessage();
+                DrawCompletionOverlay();
                 m_world->GetDrawTarget()->TransExit();
                 m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
                 m_world->GetDrawTarget()->TransTitle();
@@ -1645,11 +1648,11 @@ i32 CBootyState::HandleContinueInput() {
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
-                ShowLevelCompleteMessage();
+                DrawCompletionOverlay();
                 return 1;
             }
         }
-        if (m_initOnce != false && gameStats->IsCurrentAreaComplete() != false
+        if (m_showAreaSummary != false && gameStats->IsCurrentAreaComplete() != false
             && gameStats->GetLevelNumber() < IDX(QUESTLEVEL_LAST)
             && state == BOOTYSEQ_PERFECT_BONUS) {
             if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
@@ -1658,14 +1661,14 @@ i32 CBootyState::HandleContinueInput() {
                 }
                 m_world->GetDrawTarget()->TransExit();
                 RetireScene(0x50, 0x3e8, 0, true);
-                m_activation = BOOTYSEQ_SECRET_PENDING;
+                m_sequencePhase = BOOTYSEQ_SECRET_PENDING;
                 return 1;
             }
         }
 
-        if (m_activation == BOOTYSEQ_SECRET_PENDING
-            && (g_gameReg->GetGameStats())->IsCampaignPerfect() && m_secretBannerOnce == false) {
-            m_secretBannerOnce = true;
+        if (m_sequencePhase == BOOTYSEQ_SECRET_PENDING
+            && (g_gameReg->GetGameStats())->IsCampaignPerfect() && m_showCampaignSecret == false) {
+            m_showCampaignSecret = true;
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
@@ -1920,16 +1923,16 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (tint == NULL) {
         return 0;
     }
-    m_fortSprite = CreateSimpleAnimationSprite(0);
-    if (m_fortSprite == NULL) {
+    m_winnerFortSprite = CreateSimpleAnimationSprite(0);
+    if (m_winnerFortSprite == NULL) {
         return 0;
     }
-    m_fortSprite->SetImageSetByName("LEVEL_FORT");
-    m_fortSprite->SetAnimationByName("GAME_CYCLE100", 0);
-    m_fortSprite->SetDrawFill(SHADE_PAL_16, tint);
-    m_fortSprite->Hide();
-    SET_SCREEN_POS(m_fortSprite, 0x64, 0x64);
-    m_fortSprite->Show();
+    m_winnerFortSprite->SetImageSetByName("LEVEL_FORT");
+    m_winnerFortSprite->SetAnimationByName("GAME_CYCLE100", 0);
+    m_winnerFortSprite->SetDrawFill(SHADE_PAL_16, tint);
+    m_winnerFortSprite->Hide();
+    SET_SCREEN_POS(m_winnerFortSprite, 0x64, 0x64);
+    m_winnerFortSprite->Show();
 
     CString joyKey;
     CString bootyKey;
@@ -1941,18 +1944,18 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         "GRUNTZ_WARLORDZ_%s_BOOTY",
         static_cast<const char*>(GetWarlordName(GetWinningPlayerIndex()))
     );
-    m_warlordBooty = CreateSimpleAnimationSprite(0);
-    if (m_warlordBooty == NULL) {
+    m_winnerWarlordSprite = CreateSimpleAnimationSprite(0);
+    if (m_winnerWarlordSprite == NULL) {
         return 0;
     }
-    m_warlordBooty->SetImageSetByName(joyKey);
-    m_warlordBooty->SetAnimationByName(bootyKey, 0);
-    m_warlordBooty->SetDrawFill(SHADE_PAL_16, tint);
-    m_warlordBooty->Hide();
-    SET_SCREEN_POS(m_warlordBooty, 0x64, 0x64);
-    CWwdSpriteObject* sorted = m_warlordBooty;
+    m_winnerWarlordSprite->SetImageSetByName(joyKey);
+    m_winnerWarlordSprite->SetAnimationByName(bootyKey, 0);
+    m_winnerWarlordSprite->SetDrawFill(SHADE_PAL_16, tint);
+    m_winnerWarlordSprite->Hide();
+    SET_SCREEN_POS(m_winnerWarlordSprite, 0x64, 0x64);
+    CWwdSpriteObject* sorted = m_winnerWarlordSprite;
     sorted->SetSortKey(SORTKEY_BOOTY_WARLORD);
-    m_warlordBooty->Show();
+    m_winnerWarlordSprite->Show();
 
     const Coord* flagPos = g_bootyFlagPos;
     i32 w = 0;
@@ -2321,27 +2324,27 @@ void CMultiBootyState::DrawBattleStats() {
     for (i = 0; i < 4; i++) {
         if (g_gameReg->GetPlayer(i).HasJoinedRound() != false) {
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetCursePickupCounts(i), 4));
-            rc.CopyRect(&s_col1Rects[i]);
+            rc.CopyRect(&s_curseCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetTimedPowerupPickupCounts(i), 7));
-            rc.CopyRect(&s_col2Rects[i]);
+            rc.CopyRect(&s_powerupCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetToyPickupCounts(i), 10));
-            rc.CopyRect(&s_col3Rects[i]);
+            rc.CopyRect(&s_toyCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetToolPickupCounts(i), 22));
-            rc.CopyRect(&s_col4Rects[i]);
+            rc.CopyRect(&s_toolCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", g_gameReg->GetGameStats()->m_gruntzSpawnedByPlayer[i]);
-            rc.CopyRect(&s_col5Rects[i]);
+            rc.CopyRect(&s_gruntCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->GetGameStats())->CountKillsForPlayer(i));
-            rc.CopyRect(&s_col6Rects[i]);
+            rc.CopyRect(&s_killCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
@@ -2371,7 +2374,7 @@ void CMultiBootyState::DrawBattleStats() {
                 s = "Cursez:";
                 break;
         }
-        rc.CopyRect(&s_labelRects[c]);
+        rc.CopyRect(&s_battleStatLabelRects[c]);
         DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
@@ -2433,7 +2436,7 @@ void CMultiBootyState::DrawBattleStats() {
                     break;
             }
             s.Format("%s", static_cast<const char*>(player->GetName()));
-            rc.CopyRect(&s_colorRects[i]);
+            rc.CopyRect(&s_playerNameRects[i]);
             DrawTextToOverlaySurface(
                 m_world,
                 &s,
@@ -2550,7 +2553,7 @@ i32 CMultiBootyState::OnPaint() {
 }
 
 RVA(0x0001f8a0, 0x30)
-i32 CMultiBootyState::PostCommandIfKey() {
+i32 CMultiBootyState::HandleContinueInput() {
     if (m_sequenceState == BOOTYSEQ_PERFECT_BONUS) {
         PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
@@ -2559,17 +2562,17 @@ i32 CMultiBootyState::PostCommandIfKey() {
 
 RVA(0x0001f8e0, 0x8)
 i32 CMultiBootyState::OnLButtonDown(i32, i32, i32) {
-    return PostCommandIfKey();
+    return HandleContinueInput();
 }
 
 RVA(0x0001f900, 0x8)
 i32 CMultiBootyState::OnRButtonDown(i32, i32, i32) {
-    return PostCommandIfKey();
+    return HandleContinueInput();
 }
 
 RVA(0x0001f920, 0x8)
 i32 CMultiBootyState::OnKeyDown(i32, i32) {
-    return PostCommandIfKey();
+    return HandleContinueInput();
 }
 
 RVA(0x0001f940, 0x4c)

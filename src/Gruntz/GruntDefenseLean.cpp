@@ -54,7 +54,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 return 1;
             }
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
-            if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
+            if (occ != NULL && GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) != 0
                 && occ->IsEntranceCommitted() != false) {
                 if (m_attackWindupActive != false) {
                     return 1;
@@ -88,7 +88,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 return 1;
             }
             if (occ == NULL || occ->IsEntranceCommitted() == false
-                || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
+                || GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) == 0) {
                 goto seek;
             }
             RepathToward(occ);
@@ -112,7 +112,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
             if (rand() % 100 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= STAMINA_FULL
-                && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
+                && GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) != 0) {
                 m_triggerMgr->UseEquippedToolAt(
                     m_playerIndex,
                     m_unitIndex,

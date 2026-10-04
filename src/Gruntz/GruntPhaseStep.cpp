@@ -153,7 +153,7 @@ state0: {
     if (m_dwell <= static_cast<u32>(DWELL_REPATH_MS)) {
         goto common;
     }
-    if (GruntInRadius(nb->m_playerIndex, nb->m_unitIndex) == 0) {
+    if (GruntInRadius(nb->GetPlayerIndex(), nb->GetUnitIndex()) == 0) {
         goto s0_reset;
     }
     if (MoveToTile(

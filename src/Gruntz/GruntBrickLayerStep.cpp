@@ -113,7 +113,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
 
     if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS
-        || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+        || GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) == 0) {
         m_blockedVoicePending = false;
         goto L_ed153;
     }
@@ -129,15 +129,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
     if (m_inCombat != false) {
         goto L_ed153;
     }
-    if (MoveToTile(
-            g->m_object->m_screenX >> TILE_SHIFT_PX,
-            g->m_object->m_screenY >> TILE_SHIFT_PX,
-            0,
-            m_arrivalFlags,
-            1,
-            0
-        )
-        == 0) {
+    Coord targetTile = ScreenTile(g);
+    if (MoveToTile(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) == 0) {
         goto L_ed153;
     }
     if (m_blockedVoicePending != false) {
