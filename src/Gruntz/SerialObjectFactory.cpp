@@ -80,14 +80,11 @@
 
 #include <string.h>
 
-i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
+i32 RestoreGameFromFile(CGruntzMgr* mgr, const std::string& path) {
     if (mgr == NULL) {
         return 0;
     }
-    if (path == NULL) {
-        return 0;
-    }
-    if (strlen(path) == 0) {
+    if (path.empty()) {
         return 0;
     }
     g_serialCounter = 0;

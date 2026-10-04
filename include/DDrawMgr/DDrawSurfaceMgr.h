@@ -129,7 +129,7 @@ public:
     );
 
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
-    i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);
+    i32 RestoreChildren(HP_Callback cb, const std::string& name, LogicTypeId typeId);
     i32 SnapshotChildren(HP_Callback cb, io::Output& target, const std::string& name, LogicTypeId typeId);
     i32 RestoreChildren(HP_Callback cb, io::Input& source, LogicTypeId typeId);
 

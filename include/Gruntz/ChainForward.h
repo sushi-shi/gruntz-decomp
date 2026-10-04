@@ -3,6 +3,7 @@
 
 #include <Enums.h>
 #include <Ints.h>
+#include <Io/Bytes.h>
 
 class CGruntzMgr;
 class Settings;
@@ -23,5 +24,7 @@ i32 SaveOverlayBufferShot(
     char* name,
     i32 saveFlag
 );
+
+i32 SaveOverlayBufferShot(CGruntzMgr* owner, i32 width, i32 height, io::Output& target);
 
 #endif

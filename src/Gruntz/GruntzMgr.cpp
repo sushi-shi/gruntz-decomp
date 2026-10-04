@@ -590,7 +590,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_saveGame = new CSaveGame;
-    if (!m_saveGame->InitializeSaveDirectory("")) {
+    if (!m_saveGame->InitializeSaveDirectory(".")) {
         SAFE_DELETE(m_saveGame);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
         return 0;
@@ -851,7 +851,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
                 (currentState->m_levelIndex % IDX(QUESTLEVEL_TRAINING_LAST)) + 1
             )
         );
-        g_gameReg->m_saveGame->Save(NULL, 0x81a6);
+        g_gameReg->m_saveGame->SaveProgress();
     }
     m_gameStats->SetLevelNumber(currentState->m_levelIndex);
     m_gameStats->m_isCustomLevel = false;
@@ -3009,12 +3009,15 @@ i32 CGruntzMgr::Quicksave() {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
+    const SaveSlot previous = *m_saveInfoRec;
     if (!FillSaveInfo(m_saveInfoRec, NULL)) {
+        *m_saveInfoRec = previous;
         EnterModalUI("ERROR - Cannot Save Game.");
         return 0;
     }
 
-    if (g_gameReg->m_saveGame->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
+    if (m_saveGame->SaveSnapshot(m_saveInfoRec, 0x81a7) == 0) {
+        *m_saveInfoRec = previous;
         EnterModalUI("ERROR - Cannot Save Game.");
         return 1;
     }

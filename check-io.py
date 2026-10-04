@@ -7,8 +7,8 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parent
-SOURCES = ["src/Io/File.cpp", "src/Io/Bytes.cpp", "src/Io/StreamArchive.cpp",
-           "src/Io/Settings.cpp", "src/Font/FontData.cpp", "tests/io.cpp"]
+SOURCES = ["src/Io/File.cpp", "src/Io/FileTransaction.cpp", "src/Io/SavePaths.cpp", "src/Io/Bytes.cpp", "src/Io/StreamArchive.cpp",
+           "src/Io/Settings.cpp", "src/Font/FontData.cpp", "tests/io.cpp", "tests/save_transactions.cpp"]
 FLAGS = ["-std=c++17", "-Wall", "-Wextra", "-Werror", "-g", "-O1",
          "-DGRUNTZ_PORTABLE_TEST", "-I" + str(ROOT / "include")]
 

@@ -18,6 +18,7 @@ public:
     virtual ~File();
     bool open(const std::string& path, Access access);
     bool open(const char* path, Access access);
+    bool createSibling(const std::string& target, std::string& createdPath);
     bool finish();
     bool flush();
     size_t read(void* data, size_t size);

@@ -135,7 +135,7 @@ void LabelGameInfoSlot(
     i32 deleteControlId
 ) {
     b32 flag;
-    if (TempFileExists(item)) {
+    if (g_gameReg->m_saveGame->SnapshotExists(item)) {
         SetDlgItemTextA(hWnd, nameControlId, item->m_name);
         flag = true;
     } else {

@@ -4,8 +4,11 @@
 #include <Io/File.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #ifdef _WIN32
 #include <direct.h>
+#include <io.h>
 #else
 #include <unistd.h>
 #endif
@@ -62,6 +65,51 @@ bool File::open(const std::string& path, Access access) {
     if (!m_file) m_error = errno == ENOENT ? NotFound : OpenFailed;
     return good();
 }
+bool File::createSibling(const std::string& target, std::string& createdPath) {
+    if (m_file && !finish()) return false;
+    m_error = NoError;
+    createdPath.erase();
+    if (target.empty() || target.find('\0') != std::string::npos) {
+        m_error = OpenFailed;
+        return false;
+    }
+    for (unsigned int index = 0; index < 1024; ++index) {
+        char suffix[24];
+        sprintf(suffix, ".stage-%u", index);
+        std::string candidate = target + suffix;
+#ifdef _WIN32
+        const int descriptor = _open(candidate.c_str(), _O_CREAT | _O_EXCL | _O_RDWR | _O_BINARY,
+                                     _S_IREAD | _S_IWRITE);
+#else
+        const int descriptor = ::open(candidate.c_str(), O_CREAT | O_EXCL | O_RDWR, 0600);
+#endif
+        if (descriptor < 0) {
+            if (errno == EEXIST) continue;
+            m_error = OpenFailed;
+            return false;
+        }
+#ifdef _WIN32
+        m_file = _fdopen(descriptor, "w+b");
+#else
+        m_file = fdopen(descriptor, "w+b");
+#endif
+        if (!m_file) {
+#ifdef _WIN32
+            _close(descriptor);
+#else
+            ::close(descriptor);
+#endif
+            remove(candidate.c_str());
+            m_error = OpenFailed;
+            return false;
+        }
+        createdPath.swap(candidate);
+        return true;
+    }
+    m_error = OpenFailed;
+    return false;
+}
+
 bool File::finish() {
     if (m_file) {
         if (fclose(m_file) != 0 && m_error == NoError) m_error = CloseFailed;

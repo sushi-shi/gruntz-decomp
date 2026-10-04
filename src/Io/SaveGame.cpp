@@ -23,6 +23,8 @@
 #include <Image/ImagePool.h>
 #include <Image/RezDecodeKind.h>
 #include <Io/GameSave.h>
+#include <Io/FileTransaction.h>
+#include <Io/SavePaths.h>
 #include <MsgParam.h>
 #include <Io/Settings.h>
 #include <Wap32/ScreenGeometry.h>
@@ -47,19 +49,11 @@ static const i32 s_savePreviewBitmapOffset = 0xe;
 static const u32 s_saveProgressMagic = 0x42a;
 
 i32 CSaveGame::InitializeSaveDirectory(const std::string& saveDirectory) {
-    m_saveDirectory = saveDirectory;
-    m_progressFilePath = m_saveDirectory + "Gruntz.sav";
+    if (!io::absolutePath(saveDirectory, m_saveDirectory)) return 0;
+    m_progressFilePath = m_saveDirectory + "/Gruntz.sav";
     memset(m_header, 0, s_saveFileHeaderBytes);
     Init();
     Load();
-    for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
-        SaveSlot* slot = GetSlot(i);
-        if (slot != NULL) {
-            char numbuf[16];
-            _itoa(i + 1, numbuf, 10);
-            if (!copyTextToBuffer((m_saveDirectory + "Slot" + numbuf + ".sav"), slot->m_savePath, sizeof(slot->m_savePath))) return 0;
-        }
-    }
     return 1;
 }
 
@@ -69,11 +63,13 @@ void CSaveGame::Reset() {
 }
 
 void CSaveGame::Init() {
+    memset(m_header, 0, s_saveFileHeaderBytes);
     m_maxLevel = QUESTLEVEL_TRAINING_FIRST;
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
         SaveSlot* p = GetSlot(i);
         if (p != NULL) {
             memset(p, 0, sizeof(SaveSlot));
+            copyTextToBuffer(io::slotBaseName(i), p->m_savePath, sizeof(p->m_savePath));
         }
     }
 }
@@ -88,42 +84,79 @@ i32 CSaveGame::Load() {
         Init();
         return 0;
     }
-    if (!Verify()) {
-        Init();
+    if (!Verify()) { Init(); return 0; }
+    for (i32 index = 0; index < SAVE_SLOT_COUNT; ++index) {
+        SaveSlot* slot = GetSlot(index);
+        std::string name = io::slotBaseName(index);
+        if (slot->m_type & SAVESLOT_PRESENT) {
+            if (!io::snapshotName(index, slot->m_savePath, sizeof(slot->m_savePath), name)
+                || !memchr(slot->m_name, 0, sizeof(slot->m_name))
+                || !memchr(slot->m_levelName, 0, sizeof(slot->m_levelName))) {
+                Init(); return 0;
+            }
+        }
+        copyTextToBuffer(name, slot->m_savePath, sizeof(slot->m_savePath));
     }
     return 1;
 }
 
-i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
-    CWaitCursorScope wait;
-    io::File file;
-    if (!file.open((m_progressFilePath).c_str(), io::Replace)) {
-        return 0;
-    }
+i32 CSaveGame::SaveProgress() {
+    io::FileTransaction file(m_progressFilePath);
+    return file.good() && WriteProgress(file) && file.commit();
+}
+
+bool CSaveGame::WriteProgress(io::Output& target) {
     ComputeAll();
-    file.write(m_header, s_saveFileHeaderBytes);
-    file.write(m_slots, sizeof(m_slots));
-    const bool written = file.finish();
+    const bool written = target.write(m_header, s_saveFileHeaderBytes)
+        && target.write(m_slots, sizeof(m_slots));
     Verify();
-    if (!written) return 0;
-    if (screenshotPath != NULL) {
-        CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
-        g_gameReg->World()->GetDrawTarget()->TransEnter();
-        state->LoadSBITextEdges(messageId);
-        if (!SaveGame(g_gameReg, screenshotPath)) {
-            return 0;
-        }
-        if (!SaveOverlayBufferShot(
-                g_gameReg->m_settings,
-                g_gameReg,
-                SCREEN_HALF_W_PX,
-                SCREEN_HALF_H_PX,
-                screenshotPath,
-                1
-            )) {
-            return 0;
-        }
+    return written;
+}
+
+i32 CSaveGame::SlotIndex(const SaveSlot* slot) const {
+    for (i32 index = 0; index < SAVE_SLOT_COUNT; ++index) {
+        if (slot == &m_slots[index]) return index;
     }
+    return -1;
+}
+
+std::string CSaveGame::SnapshotPath(const SaveSlot* slot) const {
+    const i32 index = SlotIndex(slot);
+    if (index < 0) return "";
+    std::string name;
+    if (!io::snapshotName(index, slot->m_savePath, sizeof(slot->m_savePath), name)) return "";
+    return m_saveDirectory + "/" + name;
+}
+
+bool CSaveGame::SnapshotExists(const SaveSlot* slot) const {
+    if (!slot || !(slot->m_type & SAVESLOT_PRESENT)) return false;
+    io::File file;
+    return file.open(SnapshotPath(slot), io::ReadOnly) && file.finish();
+}
+
+i32 CSaveGame::SaveSnapshot(SaveSlot* slot, i32 messageId) {
+    const i32 index = SlotIndex(slot);
+    if (index < 0 || !g_gameReg || !g_gameReg->m_curState || !g_gameReg->World()) return 0;
+    CWaitCursorScope wait;
+    const SaveSlot original = *slot;
+    io::FileTransaction snapshot(m_saveDirectory + "/" + io::slotBaseName(index));
+    if (!snapshot.good()) return 0;
+    CPlay* state = g_gameReg->PickPlayOrPausedState();
+    if (!state) return 0;
+    g_gameReg->World()->GetDrawTarget()->TransEnter();
+    state->LoadSBITextEdges(messageId);
+    if (!SaveGame(g_gameReg, snapshot)
+        || !SaveOverlayBufferShot(g_gameReg, SCREEN_HALF_W_PX, SCREEN_HALF_H_PX, snapshot)
+        || !snapshot.finish()) return 0;
+    std::string name;
+    if (!io::snapshotName(index, snapshot.uniquePath().c_str(), snapshot.uniquePath().size() + 1, name)
+        || !copyTextToBuffer(name, slot->m_savePath, sizeof(slot->m_savePath))) return 0;
+    // The complete snapshot exists before its filename is made visible in progress.
+    io::FileTransaction progress(m_progressFilePath);
+    if (!progress.good() || !WriteProgress(progress) || !progress.commitReferencing(snapshot)) {
+        *slot = original; return 0;
+    }
+    io::removePreviousSnapshot(index, m_saveDirectory, original.m_savePath, sizeof(original.m_savePath), name);
     return 1;
 }
 
@@ -291,16 +324,14 @@ i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
     return CopySlot(GetSlot(idx), src);
 }
 
-i32 CSaveGame::CloseTempFile(SaveSlot* p) {
-    if (p == NULL) {
-        return 0;
-    }
-    io::File file;
-    if (file.open(p->m_savePath, io::ReadOnly)) {
-        file.finish();
-        if (remove(p->m_savePath) != 0) return 0;
-    }
-    p->m_type = SAVESLOT_EMPTY;
+i32 CSaveGame::DeleteSnapshot(SaveSlot* slot) {
+    if (SlotIndex(slot) < 0) return 0;
+    const SaveSlot original = *slot;
+    const std::string path = SnapshotPath(slot);
+    slot->m_type = SAVESLOT_EMPTY;
+    if (!SaveProgress()) { *slot = original; return 0; }
+    // A failed cleanup leaves an unreferenced file, never a dangling progress entry.
+    if (!path.empty()) remove(path.c_str());
     return 1;
 }
 
@@ -337,16 +368,5 @@ void CSaveGame::SetMagic() {
 }
 
 i32 CSaveGame::TempFileExistsAt(i32 index) {
-    return TempFileExists(GetSlot(index));
-}
-
-int TempFileExists(SaveSlot* p) {
-    if (p != NULL && (p->m_type & SAVESLOT_PRESENT)) {
-        io::File file;
-        if (file.open(p->m_savePath, io::ReadOnly)) {
-            file.finish();
-            return 1;
-        }
-    }
-    return 0;
+    return SnapshotExists(GetSlot(index));
 }

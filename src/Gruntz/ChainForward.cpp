@@ -51,3 +51,10 @@ i32 SaveOverlayBufferShot(
     }
     return SaveScreenshot(leaf, reg, owner, width, height, name, saveFlag);
 }
+
+i32 SaveOverlayBufferShot(CGruntzMgr* owner, i32 width, i32 height, io::Output& target) {
+    if (!owner || !owner->m_world) return 0;
+    CDDrawSurfacePair* pair = owner->m_world->GetDrawTarget()->m_overlayPair;
+    if (!pair || !pair->GetSurface()) return 0;
+    return SaveScreenshot(pair->GetSurface(), owner, width, height, target);
+}

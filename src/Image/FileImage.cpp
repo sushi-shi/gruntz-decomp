@@ -306,19 +306,16 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
 }
 
 i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
-    if (this->IsValid() == 0) {
-        return 0;
-    }
-    if (path == NULL) {
-        return 0;
-    }
-    if (*path == 0) {
-        return 0;
-    }
-    if (this->m_bitDepth != BPP_RGB_16) {
-        return 0;
-    }
+    static_cast<void>(pal);
+    if (!path || !*path || !IsValid() || m_bitDepth != BPP_RGB_16) return 0;
+    io::File file;
+    if (!file.open(path, flag ? io::Update : io::Replace)) return 0;
+    if (flag && !file.seek(0, io::End)) return 0;
+    return SaveRle16(file) && file.finish();
+}
 
+i32 CDDSurface::SaveRle16(io::Output& target) {
+    if (!IsValid() || m_bitDepth != BPP_RGB_16 || !target.good()) return 0;
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
     i32 width = this->m_apiDesc.dwWidth;
@@ -347,27 +344,11 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         return 0;
     }
 
-    io::File file;
-    if (flag != 0) {
-        if (file.open(path, io::Update) == false) {
-            Unlock();
-            delete[] line;
-            return 0;
-        }
-
-        file.seek(0, io::End);
-    } else {
-        if (file.open(path, io::Replace) == false) {
-            Unlock();
-            delete[] line;
-            return 0;
-        }
-    }
-    file.write(&bfh.m_hdr, sizeof(bfh.m_hdr));
-    file.write(&bi, sizeof(bi));
+    bool written = target.write(&bfh.m_hdr, sizeof(bfh.m_hdr))
+        && target.write(&bi, sizeof(bi));
 
     i32 row = this->m_apiDesc.dwHeight;
-    while (--row >= 0) {
+    while (written && --row >= 0) {
         u8* src = locked + row * this->m_apiDesc.lPitch;
         i32 x = 0;
         u8* dst = line;
@@ -383,12 +364,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
             *dst++ = r;
             x++;
         }
-        file.write(line, 3 * this->m_apiDesc.dwWidth);
+        written = target.write(line, 3 * this->m_apiDesc.dwWidth);
     }
 
     Unlock();
     delete[] line;
-    return file.finish();
+    return written && target.good();
 }
 
 i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {

@@ -174,9 +174,9 @@ s player name=Player
 
 Game preference edits remain in memory and are flushed after state teardown at
 shutdown. The startup options dialog saves on confirmation and reports failures.
-Saving encodes first, writes/closes a temporary sibling, then replaces the destination;
-a write or replacement failure retains the previous file. The storage assumes one
-writer per path. Native Windows replacement uses its filesystem primitive; Linux
+Saving encodes first, exclusively creates and writes/closes an owned temporary
+sibling, then replaces the destination; a write, close or replacement failure
+retains the previous file. The storage assumes one writer per destination. Native Windows replacement uses its filesystem primitive; Linux
 and Emscripten use standard rename. Power-loss durability is not claimed.
 
 Existing registry values are not imported. Optional `CdRom Drive` and
@@ -256,3 +256,37 @@ The suite checks expiry/rearm, period changes, frame pacing, FPS windows, clock
 wrap, long pauses, resume and independent manager state. The native run uses fatal
 ASan/UBSan checks; wasm32 executes in Node. The runner accepts the same tool/cache
 overrides as `check-io.py`. No game is launched.
+
+### Transactional saved games
+
+`io::FileTransaction` owns an exclusively created sibling file until publication.
+Writes and close must succeed before `commit()` replaces the destination. Aborted
+transactions remove their staging files. Destination paths are resolved at
+creation, so changing the current directory cannot redirect a commit. Settings,
+standalone snapshots and screenshot replacement use this same primitive.
+
+A game save contains a snapshot plus its appended preview. Both are written to
+one unique file and closed before progress metadata is published. The progress
+transaction calls `commitReferencing(snapshot)` to keep that complete snapshot
+only when its reference has been committed. A failed snapshot, preview or progress
+write leaves the old progress record and old snapshot available. Deletion removes
+the progress reference first; unsuccessful file cleanup can leave an unreferenced
+file, but cannot leave progress pointing at a deleted snapshot.
+
+The existing fixed-size progress record stores a bounded filename. `SnapshotPath`
+resolves that name under the configured save directory using an owned string.
+Loading accepts the original `SlotN.sav` paths and the port's unique
+`SlotN.sav.stage-N` names, stripping legacy installation prefixes. Malformed or
+unterminated names are rejected. The wire record size is unchanged, but new saves
+must be loaded by the port: retail clients that always open `SlotN.sav` do not
+follow unique snapshot references. Multiple writers to one save directory are not
+supported. This ordering does not claim power-loss durability or browser IDBFS
+synchronization; the browser host must persist storage explicitly. Abrupt process
+termination may leave unreferenced staging files.
+
+`check-io.py --target all` exercises replacement/abort, exclusive staging,
+publication ordering, failed writes, failed replacement, stable paths, and old/new
+bounded filenames on Linux and wasm32. Native tests also force a real stdio
+write/close failure with `RLIMIT_FSIZE` and verify that the old referenced save
+remains intact. The Windows game integration is compiled and reviewed; it is not
+launched by this suite.

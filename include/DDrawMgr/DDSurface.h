@@ -2,6 +2,7 @@
 #define DDRAWMGR_CDDSURFACE_H
 
 #include <list>
+#include <Io/Bytes.h>
 class CDDSurface;
 
 #include <vector>
@@ -139,6 +140,7 @@ public:
 
     i32 SaveBmp(const char* path, CFileImagePal* pal, i32 mode);
     i32 SaveRle16(char* path, CFileImagePal* pal, i32 flag);
+    i32 SaveRle16(io::Output& target);
     i32 SaveTga(const char* path, CFileImagePal* pal, i32 mode);
 
     i32 Resolve(

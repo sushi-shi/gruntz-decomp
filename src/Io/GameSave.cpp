@@ -15,14 +15,8 @@
 
 i32 g_saveBuf[0x24];
 
-i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
+i32 SaveGame(CGruntzMgr* gameMgr, io::Output& target) {
     if (gameMgr == NULL) {
-        return 0;
-    }
-    if (name == NULL) {
-        return 0;
-    }
-    if (strlen(name) == 0) {
         return 0;
     }
     g_serialCounter = 0;
@@ -33,6 +27,6 @@ i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
         return 0;
     }
     return world
-               ->SnapshotChildren(&GameSerializationCallback, name, "Gruntz Save Game", LOGIC_UNSET)
+               ->SnapshotChildren(&GameSerializationCallback, target, "Gruntz Save Game", LOGIC_UNSET)
            != LOGIC_UNSET;
 }
