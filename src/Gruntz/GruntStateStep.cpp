@@ -25,156 +25,162 @@
 #include <string.h>
 
 RVA(0x00033520, 0xbc3)
-i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
-    GruntAiState state = g->GetDefenderState();
+i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
+    GruntAiState state = defender->GetDefenderState();
     if (state == AISTATE_RETURN) {
         return 1;
     }
     if (state != AISTATE_ATTACK) {
 
-        CGrunt* nb;
+        CGrunt* target;
         {
-            Coord tp;
-            g->GetScreenTile(&tp);
-            nb = FindIdleGruntInBox(
-                tp.m_x,
-                tp.m_y,
+            Coord searchTile;
+            defender->GetScreenTile(&searchTile);
+            target = FindIdleGruntInBox(
+                searchTile.m_x,
+                searchTile.m_y,
                 m_defenderSearchRadiusX,
                 m_defenderSearchRadiusY
             );
         }
-        if (nb != NULL) {
-            g->RecycleCoords();
+        if (target != NULL) {
+            defender->RecycleCoords();
 
             i32 arrivalMask = 0xdc7;
-            i32 dist;
+            i32 manhattanDistance;
             {
-                Coord np;
-                nb->GetScreenTile(&np);
-                Coord gp;
-                g->GetScreenTile(&gp);
-                Coord np2;
-                nb->GetScreenTile(&np2);
-                Coord gp2;
-                g->GetScreenTile(&gp2);
-                dist = abs(np2.m_y - gp2.m_y) + abs(np.m_x - gp.m_x);
+                Coord targetXTile;
+                target->GetScreenTile(&targetXTile);
+                Coord defenderXTile;
+                defender->GetScreenTile(&defenderXTile);
+                Coord targetYTile;
+                target->GetScreenTile(&targetYTile);
+                Coord defenderYTile;
+                defender->GetScreenTile(&defenderYTile);
+                manhattanDistance = abs(targetYTile.m_y - defenderYTile.m_y)
+                                    + abs(targetXTile.m_x - defenderXTile.m_x);
             }
-            if (dist <= 0xa) {
+            if (manhattanDistance <= 0xa) {
 
-                CRect box(
-                    g->ScanCell().m_x - 5,
-                    g->ScanCell().m_y - 5,
-                    g->ScanCell().m_x + 5,
-                    g->ScanCell().m_y + 5
+                CRect searchBounds(
+                    defender->ScanCell().m_x - 5,
+                    defender->ScanCell().m_y - 5,
+                    defender->ScanCell().m_x + 5,
+                    defender->ScanCell().m_y + 5
                 );
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
-                grid->Clip(&box);
+                grid->Clip(&searchBounds);
             }
             {
-                Coord p;
-                nb->GetScreenTile(&p);
-                if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
-                    g->SetDefenderState(AISTATE_ATTACK);
-                    g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
-                    g->m_dwell = 0;
+                Coord targetTile;
+                target->GetScreenTile(&targetTile);
+                if (defender->TileSwitch(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
+                    defender->SetDefenderState(AISTATE_ATTACK);
+                    defender->m_arrivalCell.Set(target->GetPlayerIndex(), target->GetUnitIndex());
+                    defender->m_dwell = 0;
                 }
             }
-            if (dist <= 0xa) {
+            if (manhattanDistance <= 0xa) {
                 m_board->Clip(NULL);
             }
         }
-        goto tail;
+        goto checkIdleWander;
     }
 
     {
-        CGrunt* cur = m_triggerMgr->UnitAt(g->ArrivalCell().m_x, g->ArrivalCell().m_y);
-        if (cur != NULL) {
-            CGameObject* s = cur->m_object;
-            if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
+        CGrunt* target =
+            m_triggerMgr->UnitAt(defender->ArrivalCell().m_x, defender->ArrivalCell().m_y);
+        if (target != NULL) {
+            CGameObject* targetSprite = target->m_object;
+            if (defender->RectContains(targetSprite->m_screenX, targetSprite->m_screenY) != 0) {
 
-                g->RecycleCoords();
-                UNSET_COORD(g->m_arrivalCell);
-                if (g != NULL && g->IsAtSavedScreenPos() && g->m_entranceCommitted != false
-                    && g->IsDeathAnimationStarted() == false && g->m_entranceActive == false
-                    && g->m_poweredUp == false && BattlezActDiffersFromIGLPJCR(g)) {
-                    HandleUnitContact(g, cur);
+                defender->RecycleCoords();
+                UNSET_COORD(defender->m_arrivalCell);
+                if (defender != NULL && defender->IsAtSavedScreenPos()
+                    && defender->m_entranceCommitted != false
+                    && defender->IsDeathAnimationStarted() == false
+                    && defender->m_entranceActive == false && defender->m_poweredUp == false
+                    && BattlezActDiffersFromIGLPJCR(defender)) {
+                    HandleUnitContact(defender, target);
                 }
-                g->SetDefenderState(AISTATE_SEEK);
-                goto tail;
+                defender->SetDefenderState(AISTATE_SEEK);
+                goto checkIdleWander;
             }
 
-            i32 dist;
+            i32 targetDistance;
             {
-                Coord here = g->GetTilePos();
-                Coord np = cur->GetTilePos();
-                i32 dx = np.m_x - here.m_x;
-                i32 dy = np.m_y - here.m_y;
-                dist = static_cast<i32>(sqrt(static_cast<double>((SQR(abs(dx)) + SQR(abs(dy))))));
+                Coord defenderTile = defender->GetTilePos();
+                Coord targetTile = target->GetTilePos();
+                i32 dx = targetTile.m_x - defenderTile.m_x;
+                i32 dy = targetTile.m_y - defenderTile.m_y;
+                targetDistance =
+                    static_cast<i32>(sqrt(static_cast<double>((SQR(abs(dx)) + SQR(abs(dy))))));
             }
-            if (dist > m_defenderTargetMaxDistance) {
+            if (targetDistance > m_defenderTargetMaxDistance) {
                 if (GetAttackWaypointCount() != 0) {
-                    Coord* e = CoordAt(rand() % GetAttackWaypointCount());
-                    g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
+                    Coord* attackWaypoint = CoordAt(rand() % GetAttackWaypointCount());
+                    defender->TileSwitch(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
                 }
-                UNSET_COORD(g->m_arrivalCell);
-                g->m_dwell = 0;
-                g->SetDefenderState(AISTATE_SEEK);
-                g->RecycleCoords();
-                g->m_dwell = 0;
-                goto tail;
+                UNSET_COORD(defender->m_arrivalCell);
+                defender->m_dwell = 0;
+                defender->SetDefenderState(AISTATE_SEEK);
+                defender->RecycleCoords();
+                defender->m_dwell = 0;
+                goto checkIdleWander;
             }
 
-            g->RecycleCoords();
+            defender->RecycleCoords();
             i32 arrivalMask = 0xdc7;
-            i32 dist2;
+            i32 manhattanDistance;
             {
-                Coord targetPos1;
-                cur->GetScreenTile(&targetPos1);
-                Coord gruntPos1;
-                g->GetScreenTile(&gruntPos1);
-                Coord targetPos2;
-                cur->GetScreenTile(&targetPos2);
-                Coord gruntPos2;
-                g->GetScreenTile(&gruntPos2);
-                dist2 = abs(targetPos1.m_x - gruntPos1.m_x) + abs(targetPos2.m_y - gruntPos2.m_y);
+                Coord targetXTile;
+                target->GetScreenTile(&targetXTile);
+                Coord defenderXTile;
+                defender->GetScreenTile(&defenderXTile);
+                Coord targetYTile;
+                target->GetScreenTile(&targetYTile);
+                Coord defenderYTile;
+                defender->GetScreenTile(&defenderYTile);
+                manhattanDistance = abs(targetXTile.m_x - defenderXTile.m_x)
+                                    + abs(targetYTile.m_y - defenderYTile.m_y);
             }
-            if (dist2 <= 0xa) {
-                CRect box(
-                    g->ScanCell().m_x - 5,
-                    g->ScanCell().m_y - 5,
-                    g->ScanCell().m_x + 5,
-                    g->ScanCell().m_y + 5
+            if (manhattanDistance <= 0xa) {
+                CRect searchBounds(
+                    defender->ScanCell().m_x - 5,
+                    defender->ScanCell().m_y - 5,
+                    defender->ScanCell().m_x + 5,
+                    defender->ScanCell().m_y + 5
                 );
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
-                grid->Clip(&box);
+                grid->Clip(&searchBounds);
             }
             {
-                Coord cp;
-                cur->GetScreenTile(&cp);
-                if (!g->TileSwitch(cp.m_x, cp.m_y, 0, arrivalMask, 0, 0)) {
-                    ResetToSeek(g);
+                Coord targetTile;
+                target->GetScreenTile(&targetTile);
+                if (!defender->TileSwitch(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
+                    ResetToSeek(defender);
                 }
             }
-            if (dist2 <= 0xa) {
+            if (manhattanDistance <= 0xa) {
                 m_board->Clip(NULL);
             }
-            g->m_dwell = 0;
-            goto tail;
+            defender->m_dwell = 0;
+            goto checkIdleWander;
         }
-        ResetToSeek(g);
-        g->RecycleCoords();
+        ResetToSeek(defender);
+        defender->RecycleCoords();
     }
 
-tail:
-    if (CanPlaySpecialAnim(g)) {
-        if (g->CoordsEmpty()
-            && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
+checkIdleWander:
+    if (CanPlaySpecialAnim(defender)) {
+        if (defender->CoordsEmpty()
+            && static_cast<u32>(defender->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
             && GetAttackWaypointCount() != 0) {
-            Coord* e = CoordAt(rand() % GetAttackWaypointCount());
-            g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
-            g->m_dwell = 0;
+            Coord* attackWaypoint = CoordAt(rand() % GetAttackWaypointCount());
+            defender->TileSwitch(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
+            defender->m_dwell = 0;
         }
     }
     return 1;
