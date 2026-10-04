@@ -32,12 +32,12 @@ i32 CSBI_WarlordHead::SetupImage(
     if (CSBI_ImageSet::SetupImage(owner, host, cmd, tab, rc, key, frame, extra) == SBICMD_NONE) {
         return 0;
     }
-    SetState(0);
+    SetDisplayState(0);
     return 1;
 }
 
 RVA(0x000eb740, 0xb3)
-i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
+i32 CSBI_WarlordHead::SetHeadShading(ShadeMode shadeMode, CShadeTable* shadeTable) {
     if (m_frameSet == NULL) {
         return 0;
     }
@@ -47,10 +47,10 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         return 0;
     }
     if (f->GetShadeBlitter()) {
-        f->GetShadeBlitter()->Select(show, NULL);
+        f->GetShadeBlitter()->Select(shadeMode, NULL);
     }
-    if (palDescr && f->GetShadeBlitter()) {
-        f->GetShadeBlitter()->m_palDescr = palDescr;
+    if (shadeTable && f->GetShadeBlitter()) {
+        f->GetShadeBlitter()->m_palDescr = shadeTable;
     }
 
     f = m_frameSet->GetAt(2);
@@ -58,22 +58,22 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         return 0;
     }
     if (f->GetShadeBlitter()) {
-        f->GetShadeBlitter()->Select(show, NULL);
+        f->GetShadeBlitter()->Select(shadeMode, NULL);
     }
-    if (palDescr && f->GetShadeBlitter()) {
-        f->GetShadeBlitter()->m_palDescr = palDescr;
+    if (shadeTable && f->GetShadeBlitter()) {
+        f->GetShadeBlitter()->m_palDescr = shadeTable;
     }
     return 1;
 }
 
 RVA(0x000eb830, 0x31)
-i32 CSBI_WarlordHead::SetState(i32 dir) {
-    if (dir == 0 || dir == 1) {
-        m_direction = dir;
+i32 CSBI_WarlordHead::SetDisplayState(i32 state) {
+    if (state == 0 || state == 1) {
+        m_displayState = state;
         m_frameIndex = 1;
         return 1;
     }
-    m_direction = dir;
+    m_displayState = state;
     m_frameIndex = 2;
     return 1;
 }
@@ -85,7 +85,7 @@ i32 CSBI_WarlordHead::Render() {
         CDDrawSurfacePair* target = g_gameReg->m_world->m_drawTarget->GetBackPair();
 
         CImage* f;
-        if (m_direction == 1) {
+        if (m_displayState == 1) {
             f = m_frameSet->GetAt(3);
         } else {
             f = m_frameSet->GetAt(4);
@@ -118,10 +118,10 @@ i32 CSBI_WarlordHead::SerializeFields(
     }
     switch (mode) {
         case SERIAL_LOAD:
-            s->Read(&m_direction, sizeof(m_direction));
+            s->Read(&m_displayState, sizeof(m_displayState));
             break;
         case SERIAL_SAVE:
-            s->Write(&m_direction, sizeof(m_direction));
+            s->Write(&m_displayState, sizeof(m_displayState));
             break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, typeId, payload) != 0;

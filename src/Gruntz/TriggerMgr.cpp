@@ -376,7 +376,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeSize.cx;
     i32 vy = g_gameReg->m_modeSize.cy;
-    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->GetState();
+    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->GetDockState();
 
     i32 ax, cx;
     if (pos != STATUSBAR_DOCK_RIGHT) {
@@ -909,7 +909,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     level->m_mainPlane->WorldToViewport(&viewportX, &viewportY);
     CStatusBarMgr* sbi = play->m_statusBar;
     if (sbi->m_layoutLocked == false) {
-        if (sbi->GetState() == STATUSBAR_HIDDEN) {
+        if (sbi->GetDockState() == STATUSBAR_HIDDEN) {
             sbi->RestoreStatusBar();
         }
         if (sbi->GetActiveTab() != TAB_GAME) {
@@ -941,7 +941,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
     if (m_collectedWarpStoneFragments.GetSize() > 0) {
         m_collectedWarpStoneFragments.RemoveAt(m_collectedWarpStoneFragments.GetUpperBound(), 1);
         CStatusBarMgr* ctx = world->m_statusBar;
-        if (ctx->GetState() != STATUSBAR_HIDDEN && ctx->GetActiveTab() == TAB_GAME) {
+        if (ctx->GetDockState() != STATUSBAR_HIDDEN && ctx->GetActiveTab() == TAB_GAME) {
             ctx->ResetWidgets(false);
             world->m_statusBar->TryActivate();
         }

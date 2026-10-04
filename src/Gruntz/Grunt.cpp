@@ -2301,7 +2301,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_statusBar;
             if (sb->m_layoutLocked == false) {
-                if (sb->GetState() == STATUSBAR_HIDDEN) {
+                if (sb->GetDockState() == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
                 }
                 if (sb->GetActiveTab() != TAB_RESOURCE) {
