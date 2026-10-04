@@ -5380,7 +5380,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     CTriggerMgr* g = w->GetTriggerMgr();
     g->StopCameraTracking();
     CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_SCALED_FIRST(pg, x, y);
+    pg->SetScrollPosition(x, y);
     return 1;
 }
 

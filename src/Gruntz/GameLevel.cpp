@@ -210,7 +210,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         i32 startX = source->m_startX;
         i32 startY = source->m_startY;
         CDDrawWorkerHost* mp = m_mainPlane;
-        SET_SCROLL_POSITION_RAW_FIRST(mp, startX, startY);
+        mp->SetScrollPosition(startX, startY);
 
         i32 ox = m_mainPlane->GetScrollPixelX();
         i32 oy = m_mainPlane->GetScrollPixelY();
@@ -218,7 +218,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) {
             if (i2 != m_mainIndex) {
                 CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(m_planes[i2]);
-                SET_SCROLL_POSITION_RAW_FIRST(p, ox, oy);
+                p->SetScrollPosition(ox, oy);
             }
             ++i2;
         }

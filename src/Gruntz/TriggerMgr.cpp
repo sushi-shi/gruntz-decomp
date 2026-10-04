@@ -363,7 +363,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_RAW_FIRST(t, x, y);
+    t->SetScrollPosition(x, y);
     return 1;
 }
 

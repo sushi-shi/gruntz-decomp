@@ -74,7 +74,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     g_lastScrollY = scrollY;
 
     CDDrawWorkerHost* scrollPlane = pm->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_PRODUCT_CAST(scrollPlane, scrollX, scrollY);
+    scrollPlane->SetScrollPosition(scrollX, scrollY);
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
@@ -88,7 +88,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             CDDrawWorkerHost* g2 = g_backView;
-            SET_SCROLL_POSITION_PRODUCT_CAST(g2, nx, ny);
+            g2->SetScrollPosition(nx, ny);
             g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollPace.m_lastTime = g_frameTime;
         }

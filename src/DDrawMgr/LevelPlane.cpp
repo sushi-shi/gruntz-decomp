@@ -205,7 +205,7 @@ i32 CDDrawWorkerHost::InitGeometry(
     for (i32 i = 0; i < m_tileRows; i++) {
         m_tileRowOffsets[i] = i * m_tileColumns;
     }
-    SET_SCROLL_POSITION_ZERO(this);
+    SetScrollPosition(0, 0);
     return 1;
 }
 
