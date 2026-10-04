@@ -215,9 +215,9 @@ public:
 };
 
 extern const float g_diffScale;
-extern b32 g_stepRun;
+extern b32 g_battlezClaimSearchActive;
 extern i32 g_battlezRouteBlockedMask;
-extern i32 g_stepCol;
-extern i32 g_stepRow;
-extern i32 g_diffTier;
+extern i32 g_battlezClaimTargetCol;
+extern i32 g_battlezClaimTargetRow;
+extern i32 g_battlezWandUseChanceDenominator;
 #endif // SRC_GRUNTZ_BATTLEZMAPCONFIG_H
