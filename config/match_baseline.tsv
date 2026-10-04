@@ -3517,8 +3517,8 @@ projectile	?GetTypeTag@CBoomerang@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cp
 projectile	?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x12960	100.0000	
 projectile	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x12a20	100.0000	
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	100.0000	100.0000	12	6301146feca5	0xe2190	100.0000	
-projectile	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	87.2764	87.2764	22	761fdc9a3a74	0xe0690	87.2764	
-projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	99.5257	99.5257	30	c82ce38f922e	0xdf050	99.5257	
+projectile	?LaunchProjectile@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	87.2764	87.2764	22	761fdc9a3a74	0xe0690	87.2764	
+projectile	?LaunchProjectile@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	99.5257	99.5257	30	c82ce38f922e	0xdf050	99.5257	
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	4	2d368c28b0ef	0xe1990	100.0000	
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	4	895282c86011	0xdfb00	100.0000	
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	100.0000	100.0000	17	5b48814083cc	0xe0b10	100.0000	

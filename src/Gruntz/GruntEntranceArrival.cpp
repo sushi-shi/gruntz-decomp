@@ -227,7 +227,7 @@ i32 CGrunt::StepAttackFire() {
                 );
                 spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
-                if (s->LoadProjectileSprites(
+                if (s->LaunchProjectile(
                         m_activePickupType,
                         m_playerIndex,
                         m_unitIndex,
@@ -252,7 +252,7 @@ i32 CGrunt::StepAttackFire() {
                 );
                 spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
-                if (s->LoadProjectileSprites(
+                if (s->LaunchProjectile(
                         m_activePickupType,
                         m_playerIndex,
                         m_unitIndex,

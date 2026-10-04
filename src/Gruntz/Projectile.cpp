@@ -101,7 +101,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner)
     HIDE_OBJECT_INLINE();
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_ACTOR);
-    memset(&m_frames[0], 0, 0x1c);
+    memset(&m_animations[0], 0, 0x1c);
     m_sound = NULL;
     m_shadow = NULL;
 }
@@ -123,8 +123,8 @@ CProjectile::~CProjectile() {
 }
 
 RVA(0x000df050, 0x6ed)
-i32 CProjectile::LoadProjectileSprites(
-    PickupType kind,
+i32 CProjectile::LaunchProjectile(
+    PickupType weaponType,
     i32 sourcePlayerIndex,
     i32 sourceUnitIndex,
     i32 targetPxX,
@@ -137,7 +137,7 @@ i32 CProjectile::LoadProjectileSprites(
     m_sourceUnitIndex = sourceUnitIndex;
     m_targetPxX = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_targetPxY = (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_kind = kind;
+    m_weaponType = weaponType;
     m_sourcePxX = sourcePxX;
     m_sourcePxY = sourcePxY;
 
@@ -145,7 +145,7 @@ i32 CProjectile::LoadProjectileSprites(
     double dy = static_cast<double>(m_targetPxY) - m_object->m_screenY;
     i32 count = 1;
 
-    switch (kind) {
+    switch (weaponType) {
         case PICKUP_ROCK:
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
             m_timePerTile = g_buteMgr.GetDword("Projectile", "RockProjectileTimePerTile", 0xbb8);
@@ -186,39 +186,39 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    m_frames[0] = MapFind<CAnimationSequence>(
+    m_animations[0] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + DATA_COMPGEN(0x00213658, "1")
         );
-    if (m_frames[0] == NULL) {
+    if (m_animations[0] == NULL) {
         return 0;
     }
-    m_frames[1] = MapFind<CAnimationSequence>(
+    m_animations[1] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + "2"
     );
-    m_frames[2] = MapFind<CAnimationSequence>(
+    m_animations[2] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + "3"
     );
-    m_frames[3] = MapFind<CAnimationSequence>(
+    m_animations[3] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + "4"
     );
-    m_frames[4] = MapFind<CAnimationSequence>(
+    m_animations[4] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + "5"
     );
-    m_frames[PF_IMPACT] = MapFind<CAnimationSequence>(
+    m_animations[PROJECTILE_ANIM_IMPACT] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + "IMPACT"
     );
-    m_frames[PF_FALL] = MapFind<CAnimationSequence>(
+    m_animations[PROJECTILE_ANIM_FALL] = MapFind<CAnimationSequence>(
         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         key + "FALL"
     );
 
-    SwitchAnimation(m_frames[0]);
+    SwitchAnimation(m_animations[0]);
     SetImageSetByName(key + "_OBJECT");
 
     u32 totalTime = count * m_timePerTile;
@@ -282,7 +282,7 @@ void CProjectile::AdvanceMotion() {
         return;
     }
 
-    if (m_kind == PICKUP_WINGZ) {
+    if (m_weaponType == PICKUP_WINGZ) {
         CWwdSpriteObject* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
         if (::PtInRect(reg->GetViewBounds(), owner->m_screenX, owner->m_screenY)) {
@@ -295,7 +295,7 @@ void CProjectile::AdvanceMotion() {
 
     if (m_curX != m_targetPxX || m_curY != m_targetPxY) {
 
-        if (m_kind == PICKUP_WINGZ) {
+        if (m_weaponType == PICKUP_WINGZ) {
             ScanTargets(0);
         }
         m_posX = m_posX + static_cast<double>(g_frameDelta) * m_velX * m_velScale;
@@ -326,46 +326,46 @@ void CProjectile::AdvanceMotion() {
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[0]) {
-                    SwitchAnimation(m_frames[0]);
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_animations[0]) {
+                    SwitchAnimation(m_animations[0]);
                     if (m_shadow != NULL) {
-                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[0]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_animations[0]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[1]) {
-                    SwitchAnimation(m_frames[1]);
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_animations[1]) {
+                    SwitchAnimation(m_animations[1]);
                     if (m_shadow != NULL) {
-                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[1]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_animations[1]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[2]) {
-                    SwitchAnimation(m_frames[2]);
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_animations[2]) {
+                    SwitchAnimation(m_animations[2]);
                     if (m_shadow != NULL) {
-                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[2]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_animations[2]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[3]) {
-                    SwitchAnimation(m_frames[3]);
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_animations[3]) {
+                    SwitchAnimation(m_animations[3]);
                     if (m_shadow != NULL) {
-                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[3]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_animations[3]);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[4]) {
-                    SwitchAnimation(m_frames[4]);
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_animations[4]) {
+                    SwitchAnimation(m_animations[4]);
                     if (m_shadow != NULL) {
-                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[4]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_animations[4]);
                     }
                 }
             }
@@ -388,7 +388,7 @@ void CProjectile::AdvanceMotion() {
     }
     m_arrived = true;
     i32 tier = 0;
-    if (m_kind != PICKUP_WINGZ) {
+    if (m_weaponType != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* plane = reg->GetTileGrid();
         i32 tileY = m_targetPxY >> TILE_SHIFT_PX;
@@ -439,12 +439,12 @@ void CProjectile::AdvanceMotion() {
     }
     CAnimationSequence* sprite;
     if (tier != 0) {
-        sprite = m_frames[PF_FALL];
+        sprite = m_animations[PROJECTILE_ANIM_FALL];
         if (sprite != NULL) {
             goto animate;
         }
     } else {
-        sprite = m_frames[PF_IMPACT];
+        sprite = m_animations[PROJECTILE_ANIM_IMPACT];
         if (sprite != NULL) {
             goto animate;
         }
@@ -475,8 +475,8 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 }
 
 RVA(0x000e0690, 0x1a9)
-i32 CBoomerang::LoadProjectileSprites(
-    PickupType kind,
+i32 CBoomerang::LaunchProjectile(
+    PickupType weaponType,
     i32 sourcePlayerIndex,
     i32 sourceUnitIndex,
     i32 targetPxX,
@@ -484,8 +484,8 @@ i32 CBoomerang::LoadProjectileSprites(
     i32 sourcePxX,
     i32 sourcePxY
 ) {
-    if (CProjectile::LoadProjectileSprites(
-            kind,
+    if (CProjectile::LaunchProjectile(
+            weaponType,
             sourcePlayerIndex,
             sourceUnitIndex,
             targetPxX,
@@ -623,7 +623,7 @@ void CProjectile::ScanTargets(i32 impact) {
             Coord* slot = g_coordPool.PopCopy(*identity.Set(hitPlayerIndex, hitUnitIndex));
             m_hitList.AddTail(slot);
             g->StepCombatReaction(
-                m_kind,
+                m_weaponType,
                 1,
                 m_sourcePlayerIndex,
                 m_sourceUnitIndex,
@@ -656,7 +656,7 @@ i32 CProjectile::SerializeDispatch(
     switch (mode) {
         case SERIAL_LOAD: {
             m_sound = NULL;
-            s->Read(&m_kind, sizeof(m_kind));
+            s->Read(&m_weaponType, sizeof(m_weaponType));
             s->Read(&m_sourcePlayerIndex, sizeof(m_sourcePlayerIndex));
             s->Read(&m_sourceUnitIndex, sizeof(m_sourceUnitIndex));
             s->Read(&m_targetPxX, sizeof(m_targetPxX));
@@ -678,7 +678,7 @@ i32 CProjectile::SerializeDispatch(
             s->Read(&m_sourcePxY, sizeof(m_sourcePxY));
 
             for (i32 ni = 0; ni < 7; ni++) {
-                SERIAL_READ_ANIMATION(s, reg, buf, m_frames[ni]);
+                SERIAL_READ_ANIMATION(s, reg, buf, m_animations[ni]);
             }
 
             g_serialCounter++;
@@ -700,7 +700,7 @@ i32 CProjectile::SerializeDispatch(
         }
 
         case SERIAL_SAVE: {
-            s->Write(&m_kind, sizeof(m_kind));
+            s->Write(&m_weaponType, sizeof(m_weaponType));
             s->Write(&m_sourcePlayerIndex, sizeof(m_sourcePlayerIndex));
             s->Write(&m_sourceUnitIndex, sizeof(m_sourceUnitIndex));
             s->Write(&m_targetPxX, sizeof(m_targetPxX));
@@ -721,7 +721,7 @@ i32 CProjectile::SerializeDispatch(
             s->Write(&m_sourcePxX, sizeof(m_sourcePxX));
             s->Write(&m_sourcePxY, sizeof(m_sourcePxY));
 
-            CAnimationSequence** fp = m_frames;
+            CAnimationSequence** fp = m_animations;
             for (i32 fi = 0; fi < 7; fi++) {
                 SERIAL_WRITE_ANIMATION(s, reg, buf, *fp);
                 fp++;

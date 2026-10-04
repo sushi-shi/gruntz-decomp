@@ -20,8 +20,8 @@ public:
         return LOGIC_BOOMERANG;
     }
     virtual void AdvanceMotion() OVERRIDE;
-    virtual i32 LoadProjectileSprites(
-        PickupType kind,
+    virtual i32 LaunchProjectile(
+        PickupType weaponType,
         i32 sourcePlayerIndex,
         i32 sourceUnitIndex,
         i32 targetPxX,

@@ -27,8 +27,8 @@ public:
     CProjectile(CGameObject* owner);
     virtual ~CProjectile() OVERRIDE;
 
-    virtual i32 LoadProjectileSprites(
-        PickupType kind,
+    virtual i32 LaunchProjectile(
+        PickupType weaponType,
         i32 sourcePlayerIndex,
         i32 sourceUnitIndex,
         i32 targetPxX,
@@ -45,7 +45,7 @@ public:
     i32 LaunchSound(const char* key);
     virtual void AdvanceMotion() OVERRIDE;
 
-    PickupType m_kind;
+    PickupType m_weaponType;
     i32 m_sourcePlayerIndex, m_sourceUnitIndex;
     i32 m_targetPxX, m_targetPxY;
     double m_flightDist;
@@ -62,10 +62,10 @@ public:
     b32 m_arrived;
 
     enum {
-        PF_IMPACT = 5,
-        PF_FALL = 6
+        PROJECTILE_ANIM_IMPACT = 5,
+        PROJECTILE_ANIM_FALL = 6
     };
-    CAnimationSequence* m_frames[7];
+    CAnimationSequence* m_animations[7];
     CWwdSpriteObject* m_shadow;
     SoundBuffer* m_sound;
     CPtrList m_hitList;
