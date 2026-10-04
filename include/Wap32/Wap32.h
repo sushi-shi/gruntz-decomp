@@ -8,6 +8,7 @@
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/GameApp.h>
+#include <Runtime/FrameTiming.h>
 
 GZ_ENUM_FORWARD(GruntzCommandId);
 
@@ -109,8 +110,8 @@ public:
     virtual i32 PerFrameTick();
     virtual i32 HandleCommand(i32, GruntzCommandId, i32);
 
-    void ResetFpsSampleWindow(i32 reset);
     void ResetFrameTiming();
+    const FrameTiming& Timing() const { return m_timing; }
 
     b32 ToggleFrameGate() {
         m_frameGate ^= 1;
@@ -126,14 +127,8 @@ public:
     b32 m_frameGate;
     b32 m_soundEnabled;
     b32 m_musicEnabled;
-    i32 m_fps;
-
-    i32 m_targetFps;
-
-    i32 m_fpsSampleFrameCount;
-
-    i32 m_fpsSampleStartMs;
-    i32 m_frameBudgetMs;
+protected:
+    FrameTiming m_timing;
 };
 
 GZ_ENUM_FLAGS_BEGIN(GameWindowFlags, i32)

@@ -92,10 +92,10 @@ i32 CSplashState::Render() {
 
     m_world->SoundRegistry()->TickVolumeRamps();
 
-    if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_splashCountdownMs) {
+    if (m_mgr->Timing().deltaMs() >= m_splashCountdownMs) {
         m_splashCountdownMs = 0;
     } else {
-        m_splashCountdownMs = m_splashCountdownMs - g_gameAppFrameDeltaMs;
+        m_splashCountdownMs = m_splashCountdownMs - m_mgr->Timing().deltaMs();
     }
 
     {

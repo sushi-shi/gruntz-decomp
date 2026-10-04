@@ -3018,7 +3018,7 @@ void CPlay::DrawDebugStatsFull() {
     std::string fpsScratch;
     std::string scratch;
 
-    fpsScratch = formatText("Fps = %i ", m_mgr->m_fps);
+    fpsScratch = formatText("Fps = %i ", m_mgr->Timing().fps());
     buf += fpsScratch;
 
     CDDrawChildGroup* group = m_world->ChildGroup();
@@ -3058,7 +3058,7 @@ void CPlay::DrawDebugStatsFull() {
         buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE_LIMIT)) {
-        scratch = formatText(" FpsLimit = %i ", m_mgr->m_targetFps);
+        scratch = formatText(" FpsLimit = %i ", m_mgr->Timing().targetFps());
         buf += scratch;
     }
 
@@ -3120,7 +3120,7 @@ void CPlay::DrawDebugStats() {
     std::string scratch;
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE)) {
-        scratch = formatText("Fps = %i ", m_mgr->m_fps);
+        scratch = formatText("Fps = %i ", m_mgr->Timing().fps());
         buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {

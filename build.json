@@ -3415,6 +3415,17 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "frametiming",
+      "source": "src/Runtime/FrameTiming.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

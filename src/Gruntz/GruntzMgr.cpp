@@ -314,7 +314,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     srand((timeGetTime() + GetTickCount()) >> 1);
-    g_gameAppTimerPeriodMs = GRUNTZ_PERIODIC_TIMER_MS;
+    m_timing.setTimerPeriod(GRUNTZ_PERIODIC_TIMER_MS);
     while (ShowCursor(false) >= 0) {
     }
 
@@ -1881,8 +1881,8 @@ void CGruntzMgr::RefreshGameClock() {
         g_engineFrameDelta = 0;
     }
 
-    g_lastNow = g_gameAppNowMs;
-    g_frameDelta = g_gameAppFrameDeltaMs;
+    g_lastNow = Timing().nowMs();
+    g_frameDelta = Timing().deltaMs();
 }
 
 void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {

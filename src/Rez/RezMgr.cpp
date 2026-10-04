@@ -42,8 +42,8 @@ i32 CGruntzMgr::PerFrameTick() {
 
     GameStateId r = m_curState->Update();
     if (r != GAMESTATE_MULTI) {
-        u32 dt = g_gameAppFrameDeltaMs;
-        g_lastNow = g_gameAppNowMs;
+        u32 dt = Timing().deltaMs();
+        g_lastNow = Timing().nowMs();
         g_frameDelta = dt;
         if (dt > 0x64) {
             dt = 0x64;
