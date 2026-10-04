@@ -2086,7 +2086,7 @@ gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	2
 gruntentrancearrival	?FinishKnockbackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	10	439396c19a5e	0x654b0	100.0000	
 gruntentrancearrival	?FinishStruckAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	10	1a63064bcc35	0x65300	100.0000	
 gruntentrancearrival	?FinishToobMoveAnimation@CGrunt@@QAEHXZ	98.2192	98.2192	25	4f9bc564af37	0x65c20	98.2192	
-gruntentrancearrival	?LoadVehicleGruntAnimations@CGrunt@@QAEHXZ	100.0000	100.0000	21	3bf6cda4f9ed	0x63db0	100.0000	
+gruntentrancearrival	?UpdateVehicleUseAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	21	3bf6cda4f9ed	0x63db0	100.0000	
 gruntentrancearrival	?LoadWandGruntItemConfig@CGrunt@@QAEHXZ	100.0000	100.0000	13	04e9a66dec52	0x65a60	100.0000	
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000	
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	97.3366	92.1733	2	32af34d26f5f	0x62b70	97.3366	
@@ -2096,7 +2096,7 @@ gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	100.0000	100.0000	23
 gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	96.2980	96.2980	26	39eb31ef1895	0x65630	96.2980	
 gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5705	91.5705	17	ccd514e058c6	0x61940	91.5951	
 gruntentrancearrival	?StartRangedAttackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	8	2357eb5b0fab	0x61bc0	100.0000	
-gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	100.0000	100.0000	10	c8ddc4e69c23	0x63b60	100.0000	
+gruntentrancearrival	?UpdateWalkAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	10	c8ddc4e69c23	0x63b60	100.0000	
 gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	100.0000	100.0000	25	ae0f90d208a0	0x61cb0	100.0000	
 gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	97.7331	97.7331	34	75971f49549e	0x646b0	97.7331	
 gruntentrancearrival	?StepEntranceReinit@CGrunt@@QAEHXZ	98.2778	98.2778	19	bf4a740d6e8a	0x637a0	98.2778	

@@ -356,7 +356,7 @@ public:
 
     i32 BuildGruntExitAnimation();
 
-    i32 LoadVehicleGruntAnimations();
+    i32 UpdateVehicleUseAnimation();
 
     i32 SetupTubeAnim(b32 isWater);
 
@@ -616,7 +616,7 @@ public:
     ClockInterval m_wingzTiming;
     ClockInterval m_conversionTiming;
     ClockInterval m_shimmerTiming;
-    ClockInterval m_arrivalVoiceTiming;
+    ClockInterval m_walkVoiceTiming;
     i32 m_reserved8d0;
 
     CGrunt() : CMovingLogic(CUserLogic::INLINE_BASE) {}
@@ -775,7 +775,7 @@ public:
     virtual void FinalizeStep(char* name) OVERRIDE;
 
     i32 UpdateToyUseAnimation();
-    i32 StepArrivalReroll();
+    i32 UpdateWalkAnimation();
     i32 FinishStruckAnimation();
     i32 FinishKnockbackAnimation();
     i32 FinishToobMoveAnimation();

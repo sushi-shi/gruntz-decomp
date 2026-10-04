@@ -750,7 +750,7 @@ i32 CGrunt::StepEntranceReinit() {
         return 0;
     }
 
-    m_arrivalVoiceTiming.Start(0x7530);
+    m_walkVoiceTiming.Start(0x7530);
     m_neighborScanEnabled = false;
 
     if (IsAnimationAct("I")) {
@@ -791,9 +791,9 @@ i32 CGrunt::StepEntranceReinit() {
 
 // @early-stop
 RVA(0x00063b60, 0x1cf)
-i32 CGrunt::StepArrivalReroll() {
+i32 CGrunt::UpdateWalkAnimation() {
     m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    u32 elapsed = m_arrivalVoiceTiming.Elapsed();
+    u32 elapsed = m_walkVoiceTiming.Elapsed();
     if (elapsed <= 0x2710) {
         return 0;
     }
@@ -824,7 +824,7 @@ i32 CGrunt::StepArrivalReroll() {
 }
 
 RVA(0x00063db0, 0x32f)
-i32 CGrunt::LoadVehicleGruntAnimations() {
+i32 CGrunt::UpdateVehicleUseAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (sub->IsComplete()) {
         if (m_arrived) {

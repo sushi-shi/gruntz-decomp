@@ -315,7 +315,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_wingzTiming.Clear();
     m_conversionTiming.Clear();
     m_shimmerTiming.Clear();
-    m_arrivalVoiceTiming.Clear();
+    m_walkVoiceTiming.Clear();
     m_arrivalRerollTiming.Clear();
     m_unusedBattleCell.Set(-1, -1);
     m_arrivalNotified = false;

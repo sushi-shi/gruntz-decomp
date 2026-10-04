@@ -1520,7 +1520,7 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "A", &CGrunt::ResolveEntranceArrival);
     REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
     REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_ACT(registry, "D", &CGrunt::StepArrivalReroll);
+    REGISTER_ACT(registry, "D", &CGrunt::UpdateWalkAnimation);
     REGISTER_ACT(registry, "E", &CGrunt::UpdateGruntStatus);
     REGISTER_ACT(registry, "F", &CGrunt::StepAttackAction);
     REGISTER_ACT(registry, "G", &CGrunt::UpdateToyUseAnimation);
@@ -1528,7 +1528,7 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "I", &CGrunt::LoadWandGruntItemConfig);
     REGISTER_ACT(registry, "J", &CGrunt::RunEntranceMove);
     REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
-    REGISTER_ACT(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_ACT(registry, "L", &CGrunt::UpdateVehicleUseAnimation);
     REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);
     REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
     REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
@@ -2314,11 +2314,14 @@ void CGrunt::AdvanceMotion() {
         if (isIdle && !CoordsEmpty()) {
             Coord* nextPathTile = GetHeadCoord();
             i32 nextCellFlags = MAP_CELL_FLAGS_AT_UNCHECKED(
-                g_gameReg->GetTileGrid(), nextPathTile->m_x, nextPathTile->m_y
+                g_gameReg->GetTileGrid(),
+                nextPathTile->m_x,
+                nextPathTile->m_y
             );
             if (!(nextCellFlags & BRICKZ_CELL_OCCUPIED)
                 && !((m_arrivalFlags & nextCellFlags) & BRICKZ_CELL_OCCUPIED)
-                && ((m_arrivalFlags & nextCellFlags) == 0 || (m_passableMask & nextCellFlags) != 0)) {
+                && ((m_arrivalFlags & nextCellFlags) == 0
+                    || (m_passableMask & nextCellFlags) != 0)) {
                 Coord* destinationTile = GetTailCoord();
                 m_entrancePx.Set(
                     (destinationTile->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -2336,7 +2339,9 @@ void CGrunt::AdvanceMotion() {
                     if (!CoordsEmpty()) {
                         Coord* reroutedNextTile = GetHeadCoord();
                         i32 reroutedCellFlags = MAP_CELL_FLAGS_AT_UNCHECKED(
-                            g_gameReg->GetTileGrid(), reroutedNextTile->m_x, reroutedNextTile->m_y
+                            g_gameReg->GetTileGrid(),
+                            reroutedNextTile->m_x,
+                            reroutedNextTile->m_y
                         );
                         if (!(reroutedCellFlags & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;

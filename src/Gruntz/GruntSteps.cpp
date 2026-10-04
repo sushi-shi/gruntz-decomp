@@ -891,7 +891,7 @@ i32 CGrunt::SerializeDispatch(
     m_wingzTiming.Serialize(ar, mode, typeId, object);
     m_conversionTiming.Serialize(ar, mode, typeId, object);
     m_shimmerTiming.Serialize(ar, mode, typeId, object);
-    m_arrivalVoiceTiming.Serialize(ar, mode, typeId, object);
+    m_walkVoiceTiming.Serialize(ar, mode, typeId, object);
     m_arrivalRerollTiming.Serialize(ar, mode, typeId, object);
     m_holdTiming.Serialize(ar, mode, typeId, object);
     return 1;
