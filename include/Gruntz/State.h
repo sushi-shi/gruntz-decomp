@@ -168,11 +168,11 @@ public:
     CGruntzMgr* owner() {
         return m_mgr;
     }
-    i32 BuildAssetNamespacePrefixes(
-        const CString& name,
-        i32 mode,
-        i32 lightGate,
-        class CMulti* finishGate
+    i32 SetAssetGroupLoaded(
+        const CString& resourceGroup,
+        i32 loadAssets,
+        i32 showLoadingText,
+        class CMulti* multiplayerSession
     );
 
     CGruntzMgr* m_mgr;

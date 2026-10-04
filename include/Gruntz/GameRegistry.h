@@ -17,7 +17,7 @@ class CGameStats;
 struct CDDrawSubMgrPages;
 class CDDrawWorkerRegistry;
 
-class CSpriteRefTable;
+class CGruntPaletteTable;
 class CLightFxMgr;
 
 class CShadeTableCache;

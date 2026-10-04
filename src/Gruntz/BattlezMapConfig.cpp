@@ -532,7 +532,7 @@ candidateFound:
             screen.m_y,
             0x186a0,
             GRUNT_ENTRANCE_DROP,
-            g_groupSentinel,
+            g_defaultGruntColorIndex,
             0,
             0,
             0,
@@ -548,7 +548,7 @@ candidateFound:
             screen.m_y,
             0x186a0,
             GRUNT_ENTRANCE_NONE,
-            g_groupSentinel,
+            g_defaultGruntColorIndex,
             0,
             0,
             0,
@@ -1054,7 +1054,7 @@ perimSweep: {
         GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(unit), qa)
         i32 rt = qa.m_y - 2;
         if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rt) < m_board->m_height) {
-            if (unit->TileSwitch(col, rt, 0, 0x2000098b, 1, 0) != 0) {
+            if (unit->MoveToTile(col, rt, 0, 0x2000098b, 1, 0) != 0) {
                 goto topRowProbeHit;
             }
         }
@@ -1062,7 +1062,7 @@ perimSweep: {
         GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(unit), qc)
         i32 rb = qc.m_y + 2;
         if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rb) < m_board->m_height) {
-            if (unit->TileSwitch(col, rb, 0, 0x2000098b, 1, 0) != 0) {
+            if (unit->MoveToTile(col, rb, 0, 0x2000098b, 1, 0) != 0) {
                 goto bottomRowProbeHit;
             }
         }
@@ -1080,7 +1080,7 @@ perimSweep: {
             i32 xl = ua.m_x - 2;
             if (static_cast<u32>(xl) < m_board->m_width
                 && static_cast<u32>(row) < m_board->m_height) {
-                if (unit->TileSwitch(xl, row, 0, 0x2000098b, 1, 0) != 0) {
+                if (unit->MoveToTile(xl, row, 0, 0x2000098b, 1, 0) != 0) {
                     goto firstColumnProbeHit;
                 }
             }
@@ -1091,7 +1091,7 @@ perimSweep: {
             if (static_cast<u32>(uc.m_x + 2) < m_board->m_width
                 && static_cast<u32>(row) < m_board->m_height) {
 
-                if (unit->TileSwitch(xl, row, 0, 0x2000098b, 1, 0) != 0) {
+                if (unit->MoveToTile(xl, row, 0, 0x2000098b, 1, 0) != 0) {
                     goto secondColumnProbeHit;
                 }
             }
@@ -1239,7 +1239,7 @@ void CBattlezMapConfig::RerouteIdleUnit(
     if (burnSecondRandom) {
         rand();
     }
-    unit->TileSwitch(col, row, 0, 0x9c7, 0, 0);
+    unit->MoveToTile(col, row, 0, 0x9c7, 0, 0);
 }
 
 RVA(0x00029b40, 0x813)
@@ -2134,7 +2134,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 g->GetScreenPos(&c);
                 stepDx = (c.m_x >> TILE_SHIFT_PX) - first.m_x;
             }
-            if (g->TileSwitch(stepDx, stepDy, 0, 0x20000983, 1, 0) == 0) {
+            if (g->MoveToTile(stepDx, stepDy, 0, 0x20000983, 1, 0) == 0) {
                 for (i32 scanRow = scan.top; scanRow < scan.bottom; scanRow++) {
                     BrickzCell* rowCell = &m_board->m_rows[scanRow][scan.left];
                     for (i32 scanCol = scan.left; scanCol < scan.right; scanCol++) {
@@ -2395,7 +2395,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (c0 & BRICKZ_CELL_OCCUPIED) {
             return 1;
         }
-        g->TileSwitch(col, row, 0, 0x987, 1, 0);
+        g->MoveToTile(col, row, 0, 0x987, 1, 0);
     }
     return 1;
 }
@@ -2616,7 +2616,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
                 flag = true;
             }
         }
-        unit->TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
+        unit->MoveToTile(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != false) {
             unit->m_entrancePx = saved;
         }

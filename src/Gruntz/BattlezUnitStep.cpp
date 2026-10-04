@@ -79,7 +79,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         if (nb != NULL) {
             Coord c1;
             nb->GetScreenTile((&c1));
-            if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
+            if (g->MoveToTile(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
             g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
@@ -127,7 +127,7 @@ inflight: {
         g->SetAiState(AISTATE_ATTACK);
         g->ResetDwell();
         {
-            if (g->TileSwitch(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
+            if (g->MoveToTile(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
                 return 1;
             }
         }
@@ -167,7 +167,7 @@ inflight: {
                 goto L_clearAt;
             }
             g->RecycleCoords();
-            if (g->TileSwitch(cur->GetScreenTileX(), cur->GetScreenTileY(), 0, 0xd87, 0, 0) != 0) {
+            if (g->MoveToTile(cur->GetScreenTileX(), cur->GetScreenTileY(), 0, 0xd87, 0, 0) != 0) {
                 goto L_done;
             }
         }
@@ -216,7 +216,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                 i32 flags = unit->GetRouteBlockedMask();
                 unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                 CGameObject* tl = target->m_object;
-                unit->TileSwitch(
+                unit->MoveToTile(
                     tl->m_screenX >> TILE_SHIFT_PX,
                     tl->m_screenY >> TILE_SHIFT_PX,
                     0,
@@ -340,7 +340,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     i32 flags = unit->GetRoutePassableMask();
                     ADD_BATTLEZ_TRAVERSAL_FLAGS(unit, flags);
                     Coord routeTarget = unit->DefenderPosition();
-                    if (unit->TileSwitch(routeTarget.m_x, routeTarget.m_y, 0, cfg, 0, flags) != 0) {
+                    if (unit->MoveToTile(routeTarget.m_x, routeTarget.m_y, 0, cfg, 0, flags) != 0) {
                         goto routeSuccess;
                     }
                     i32 st = unit->GetRoutePassableMask();
@@ -370,7 +370,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 board->Clip(NULL);
                 i32 flags = unit->GetRoutePassableMask();
                 ADD_BATTLEZ_TRAVERSAL_FLAGS(unit, flags);
-                if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
+                if (unit->MoveToTile(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;
                 }
                 unit->ResetDwell();

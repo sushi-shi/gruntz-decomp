@@ -266,8 +266,8 @@ public:
         return m_entrancePx;
     }
 
-    PickupType GetMoveIcon() const {
-        return m_moveIcon;
+    PickupType GetColorIndex() const {
+        return m_colorIndex;
     }
 
     Coord LastTilePx() {
@@ -418,9 +418,10 @@ public:
     void FaceTowardTile(i32 tileX, i32 tileY);
     void SnapToLastTile(i32 clearArrivalState);
     i32 ClaimSwitchTile();
-    i32 SetArrivalTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
+    i32
+    SetGruntActionTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     void ConsiderArrival(i32 clearArrivalState);
-    void SelectMoveIcon(i32 moveIconId);
+    void SetColorIndex(i32 colorIndex);
     i32 TryPowerupAtTile();
 
     i32 PathScan();
@@ -460,8 +461,8 @@ public:
     b32 m_arrivalPending;
     i32 m_playerIndex;
     i32 m_unitIndex;
-    PickupType m_moveIcon;
-    i32 m_savedMoveIcon;
+    PickupType m_colorIndex;
+    i32 m_savedColorIndex;
     b32 m_entranceCommitted;
     i32 m_neighborPlayerIndex;
     i32 m_neighborUnitIndex;
@@ -474,7 +475,7 @@ public:
     i32 m_daFlag;
     b32 m_toyBreakStarted;
     b32 m_bombRunStarting;
-    b32 m_arrivalActive;
+    b32 m_actionTargetsGrunt;
     b32 m_toobWaterMode;
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
@@ -488,9 +489,9 @@ public:
     b32 m_entranceArmed;
 
     class CTriggerMgr* m_triggerMgr;
-    i32 m_struckCount;
+    i32 m_selectionClickCount;
 
-    ClockInterval m_struckTiming;
+    ClockInterval m_selectionClickResetTimer;
     ClockInterval m_holdTiming;
     Coord m_arrivalTargetPx;
 
@@ -718,7 +719,7 @@ public:
 
     void FaceTowardPixel(i32 x, i32 y);
     void SetFacing(i32 unused, GruntDirectionCell facing);
-    void OnStruck(b32 wasHit);
+    void PlaySelectionVoice(b32 isOwnedByLocalPlayer);
     i32 StepPostGuardBehavior();
     i32 UpdateBombRunAnimation();
 
@@ -751,7 +752,7 @@ public:
 
     i32 UpdateArrival(i32 walking, i32 commit);
 
-    i32 StepArrivalDrop(
+    i32 MoveTo(
         i32 pxX,
         i32 pxY,
         i32 arrivalAction,
@@ -833,7 +834,7 @@ public:
         PickupType attackerPowerupType
     );
 
-    i32 TileSwitch(
+    i32 MoveToTile(
         i32 col,
         i32 row,
         i32 arrivalAction,
@@ -848,7 +849,7 @@ public:
         class CTriggerMgr* board,
         i32 playerIndex,
         i32 unitIndex,
-        PickupType moveIcon,
+        PickupType colorIndex,
         PickupType typeKind,
         i32 carriedToyType,
         EnemyAiType aiType,

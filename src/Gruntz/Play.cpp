@@ -468,7 +468,7 @@ i32 CPlay::Render() {
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
     }
@@ -490,7 +490,7 @@ i32 CPlay::Render() {
 
         UpdateAmbientMusic();
 
-        if (m_region0Gate != false) {
+        if (m_tinyViewportCurseActive != false) {
             m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
             m_statusBar->Deactivate();
         }
@@ -618,7 +618,7 @@ i32 CPlay::Render() {
             view->DrawBox(&m_selectionRect, 0xff);
         }
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         {
             CGameLevel* lvl = m_world->m_level;
             if (lvl->m_mainPlane != NULL) {
@@ -626,24 +626,24 @@ i32 CPlay::Render() {
             }
         }
 
-        if (m_region0Gate != false) {
-            if (m_region0Timing.Expired()) {
+        if (m_tinyViewportCurseActive != false) {
+            if (m_tinyViewportCurseTimer.Expired()) {
                 SetTinyViewportCurse(false);
             }
         }
-        if (m_region1Gate != false) {
-            if (m_region1Timing.Expired()) {
+        if (m_darknessCurseActive != false) {
+            if (m_darknessCurseTimer.Expired()) {
                 SetDarknessCurse(false);
             }
         }
-        if (m_region2Gate != false) {
-            if (m_region2Timing.Expired()) {
+        if (m_monitorCurseActive != false) {
+            if (m_monitorCurseTimer.Expired()) {
                 SetMonitorCurse(false);
             }
         }
-        if (m_region3Gate != false) {
-            if (m_region3Timing.Expired()) {
-                SetRandomMoveIconsCurse(false);
+        if (m_randomColorsCurseActive != false) {
+            if (m_randomColorsCurseTimer.Expired()) {
+                SetRandomColorsCurse(false);
             }
         }
         return 1;
@@ -839,7 +839,7 @@ i32 CPlay::ProfileInputFrame() {
         }
     }
     g_deactivateProfileMs = static_cast<i32>((tg() - static_cast<u32>(g_deactivateProfileMs)));
-    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
     return 1;
 }
 
@@ -1163,7 +1163,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RegisterInputBindings();
     if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
-        BuildWarlordNameTable(savedThis);
+        UnloadGruntAndWarlordAssets(savedThis);
     }
     BuildHelpReveal(false);
     RegisterInputBindings();
@@ -1183,7 +1183,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (!BuildSpriteImageKeyTable(savedThis)) {
+    if (!LoadGruntImageNamespaces(savedThis)) {
         goto fail0;
     }
     BuildHelpReveal(false);
@@ -1233,7 +1233,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (!BuildAnizKeyTable(NULL)) {
+    if (!LoadGruntAnimationNamespaces(NULL)) {
         goto fail0;
     }
     BuildHelpReveal(false);
@@ -1415,10 +1415,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_cueToggle = true;
         self->m_cueText = "";
         self->m_lastCueId = 0;
-        self->m_region0Gate = false;
-        self->m_region1Gate = false;
-        self->m_region2Gate = false;
-        self->m_region3Gate = false;
+        self->m_tinyViewportCurseActive = false;
+        self->m_darknessCurseActive = false;
+        self->m_monitorCurseActive = false;
+        self->m_randomColorsCurseActive = false;
         self->m_defeatCountdownActive = false;
         self->m_focusPlayerIndex = 3;
         self->m_renderDisabled = true;
@@ -1587,7 +1587,7 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
 
     DrawWorldView();
 
@@ -2177,7 +2177,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         i32 playerIndex;
         i32 unitIndex;
-        CGrunt* r = mgr->GetTriggerMgr()->ScreenToCell(
+        CGrunt* r = mgr->GetTriggerMgr()->PickGruntAtScreenPoint(
             this->m_cursorX,
             this->m_cursorY,
             &playerIndex,
@@ -2579,7 +2579,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 LevelCoordRect* vr2 = ds->m_mainPlane->GetPlaneViewRect();
                 i32 wx = vr2->left - ds->m_viewportRect.left + xr;
                 i32 wy = vr2->top - ds->m_viewportRect.top + y;
-                if (g_gameReg->GetTriggerMgr()->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
+                if (g_gameReg->GetTriggerMgr()
+                        ->PickGruntAtWorldPoint(wx, wy, &eventArg, &y, g_curPlayer)
                     != NULL) {
                     m_mgr->GetCommandMgr()->EnqueueSingle(
                         true,
@@ -2603,7 +2604,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
                 RECT span = {0, 0, 0, 0};
                 CGrunt* p =
-                    g_gameReg->GetTriggerMgr()->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
+                    g_gameReg->GetTriggerMgr()->FindGruntInArea(wx, wy, &span, &eventArg, &y, &box);
                 if (p == NULL || g_curPlayer != p->GetPlayerIndex()) {
                     goto waypoint_cancel;
                 }
@@ -2721,7 +2722,7 @@ drag_box: {
     }
 
     CGrunt* picked = static_cast<CGrunt*>(
-        m_mgr->GetTriggerMgr()->ScreenToCell(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
+        m_mgr->GetTriggerMgr()->PickGruntAtScreenPoint(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
     );
     if (picked != NULL) {
         m_mgr->GetTriggerMgr()
@@ -2730,10 +2731,10 @@ drag_box: {
             if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
                 goto ret1;
             }
-            picked->OnStruck(true);
+            picked->PlaySelectionVoice(true);
             return 1;
         }
-        picked->OnStruck(false);
+        picked->PlaySelectionVoice(false);
         return 1;
     }
     m_selectionAnchorX = xr;
@@ -2815,7 +2816,8 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 playerIndex;
     {
         i32 unitIndex;
-        if (m_mgr->GetTriggerMgr()->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
+        if (m_mgr->GetTriggerMgr()
+                ->PickGruntAtScreenPoint(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
             m_statusBar->ToggleStat(unitIndex);
             return 1;
@@ -3654,9 +3656,9 @@ i32 CPlay::LoadCursorAnimation(
     if (tintForPlayer != false) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        CShadeTable* spr = w->SpriteTable()->GetSel(IDX(w->GetPlayer(id).GetColor()), 0);
+        CShadeTable* spr = w->GruntPalettes()->GetShadeTable(IDX(w->GetPlayer(id).GetColor()), 0);
         if (spr == NULL) {
-            spr = g_gameReg->SpriteTable()->GetSel(1, 0);
+            spr = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
         }
         m_cursorSprite->SetAllTypes(SHADE_PAL_16);
         m_cursorSprite->SetAllFormats(spr);
@@ -4122,7 +4124,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u16>(targetYOrUnitIndex),
                 100000,
                 GRUNT_ENTRANCE_DROP,
-                g_groupSentinel,
+                g_defaultGruntColorIndex,
                 0,
                 0,
                 0,
@@ -4152,7 +4154,7 @@ i32 CPlay::ExecuteCommand(
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g != NULL && g->IsEntranceCommitted() != false) {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
             }
             if (!m_mgr->GetTriggerMgr()->MoveUnitTo(
                     player,
@@ -4216,18 +4218,22 @@ i32 CPlay::ExecuteCommand(
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
 
-            CGrunt* node =
-                m_mgr->GetTriggerMgr()
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+            CGrunt* node = m_mgr->GetTriggerMgr()->PickGruntAtWorldPoint(
+                px,
+                py,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                PLAYER_SLOT_ALL
+            );
             if (node != NULL && g->m_busy == false) {
-                g->SetArrivalTarget(
+                g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
             }
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
@@ -4273,12 +4279,12 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_busy != false) {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
-            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
+            g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
@@ -4325,18 +4331,22 @@ i32 CPlay::ExecuteCommand(
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* node =
-                m_mgr->GetTriggerMgr()
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+            CGrunt* node = m_mgr->GetTriggerMgr()->PickGruntAtWorldPoint(
+                px,
+                py,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                PLAYER_SLOT_ALL
+            );
             if (node != NULL && g->m_busy == false) {
-                g->SetArrivalTarget(
+                g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
             }
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, px, py);
             if (res == 0) {
@@ -4382,12 +4392,12 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_busy != false) {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
-            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
+            g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
@@ -5538,18 +5548,18 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 BuildHelpReveal(false);
                 loaded[id] = 1;
             }
-            if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 1, 0, ctx)) {
+            if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, ctx)) {
                 return 0;
             }
         }
-        if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x21] == 0) {
             BuildHelpReveal(false);
             loaded[0x21] = 1;
         }
-        if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x22] == 0) {
@@ -5557,7 +5567,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             loaded[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
-        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x23] == 0) {
@@ -5565,7 +5575,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             loaded[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
-        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x24] == 0) {
@@ -5573,7 +5583,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             loaded[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
-        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x25] == 0) {
@@ -5592,7 +5602,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 v = obj->m_powerup;
                 if (v) {
-                    if (!BuildGruntTypeNameTable(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
@@ -5602,7 +5612,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 }
                 v = obj->m_damage;
                 if (v) {
-                    if (!BuildGruntTypeNameTable(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
@@ -5613,7 +5623,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 EnemyAiType aiType = static_cast<EnemyAiType>(obj->GetPoints());
                 switch (aiType) {
                     case AI_BOMBER:
-                        if (!BuildGruntTypeNameTable(PICKUP_BOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BOMB, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[1] == 0) {
@@ -5622,7 +5632,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_BRICKLAYER:
-                        if (!BuildGruntTypeNameTable(PICKUP_BRICK, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BRICK, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[3] == 0) {
@@ -5631,7 +5641,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_GAUNTLETZGRUNT:
-                        if (!BuildGruntTypeNameTable(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[5] == 0) {
@@ -5640,7 +5650,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_GOOSUCKER:
-                        if (!BuildGruntTypeNameTable(PICKUP_GOOBER, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GOOBER, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[7] == 0) {
@@ -5649,7 +5659,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_DIGGER:
-                        if (!BuildGruntTypeNameTable(PICKUP_SHOVEL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SHOVEL, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0xd] == 0) {
@@ -5658,7 +5668,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_TIMEBOMBER:
-                        if (!BuildGruntTypeNameTable(PICKUP_TIMEBOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_TIMEBOMB, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x11] == 0) {
@@ -5667,7 +5677,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_MAGICWANDGRUNT:
-                        if (!BuildGruntTypeNameTable(PICKUP_WAND, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_WAND, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x13] == 0) {
@@ -5676,7 +5686,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_SCROLLGRUNT:
-                        if (!BuildGruntTypeNameTable(PICKUP_SCROLL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SCROLL, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x1e] == 0) {
@@ -5702,7 +5712,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 d = obj->GetSmarts();
                 PickupType item = static_cast<PickupType>(d);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->GetSmarts()] == 0) {
@@ -5710,7 +5720,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->GetSmarts()] = 1;
                     }
                 } else if (d == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
@@ -5718,7 +5728,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x21] = 1;
                     }
                 } else if (d == IDX(GRUNT_REAPER)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -5726,7 +5736,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5739,7 +5749,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5771,7 +5781,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 e = obj->m_powerup;
                 PickupType item = static_cast<PickupType>(e);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_powerup] == 0) {
@@ -5779,7 +5789,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->m_powerup] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
@@ -5787,7 +5797,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x21] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_REAPER)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -5795,7 +5805,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5808,7 +5818,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5837,7 +5847,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
     if (m_initialFramePending != false) {
         m_initialFramePending = false;
         m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
@@ -5983,12 +5993,12 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
             if (m_cursorUsesPlayerTint) {
                 CGruntzMgr* gameManager = m_mgr;
                 i32 playerIndex = g_curPlayer;
-                CShadeTable* shadeTable = gameManager->SpriteTable()->GetSel(
+                CShadeTable* shadeTable = gameManager->GruntPalettes()->GetShadeTable(
                     IDX(gameManager->GetPlayer(playerIndex).GetColor()),
                     0
                 );
                 if (shadeTable == NULL) {
-                    shadeTable = g_gameReg->SpriteTable()->GetSel(1, 0);
+                    shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                 }
                 m_cursorSprite->SetAllTypes(SHADE_PAL_16);
                 m_cursorSprite->SetAllFormats(shadeTable);
@@ -6014,11 +6024,11 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
-    SerializeClockPair(ar, mode, &m_region0Timing);
-    SerializeClockPair(ar, mode, &m_region1Timing);
+    SerializeClockPair(ar, mode, &m_tinyViewportCurseTimer);
+    SerializeClockPair(ar, mode, &m_darknessCurseTimer);
     SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
-    SerializeClockPair(ar, mode, &m_region2Timing);
-    SerializeClockPair(ar, mode, &m_region3Timing);
+    SerializeClockPair(ar, mode, &m_monitorCurseTimer);
+    SerializeClockPair(ar, mode, &m_randomColorsCurseTimer);
     SerializeClockPair(ar, mode, &m_bootyTiming);
     return 1;
 }
@@ -6134,10 +6144,10 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_pathPreviewDestination.x, sizeof(m_pathPreviewDestination.x));
     s->Write(&m_pathPreviewDestination.y, sizeof(m_pathPreviewDestination.y));
     s->Write(&m_pathPreviewColor, sizeof(m_pathPreviewColor));
-    s->Write(&m_region0Gate, sizeof(m_region0Gate));
-    s->Write(&m_region1Gate, sizeof(m_region1Gate));
-    s->Write(&m_region2Gate, sizeof(m_region2Gate));
-    s->Write(&m_region3Gate, sizeof(m_region3Gate));
+    s->Write(&m_tinyViewportCurseActive, sizeof(m_tinyViewportCurseActive));
+    s->Write(&m_darknessCurseActive, sizeof(m_darknessCurseActive));
+    s->Write(&m_monitorCurseActive, sizeof(m_monitorCurseActive));
+    s->Write(&m_randomColorsCurseActive, sizeof(m_randomColorsCurseActive));
     s->Write(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     s->Write(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     s->Write(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
@@ -6271,10 +6281,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_pathPreviewDestination.x, sizeof(m_pathPreviewDestination.x));
     ar->Read(&m_pathPreviewDestination.y, sizeof(m_pathPreviewDestination.y));
     ar->Read(&m_pathPreviewColor, sizeof(m_pathPreviewColor));
-    ar->Read(&m_region0Gate, sizeof(m_region0Gate));
-    ar->Read(&m_region1Gate, sizeof(m_region1Gate));
-    ar->Read(&m_region2Gate, sizeof(m_region2Gate));
-    ar->Read(&m_region3Gate, sizeof(m_region3Gate));
+    ar->Read(&m_tinyViewportCurseActive, sizeof(m_tinyViewportCurseActive));
+    ar->Read(&m_darknessCurseActive, sizeof(m_darknessCurseActive));
+    ar->Read(&m_monitorCurseActive, sizeof(m_monitorCurseActive));
+    ar->Read(&m_randomColorsCurseActive, sizeof(m_randomColorsCurseActive));
     ar->Read(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     ar->Read(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     ar->Read(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
@@ -6303,7 +6313,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 }
 
 RVA(0x000d88f0, 0x44)
-void CPlay::RegionEnter() {
+void CPlay::PlayCurseMusic() {
     if (m_savedMusicSequence == NULL) {
         CGruntzMgr* gameManager = m_mgr;
         m_savedMusicSequence = gameManager->m_midi->m_currentSequence;
@@ -6315,9 +6325,10 @@ void CPlay::RegionEnter() {
 }
 
 RVA(0x000d8960, 0x75)
-void CPlay::RegionLeave() {
-    if (m_region0Gate == false && m_region1Gate == false && m_region2Gate == false
-        && m_region3Gate == false && m_savedMusicSequence != NULL) {
+void CPlay::RestoreMusicAfterCurses() {
+    if (m_tinyViewportCurseActive == false && m_darknessCurseActive == false
+        && m_monitorCurseActive == false && m_randomColorsCurseActive == false
+        && m_savedMusicSequence != NULL) {
         m_mgr->m_midi->EndCurrent();
         m_mgr->m_midi->m_currentSequence = m_savedMusicSequence;
         if (g_gameReg->m_musicEnabled != false) {
@@ -6330,56 +6341,56 @@ void CPlay::RegionLeave() {
 RVA(0x000d8a00, 0x73)
 i32 CPlay::SetTinyViewportCurse(b32 active) {
     if (active != false) {
-        m_region0Gate = true;
-        RegionEnter();
+        m_tinyViewportCurseActive = true;
+        PlayCurseMusic();
         m_viewportResizeMode = VIEW_RESIZE_SHRINK;
     } else {
-        m_region0Gate = false;
-        RegionLeave();
+        m_tinyViewportCurseActive = false;
+        RestoreMusicAfterCurses();
         m_viewportResizeMode = VIEW_RESIZE_EXPAND;
     }
-    m_region0Timing.Start(REGION_INTERVAL_MS);
+    m_tinyViewportCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
 RVA(0x000d8aa0, 0x5f)
 i32 CPlay::SetDarknessCurse(b32 active) {
     if (active != false) {
-        m_region1Gate = true;
-        RegionEnter();
+        m_darknessCurseActive = true;
+        PlayCurseMusic();
     } else {
-        m_region1Gate = false;
-        RegionLeave();
+        m_darknessCurseActive = false;
+        RestoreMusicAfterCurses();
     }
-    m_region1Timing.Start(REGION_INTERVAL_MS);
+    m_darknessCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
 RVA(0x000d8b20, 0x74)
 i32 CPlay::SetMonitorCurse(b32 active) {
     if (active != false) {
-        m_region2Gate = true;
-        RegionEnter();
-        Cmd_ApplyScrollParams(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
+        m_monitorCurseActive = true;
+        PlayCurseMusic();
+        StartScreenShake(CURSE_DURATION_MS, 6, 6, 0, 0x2d);
     } else {
-        m_region2Gate = false;
-        RegionLeave();
+        m_monitorCurseActive = false;
+        RestoreMusicAfterCurses();
     }
-    m_region2Timing.Start(REGION_INTERVAL_MS);
+    m_monitorCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
 RVA(0x000d8bc0, 0x71)
-i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
+i32 CPlay::SetRandomColorsCurse(b32 active) {
     if (active != false) {
-        m_region3Gate = true;
-        RegionEnter();
+        m_randomColorsCurseActive = true;
+        PlayCurseMusic();
     } else {
-        m_region3Gate = false;
-        RegionLeave();
-        g_gameReg->GetTriggerMgr()->CycleMoveIcons(-1, false);
+        m_randomColorsCurseActive = false;
+        RestoreMusicAfterCurses();
+        g_gameReg->GetTriggerMgr()->SetRandomGruntColors(-1, false);
     }
-    m_region3Timing.Start(REGION_INTERVAL_MS);
+    m_randomColorsCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
@@ -6398,7 +6409,7 @@ i32 CPlay::ResetViewport() {
     } else {
         SetRect(&r, 0, 0, right - 1, bottom - 1);
     }
-    if (m_region0Gate) {
+    if (m_tinyViewportCurseActive) {
         i32 halfW = (r.right - r.left) / 2;
         i32 halfH = (r.bottom - r.top) / 2;
         SET_RECT_COMPONENTS(

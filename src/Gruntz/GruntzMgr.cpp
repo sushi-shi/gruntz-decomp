@@ -232,7 +232,7 @@ CGruntzMgr::CGruntzMgr() {
     m_triggerMgr = NULL;
     m_commandMgr = NULL;
     m_tileGrid = NULL;
-    m_spriteFactory = NULL;
+    m_gruntPalettes = NULL;
     m_lightFxMgr = NULL;
     m_lobbyResult = 0;
     m_lobbyProbed = false;
@@ -637,10 +637,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x415);
         return 0;
     }
-    m_spriteFactory = new CSpriteRefTable;
+    m_gruntPalettes = new CGruntPaletteTable;
 
-    if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
-        SAFE_DELETE(m_spriteFactory);
+    if (!m_gruntPalettes->Init(m_shadeCache, m_world)) {
+        SAFE_DELETE(m_gruntPalettes);
 
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x416);
     }
@@ -814,7 +814,7 @@ void CGruntzMgr::Close() {
     }
     ClearStateStack();
     SAFE_DELETE(m_curState)
-    SAFE_DELETE(m_spriteFactory)
+    SAFE_DELETE(m_gruntPalettes)
     SAFE_DELETE(m_triggerMgr)
     SAFE_DELETE(m_tileGrid)
     CGameStats* gameStats = m_gameStats;
@@ -3723,10 +3723,10 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&g_explosionz, sizeof(g_explosionz));
     ar->Write(&m_isEasyMode, sizeof(m_isEasyMode));
     ar->Write(&g_monologoShown, sizeof(g_monologoShown));
-    ar->Write(&g_jitterX, sizeof(g_jitterX));
-    ar->Write(&g_jitterY, sizeof(g_jitterY));
-    ar->Write(&g_panMinX, sizeof(g_panMinX));
-    ar->Write(&g_panMaxX, sizeof(g_panMaxX));
+    ar->Write(&g_screenShakeAmplitudeX, sizeof(g_screenShakeAmplitudeX));
+    ar->Write(&g_screenShakeAmplitudeY, sizeof(g_screenShakeAmplitudeY));
+    ar->Write(&g_screenShakeMinDelayMs, sizeof(g_screenShakeMinDelayMs));
+    ar->Write(&g_screenShakeMaxDelayMs, sizeof(g_screenShakeMaxDelayMs));
     ar->Write(&g_warpX, sizeof(g_warpX));
     ar->Write(&g_warpY, sizeof(g_warpY));
     return 1;
@@ -3770,10 +3770,10 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&g_explosionz, sizeof(g_explosionz));
     ar->Read(&m_isEasyMode, sizeof(m_isEasyMode));
     ar->Read(&g_monologoShown, sizeof(g_monologoShown));
-    ar->Read(&g_jitterX, sizeof(g_jitterX));
-    ar->Read(&g_jitterY, sizeof(g_jitterY));
-    ar->Read(&g_panMinX, sizeof(g_panMinX));
-    ar->Read(&g_panMaxX, sizeof(g_panMaxX));
+    ar->Read(&g_screenShakeAmplitudeX, sizeof(g_screenShakeAmplitudeX));
+    ar->Read(&g_screenShakeAmplitudeY, sizeof(g_screenShakeAmplitudeY));
+    ar->Read(&g_screenShakeMinDelayMs, sizeof(g_screenShakeMinDelayMs));
+    ar->Read(&g_screenShakeMaxDelayMs, sizeof(g_screenShakeMaxDelayMs));
     ar->Read(&g_warpX, sizeof(g_warpX));
     ar->Read(&g_warpY, sizeof(g_warpY));
     return 1;

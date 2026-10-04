@@ -538,7 +538,7 @@ i32 CBootyState::StepGlitterAnim() {
 // @early-stop
 RVA(0x00019920, 0x1f0)
 i32 CBootyState::BuildGruntSprintAnimation() {
-    CShadeTable* h = g_gameReg->SpriteTable()->GetSel(0, 0);
+    CShadeTable* h = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
     if (!h) {
         return 0;
     }
@@ -741,11 +741,11 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 // @early-stop
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
-    CShadeTable* handleA = g_gameReg->SpriteTable()->GetSel(0, 0);
+    CShadeTable* handleA = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
     if (handleA == NULL) {
         return 0;
     }
-    CShadeTable* handleB = g_gameReg->SpriteTable()->GetSel(0, 1);
+    CShadeTable* handleB = g_gameReg->GruntPalettes()->GetShadeTable(0, 1);
 
     CRezDir* img = m_gruntResources->GetDirFromPath("IMAGEZ_GOKARTGRUNT");
     if (img == NULL) {
@@ -1076,7 +1076,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->GetGameStats()->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
         return 1;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(0, 0);
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
     if (sel == NULL) {
         return 0;
     }
@@ -1212,7 +1212,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(0, 0);
+            CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
             if (sel != NULL) {
                 if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_FLAGRISE");
@@ -1711,7 +1711,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             continue;
         }
         CShadeTable* tint =
-            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->GetPlayer(i).GetColor()), 0);
+            g_gameReg->m_gruntPalettes->GetShadeTable(IDX(g_gameReg->GetPlayer(i).GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1761,7 +1761,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_weaponIcons[i]->Hide();
 
         {
-            CShadeTable* iconTint = g_gameReg->m_spriteFactory->GetSel(0x10, 0);
+            CShadeTable* iconTint = g_gameReg->m_gruntPalettes->GetShadeTable(0x10, 0);
             if (iconTint == NULL) {
                 return 0;
             }
@@ -1823,7 +1823,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         CString tabKey;
         CString flagKey;
         GruntzPlayer* pl = &g_gameReg->GetPlayer(t);
-        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->GetColor()), 0);
+        CShadeTable* tint = g_gameReg->m_gruntPalettes->GetShadeTable(IDX(pl->GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1867,7 +1867,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->Show();
     }
 
-    CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
+    CShadeTable* tint = g_gameReg->m_gruntPalettes->GetShadeTable(
         IDX(g_gameReg->GetPlayer(QueryGruntSlots()).GetColor()),
         0
     );
@@ -2163,9 +2163,9 @@ DATA(0x002453d8)
 CButeMgr g_buteMgr;
 
 DATA(0x00245508)
-i32 g_panMinX;
+i32 g_screenShakeMinDelayMs;
 DATA(0x0024550c)
-i32 g_panMaxX;
+i32 g_screenShakeMaxDelayMs;
 
 RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
 RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)

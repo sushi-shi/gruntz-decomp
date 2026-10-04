@@ -75,7 +75,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
             {
                 Coord targetTile;
                 target->GetScreenTile(&targetTile);
-                if (defender->TileSwitch(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
+                if (defender->MoveToTile(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
                     defender->SetAiState(AISTATE_ATTACK);
                     defender->m_arrivalCell.Set(target->GetPlayerIndex(), target->GetUnitIndex());
                     defender->m_dwell = 0;
@@ -119,7 +119,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
             if (targetDistance > m_defenderTargetMaxDistance) {
                 if (GetAttackWaypointCount() != 0) {
                     Coord* attackWaypoint = CoordAt(rand() % GetAttackWaypointCount());
-                    defender->TileSwitch(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
+                    defender->MoveToTile(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
                 }
                 UNSET_COORD(defender->m_arrivalCell);
                 defender->m_dwell = 0;
@@ -158,7 +158,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
             {
                 Coord targetTile;
                 target->GetScreenTile(&targetTile);
-                if (!defender->TileSwitch(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
+                if (!defender->MoveToTile(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
                     ResetToSeek(defender);
                 }
             }
@@ -178,7 +178,7 @@ checkIdleWander:
             && static_cast<u32>(defender->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
             && GetAttackWaypointCount() != 0) {
             Coord* attackWaypoint = CoordAt(rand() % GetAttackWaypointCount());
-            defender->TileSwitch(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
+            defender->MoveToTile(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
             defender->m_dwell = 0;
         }
     }

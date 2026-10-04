@@ -117,47 +117,19 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 i32 tx = LastTilePx().m_x >> TILE_SHIFT_PX;
                 i32 ty = LastTilePx().m_y >> TILE_SHIFT_PX;
                 if (tx < gx && ty < gy) {
-                    StepArrivalDrop(
-                        m_lastTilePx.m_x + 0x40,
-                        m_lastTilePx.m_y,
-                        0,
-                        m_arrivalFlags,
-                        1,
-                        0
-                    );
+                    MoveTo(m_lastTilePx.m_x + 0x40, m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
                     return 1;
                 }
                 if (tx < gx && ty > gy) {
-                    StepArrivalDrop(
-                        m_lastTilePx.m_x,
-                        m_lastTilePx.m_y - 0x40,
-                        0,
-                        m_arrivalFlags,
-                        1,
-                        0
-                    );
+                    MoveTo(m_lastTilePx.m_x, m_lastTilePx.m_y - 0x40, 0, m_arrivalFlags, 1, 0);
                     return 1;
                 }
                 if (tx > gx && ty < gy) {
-                    StepArrivalDrop(
-                        m_lastTilePx.m_x,
-                        m_lastTilePx.m_y + 0x40,
-                        0,
-                        m_arrivalFlags,
-                        1,
-                        0
-                    );
+                    MoveTo(m_lastTilePx.m_x, m_lastTilePx.m_y + 0x40, 0, m_arrivalFlags, 1, 0);
                     return 1;
                 }
                 if (tx > gx && ty > gy) {
-                    StepArrivalDrop(
-                        m_lastTilePx.m_x - 0x40,
-                        m_lastTilePx.m_y,
-                        0,
-                        m_arrivalFlags,
-                        1,
-                        0
-                    );
+                    MoveTo(m_lastTilePx.m_x - 0x40, m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
                     return 1;
                 }
                 goto resetState;
@@ -176,7 +148,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 || GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
                 goto resetState;
             }
-            StepArrivalDrop(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
+            MoveTo(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
             if (m_inCombat != false) {
                 return 1;
             }
@@ -199,14 +171,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             return 1;
 
         case AISTATE_RETURN: {
-            StepArrivalDrop(
-                m_defenderPx.m_x - 0x20,
-                m_defenderPx.m_y - 0x20,
-                0,
-                m_arrivalFlags,
-                1,
-                0
-            );
+            MoveTo(m_defenderPx.m_x - 0x20, m_defenderPx.m_y - 0x20, 0, m_arrivalFlags, 1, 0);
             if (m_object->m_screenX == m_defenderPx.m_x - 0x20
                 && m_object->m_screenY == m_defenderPx.m_y - 0x20) {
                 m_aiState = AISTATE_SEEK;

@@ -14,8 +14,8 @@ struct ScrollPace {
 };
 
 extern ScrollPace g_scrollPace;
-extern u32 g_scrollClock;
-extern u32 g_scrollTimer;
+extern u32 g_screenShakeEndTime;
+extern u32 g_screenShakeDelayRemainingMs;
 
 extern i32 g_serializedScrollReservedFirst;
 extern i32 g_serializedScrollReservedSecond;

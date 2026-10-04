@@ -348,7 +348,7 @@ RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopVehicleLoopSound();
-        if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY && m_arrivalActive != false) {
+        if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY && m_actionTargetsGrunt != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
@@ -1115,7 +1115,7 @@ i32 CGrunt::FinishStruckAnimation() {
         return 0;
     }
     if (m_neighborScanEnabled == false && m_tileMoveCommitted != false) {
-        StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
+        MoveTo(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
     if (m_activePickupType == PICKUP_WARPSTONE) {
@@ -1152,7 +1152,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
         return 0;
     }
     if (m_neighborScanEnabled == false && m_tileMoveCommitted != false) {
-        StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
+        MoveTo(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
     StartAttackIdleAnimation();

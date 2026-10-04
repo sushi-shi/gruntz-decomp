@@ -184,7 +184,7 @@ public:
     void DrawMessageFrame(i32 index, b32 useFront);
 
     void LoadSBITextEdges(i32 msgId);
-    i32 BuildGruntNamespaceList(CMulti* finishGate);
+    i32 LoadGruntAssetNamespaces(CMulti* multiplayerSession);
 
     i32 StepViewportResize();
     i32 GetAmbientId();
@@ -195,7 +195,7 @@ public:
     i32 SetDarknessCurse(b32 active);
     i32 SetTinyViewportCurse(b32 active);
     i32 SetMonitorCurse(b32 active);
-    i32 SetRandomMoveIconsCurse(b32 active);
+    i32 SetRandomColorsCurse(b32 active);
 
     i32 ShrinkViewport(i32 step);
     i32 ExpandViewport(i32 step);
@@ -203,8 +203,8 @@ public:
 
     i32 ResetViewport();
 
-    void RegionEnter();
-    void RegionLeave();
+    void PlayCurseMusic();
+    void RestoreMusicAfterCurses();
 
     i32 ProfileDeltaFrame();
     i32 ProfileInputFrame();
@@ -272,9 +272,9 @@ public:
     i32 LoadGameImages(i32 force);
     i32 LoadGameSounds(i32 force);
     i32 LoadGameAnims(i32 force);
-    i32 LoadGruntSoundNamespaces(CMulti* notify);
-    i32 BuildSpriteImageKeyTable(CMulti* notify);
-    i32 BuildAnizKeyTable(CMulti* notify);
+    i32 LoadGruntSoundNamespaces(CMulti* multiplayerSession);
+    i32 LoadGruntImageNamespaces(CMulti* multiplayerSession);
+    i32 LoadGruntAnimationNamespaces(CMulti* multiplayerSession);
 
     i32 EnterMode(GameStateId mode);
     i32 ResetPlayState();
@@ -285,7 +285,7 @@ public:
 
     i32 SetEffectSpriteDurations();
 
-    i32 BuildWarlordNameTable(CMulti* finishGate);
+    i32 UnloadGruntAndWarlordAssets(CMulti* multiplayerSession);
 
     i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
 
@@ -358,14 +358,14 @@ public:
     POINT m_pathPreviewDestination;
     i16 m_pathPreviewColor;
 
-    ClockInterval m_region0Timing;
-    ClockInterval m_region1Timing;
-    ClockInterval m_region2Timing;
-    ClockInterval m_region3Timing;
-    b32 m_region0Gate;
-    b32 m_region1Gate;
-    b32 m_region2Gate;
-    b32 m_region3Gate;
+    ClockInterval m_tinyViewportCurseTimer;
+    ClockInterval m_darknessCurseTimer;
+    ClockInterval m_monitorCurseTimer;
+    ClockInterval m_randomColorsCurseTimer;
+    b32 m_tinyViewportCurseActive;
+    b32 m_darknessCurseActive;
+    b32 m_monitorCurseActive;
+    b32 m_randomColorsCurseActive;
     ViewportResizeMode m_viewportResizeMode;
     b32 m_hudSuppressed;
 
@@ -404,7 +404,12 @@ public:
     i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 cursorId, b32 targetValid);
     i32 LoadScrollSpeedOptions();
-    i32 BuildGruntTypeNameTable(PickupType typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
+    i32 SetGruntTypeAssetsLoaded(
+        PickupType gruntType,
+        i32 loadAssets,
+        i32 showLoadingText,
+        CMulti* multiplayerSession
+    );
 
     i32 ScanBuildTiles();
     i32 ScanShuffleQuads();
@@ -428,7 +433,13 @@ extern b32 g_levelBias100;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 
-void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX);
+void StartScreenShake(
+    i32 durationMs,
+    i32 amplitudeX,
+    i32 amplitudeY,
+    i32 minDelayMs,
+    i32 maxDelayMs
+);
 CString GetColorName(i32 colorIdx, b32 upper);
 CString GetDifficultyName(i32 diffIdx, b32 upper);
 

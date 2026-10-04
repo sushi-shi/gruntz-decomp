@@ -86,7 +86,7 @@ i32 CTriggerMgr::SpawnGrunt(
     i32 y,
     i32 z,
     GruntEntranceMode mode,
-    i32 kindDefault,
+    i32 defaultColorIndex,
     i32 typeKind,
     i32 carriedToyType,
     i32 aiType,
@@ -152,78 +152,78 @@ i32 CTriggerMgr::SpawnGrunt(
         CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->UserLogic());
         CGruntzMgr* game = g_gameReg;
 
-        i32 kindId;
+        i32 colorIndex;
         if (game->GetGameMode() == GAMEMODE_QUESTZ) {
             switch (aiType) {
                 case BZUNIT_BOMB:
-                    kindId = IDX(PICKUP_BOMB);
+                    colorIndex = IDX(PICKUP_BOMB);
                     break;
                 case BZUNIT_GUNHAT:
-                    kindId = IDX(PICKUP_GUNHAT);
+                    colorIndex = IDX(PICKUP_GUNHAT);
                     break;
                 case BZUNIT_GAUNTLETZ:
-                    kindId = IDX(PICKUP_GAUNTLETZ);
+                    colorIndex = IDX(PICKUP_GAUNTLETZ);
                     break;
                 case BZUNIT_CLUB:
-                    kindId = IDX(PICKUP_CLUB);
+                    colorIndex = IDX(PICKUP_CLUB);
                     break;
                 case BZUNIT_SHIELD:
-                    kindId = IDX(PICKUP_SHIELD);
+                    colorIndex = IDX(PICKUP_SHIELD);
                     break;
                 case BZUNIT_GLOVEZ:
-                    kindId = IDX(PICKUP_GLOVEZ);
+                    colorIndex = IDX(PICKUP_GLOVEZ);
                     break;
                 case BZUNIT_BRICK:
-                    kindId = IDX(PICKUP_BRICK);
+                    colorIndex = IDX(PICKUP_BRICK);
                     typeKind = 1;
                     break;
                 case BZUNIT_GRAVITYBOOTZ:
-                    kindId = IDX(PICKUP_GRAVITYBOOTZ);
+                    colorIndex = IDX(PICKUP_GRAVITYBOOTZ);
                     typeKind = 3;
                     break;
                 case BZUNIT_SPY:
-                    kindId = IDX(PICKUP_SPY);
+                    colorIndex = IDX(PICKUP_SPY);
                     typeKind = 7;
                     break;
                 case BZUNIT_NERFGUN:
-                    kindId = IDX(PICKUP_NERFGUN);
+                    colorIndex = IDX(PICKUP_NERFGUN);
                     typeKind = 13;
                     break;
                 case BZUNIT_BOOMERANG:
-                    kindId = IDX(PICKUP_BOOMERANG);
+                    colorIndex = IDX(PICKUP_BOOMERANG);
                     typeKind = 5;
                     break;
                 case BZUNIT_GOOBER:
-                    kindId = IDX(PICKUP_GOOBER);
+                    colorIndex = IDX(PICKUP_GOOBER);
                     break;
                 case BZUNIT_SWORD:
-                    kindId = IDX(PICKUP_SWORD);
+                    colorIndex = IDX(PICKUP_SWORD);
                     break;
                 case BZUNIT_ROCK:
-                    kindId = IDX(PICKUP_ROCK);
+                    colorIndex = IDX(PICKUP_ROCK);
                     typeKind = 17;
                     break;
                 case BZUNIT_SHOVEL:
-                    kindId = IDX(PICKUP_SHOVEL);
+                    colorIndex = IDX(PICKUP_SHOVEL);
                     typeKind = 19;
                     break;
                 case BZUNIT_SHOVEL_MOUNTED:
-                    kindId = IDX(PICKUP_SHOVEL);
+                    colorIndex = IDX(PICKUP_SHOVEL);
                     carriedToyType = IDX(PICKUP_SCROLL);
                     break;
                 default:
-                    kindId = kindDefault;
+                    colorIndex = defaultColorIndex;
                     break;
             }
         } else {
-            kindId = kindDefault;
+            colorIndex = defaultColorIndex;
         }
 
         if (m_unitCountByPlayer[playerIndex] < game->GetPlayer(playerIndex).GetMaxGruntz()) {
             if (game->GetPlayer(playerIndex).IsActive() != false
                 || (playerIndex != g_curPlayer
-                    && kindId == IDX(game->GetPlayer(g_curPlayer).GetColor()))) {
-                kindId = IDX(game->GetPlayer(playerIndex).GetColor());
+                    && colorIndex == IDX(game->GetPlayer(g_curPlayer).GetColor()))) {
+                colorIndex = IDX(game->GetPlayer(playerIndex).GetColor());
             }
             if (playerIndex == g_curPlayer && aiType != 0) {
                 aiType = 0;
@@ -232,7 +232,7 @@ i32 CTriggerMgr::SpawnGrunt(
                     this,
                     playerIndex,
                     unitIndex,
-                    static_cast<PickupType>(kindId),
+                    static_cast<PickupType>(colorIndex),
                     static_cast<PickupType>(typeKind),
                     carriedToyType,
                     static_cast<EnemyAiType>(aiType),
@@ -361,63 +361,63 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
 
 // @early-stop
 RVA(0x0006be30, 0x47)
-CGrunt* CTriggerMgr::ScreenToCell(
-    i32 sx,
-    i32 sy,
+CGrunt* CTriggerMgr::PickGruntAtScreenPoint(
+    i32 screenX,
+    i32 screenY,
     i32* outPlayerIndex,
     i32* outUnitIndex,
-    i32 startPlayerIndex
+    i32 playerSelector
 ) {
-    CGameLevel* view = m_world->GetLevel();
-    RECT* r = view->m_mainPlane->GetPlaneViewRect();
-    i32 px = r->left - view->m_viewportRect.left + sx;
-    i32 py = r->top - view->m_viewportRect.top + sy;
-    return CellHitTest(px, py, outPlayerIndex, outUnitIndex, startPlayerIndex);
+    CGameLevel* level = m_world->GetLevel();
+    RECT* planeView = level->m_mainPlane->GetPlaneViewRect();
+    i32 worldX = planeView->left - level->m_viewportRect.left + screenX;
+    i32 worldY = planeView->top - level->m_viewportRect.top + screenY;
+    return PickGruntAtWorldPoint(worldX, worldY, outPlayerIndex, outUnitIndex, playerSelector);
 }
 
 // @early-stop
 RVA(0x0006bea0, 0xe2)
-CGrunt* CTriggerMgr::CellHitTest(
-    i32 px,
-    i32 py,
+CGrunt* CTriggerMgr::PickGruntAtWorldPoint(
+    i32 worldX,
+    i32 worldY,
     i32* outPlayerIndex,
     i32* outUnitIndex,
-    i32 startPlayerIndex
+    i32 playerSelector
 ) {
-    i32 last;
-    if (startPlayerIndex == PLAYER_SLOT_ALL) {
-        startPlayerIndex = 0;
-        last = 3;
+    i32 lastPlayerIndex;
+    if (playerSelector == PLAYER_SLOT_ALL) {
+        playerSelector = 0;
+        lastPlayerIndex = 3;
     } else {
-        last = startPlayerIndex;
+        lastPlayerIndex = playerSelector;
     }
 
-    if (startPlayerIndex <= last) {
+    if (playerSelector <= lastPlayerIndex) {
         do {
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
-                CGrunt* g = PlayerUnits(startPlayerIndex)[unitIndex];
-                if (g != NULL && g->IsEntranceCommitted() != false) {
-                    CWwdSpriteObject* o = g->m_object;
-                    if (o->m_frameImage != NULL) {
+                CGrunt* grunt = PlayerUnits(playerSelector)[unitIndex];
+                if (grunt != NULL && grunt->IsEntranceCommitted() != false) {
+                    CWwdSpriteObject* object = grunt->m_object;
+                    if (object->m_frameImage != NULL) {
                         RECT hitBox;
-                        hitBox.left = o->m_screenX - 15;
-                        hitBox.top = o->m_screenY - 15;
+                        hitBox.left = object->m_screenX - 15;
+                        hitBox.top = object->m_screenY - 15;
                         hitBox.right = hitBox.left + 30;
                         hitBox.bottom = hitBox.top + 30;
-                        if (::PtInRect(&hitBox, px, py)) {
+                        if (::PtInRect(&hitBox, worldX, worldY)) {
                             if (outPlayerIndex != NULL) {
-                                *outPlayerIndex = startPlayerIndex;
+                                *outPlayerIndex = playerSelector;
                             }
                             if (outUnitIndex != NULL) {
                                 *outUnitIndex = unitIndex;
                             }
-                            return PlayerUnits(startPlayerIndex)[unitIndex];
+                            return PlayerUnits(playerSelector)[unitIndex];
                         }
                     }
                 }
             }
-            startPlayerIndex++;
-        } while (startPlayerIndex <= last);
+            playerSelector++;
+        } while (playerSelector <= lastPlayerIndex);
     }
     return NULL;
 }
@@ -681,7 +681,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
+            g->MoveTo(x, y - 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_RIGHT_A:
@@ -690,7 +690,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
+            g->MoveTo(x + 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_DOWN_A:
@@ -699,7 +699,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
+            g->MoveTo(x, y + 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_LEFT_A:
@@ -708,7 +708,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
+            g->MoveTo(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
@@ -716,19 +716,19 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g->m_busy = true;
                 switch (static_cast<GruntDirection>(g->m_facing.m_direction)) {
                     case DIR_NORTH:
-                        g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
+                        g->MoveTo(x, y - 32, 0, -1, 1, 0);
                         break;
                     case DIR_EAST:
-                        g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
+                        g->MoveTo(x + 32, y, 0, -1, 1, 0);
                         break;
                     case DIR_SOUTH:
-                        g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
+                        g->MoveTo(x, y + 32, 0, -1, 1, 0);
                         break;
                     case DIR_WEST:
-                        g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
+                        g->MoveTo(x - 32, y, 0, -1, 1, 0);
                         break;
                     default:
-                        g->StepArrivalDrop(x, y, 0, -1, 1, 0);
+                        g->MoveTo(x, y, 0, -1, 1, 0);
                         break;
                 }
                 return 1;
@@ -1099,7 +1099,8 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             goto outOfRange;
         }
         cell->m_arrivalAction = 0;
-        CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+        CGrunt* hit =
+            PickGruntAtWorldPoint(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
         if (hit != NULL) {
             if (hit->GetPlayerIndex() == cell->GetPlayerIndex() && g_traitorMode == false) {
                 return 0;
@@ -1236,7 +1237,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     cell->m_arrivalAction = 0;
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
-    hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+    hit = PickGruntAtWorldPoint(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         i32 flags = map->CellFlagsAt(argTileX, argTileY);
@@ -1332,21 +1333,21 @@ i32 CTriggerMgr::MoveUnitTo(
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
-    return cell->StepArrivalDrop(bx, by, arrivalAction, -1, 1, 0) != 0;
+    return cell->MoveTo(bx, by, arrivalAction, -1, 1, 0) != 0;
 }
 
 RVA(0x0006ea00, 0x125)
-void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
+void CTriggerMgr::CheckWarpStoneExit(i32 x, i32 y, HitSpanArg span) {
 
-    CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);
-    if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
+    CGrunt* grunt = FindGruntInArea(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);
+    if (grunt == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    if (cell->IsNotAnimationAct("B") && cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
-        CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-        g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
-        world->m_levelTimer->Stop();
-        world->CancelDefeatCountdown();
+    if (grunt->IsNotAnimationAct("B") && grunt->GetEquippedToolType() == PICKUP_WARPSTONE) {
+        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        g_gameReg->m_gameStats->m_elapsedTimeMs += play->m_levelTimer->m_stamp.Elapsed();
+        play->m_levelTimer->Stop();
+        play->CancelDefeatCountdown();
         StartPlayerVictorySequence(g_curPlayer);
     }
 }

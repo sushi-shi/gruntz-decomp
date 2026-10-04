@@ -20,10 +20,10 @@
 inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     player->m_active = true;
     player->SetHumanControlled(true);
-    m_region0Gate = false;
-    m_region1Gate = false;
-    m_region2Gate = false;
-    m_region3Gate = false;
+    m_tinyViewportCurseActive = false;
+    m_darknessCurseActive = false;
+    m_monitorCurseActive = false;
+    m_randomColorsCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_hudSuppressed = true;
     m_cameraBookmarkIndex = -1;
@@ -87,7 +87,7 @@ inline void CPlay::DrawVisibleWorld() {
 }
 
 inline void CPlay::DrawWorldView() {
-    if (m_region1Gate != false) {
+    if (m_darknessCurseActive != false) {
         NotifyVisibleEntities();
     } else {
         DrawVisibleWorld();

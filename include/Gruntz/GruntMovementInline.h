@@ -42,7 +42,7 @@ inline void ResetToSeek(CGrunt* grunt) {
 
 inline void RepathToward(CGrunt* grunt, CGrunt* target) {
     if (static_cast<u32>(grunt->GetDwell()) > DWELL_REPATH_MS) {
-        grunt->StepArrivalDrop(
+        grunt->MoveTo(
             target->m_lastTilePx.m_x,
             target->m_lastTilePx.m_y,
             0,
@@ -58,7 +58,7 @@ inline void RepathToward(CGrunt* grunt, CGrunt* target) {
     do {                                                                                           \
         i32 gx = ScanCell().m_x - m_arrivalCell.m_x + ScanCell().m_x;                              \
         i32 gy = ScanCell().m_y - m_arrivalCell.m_y + ScanCell().m_y;                              \
-        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);                                               \
+        MoveToTile(gx, gy, 0, m_arrivalFlags, 1, 0);                                               \
     } while (0)
 
 inline void ScreenTile(Coord* pos) {

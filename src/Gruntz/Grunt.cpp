@@ -290,7 +290,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_reserved210 = 0;
     m_attackWindupActive = false;
     m_attackQueued = false;
-    m_arrivalActive = false;
+    m_actionTargetsGrunt = false;
     m_toobWaterMode = false;
     m_wingzEnabled = false;
     m_vehicleLoopSound = NULL;
@@ -441,7 +441,7 @@ void CGrunt::BuildImageSetNames(i32 toyMode, i32 mobileToy) {
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), toyMode);
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(m_colorIndex), toyMode);
     CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
@@ -741,7 +741,7 @@ void CGrunt::Deselect() {
 }
 
 RVA(0x0004b320, 0x34)
-i32 CGrunt::TileSwitch(
+i32 CGrunt::MoveToTile(
     i32 col,
     i32 row,
     i32 arrivalAction,
@@ -752,7 +752,7 @@ i32 CGrunt::TileSwitch(
     Coord center;
     Coord* point =
         center.Set((col << TILE_SHIFT_PX) + TILE_HALF_PX, (row << TILE_SHIFT_PX) + TILE_HALF_PX);
-    return StepArrivalDrop(
+    return MoveTo(
         point->m_x,
         point->m_y,
         arrivalAction,
@@ -763,7 +763,7 @@ i32 CGrunt::TileSwitch(
 }
 
 RVA(0x0004b370, 0xb30)
-i32 CGrunt::StepArrivalDrop(
+i32 CGrunt::MoveTo(
     i32 pxX,
     i32 pxY,
     i32 arrivalAction,
@@ -1392,7 +1392,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
     m_entrancePx = m_lastTilePx;
     if (clearArrivalState) {
         m_arrivalAction = 0;
-        m_arrivalActive = false;
+        m_actionTargetsGrunt = false;
     }
     if (recycleRoute && m_aiType != AI_BATTLEZ_PATH && !CoordsEmpty()) {
         this->RecycleCoords();
@@ -1598,7 +1598,7 @@ i32 CGrunt::Place(
     class CTriggerMgr* board,
     i32 playerIndex,
     i32 unitIndex,
-    PickupType moveIcon,
+    PickupType colorIndex,
     PickupType typeKind,
     i32 carriedToyType,
     EnemyAiType aiType,
@@ -1624,7 +1624,7 @@ i32 CGrunt::Place(
     m_defenderPx.Set(-1, -1);
     m_powerupDuration = 0;
     m_blockedVoicePending = true;
-    m_struckCount = 0;
+    m_selectionClickCount = 0;
     m_toyTileIndex = 0;
     m_pendingPickupType = PICKUP_INVALID;
     m_coordRetryCount = 0;
@@ -1642,7 +1642,7 @@ i32 CGrunt::Place(
     m_defenderRadius = defenderRadiusMinusOne + 1;
     m_arrivalRerollTiming.Clear();
     m_holdTiming.Clear();
-    m_moveIcon = moveIcon;
+    m_colorIndex = colorIndex;
     m_triggerMgr = board;
     m_daFlag = 1;
     m_arrivalAction = 0;
@@ -1657,7 +1657,7 @@ i32 CGrunt::Place(
     m_cellRemovalNotified = false;
     m_killerPlayerIndex = -1;
     m_passableMask = 0;
-    m_savedMoveIcon = -1;
+    m_savedColorIndex = -1;
     m_lowStaminaCued = false;
     m_targetTeam = -1;
     SetCarriedToy(static_cast<PickupType>(carriedToyType));
@@ -1678,12 +1678,12 @@ i32 CGrunt::Place(
     } else {
         m_hasExtent = true;
     }
-    if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_MOVEICON_END) {
-        m_moveIcon = PICKUP_NONE;
+    if (m_colorIndex < PICKUP_NONE || m_colorIndex >= PICKUP_MOVEICON_END) {
+        m_colorIndex = PICKUP_NONE;
     }
-    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), 0);
+    CShadeTable* shade = g_gameReg->m_gruntPalettes->GetShadeTable(IDX(m_colorIndex), 0);
     if (shade == NULL) {
-        shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
+        shade = g_gameReg->m_gruntPalettes->GetShadeTable(1, 0);
     }
     m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
@@ -1716,7 +1716,7 @@ i32 CGrunt::Place(
                     (defenderQueuePosition << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (defenderPickupType << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
-                StepArrivalDrop(defender.m_x, defender.m_y - TILE_SIZE_PX, 0, -1, 1, 0);
+                MoveTo(defender.m_x, defender.m_y - TILE_SIZE_PX, 0, -1, 1, 0);
             }
             break;
         case AI_DEFENDER:
@@ -2313,7 +2313,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             return 1;
         }
         case PICKUP_RANDOMCOLORZ: {
-            m_triggerMgr->CycleMoveIcons(m_playerIndex, true);
+            m_triggerMgr->SetRandomGruntColors(m_playerIndex, true);
             return 1;
         }
         case PICKUP_SCREENSHAKE: {
@@ -2382,9 +2382,9 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
     {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
         if (pickupType == PICKUP_TOOB) {
-            play->BuildGruntTypeNameTable(PICKUP_TOOB, 1, 1, NULL);
+            play->SetGruntTypeAssetsLoaded(PICKUP_TOOB, 1, 1, NULL);
         } else {
-            play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
+            play->SetAssetGroupLoaded(m_animSetName, 1, 1, NULL);
         }
     }
     m_activePickupType = pickupType;

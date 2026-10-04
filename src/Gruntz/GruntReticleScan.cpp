@@ -181,7 +181,7 @@ i32 CGrunt::StepDefenderBehavior() {
                     }
                 }
 
-                TileSwitch(occTX, occTY, 0, m_arrivalFlags, 1, 0);
+                MoveToTile(occTX, occTY, 0, m_arrivalFlags, 1, 0);
 
                 i32 savedIndex = 0;
                 for (i32 restoreY = oldBounds.top; restoreY < oldBounds.bottom + 1; restoreY++) {
@@ -236,19 +236,19 @@ i32 CGrunt::StepDefenderBehavior() {
                     }
                 } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
                            || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
-                    TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
+                    MoveToTile(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
                     m_dwell = 0;
                 }
             }
         } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
                    || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
-            TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
+            MoveToTile(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
     } else if (occ == NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS
                && ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
                    || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y)) {
-        TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
+        MoveToTile(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
     }
 
     CMapMgr* grid = g_gameReg->GetTileGrid();

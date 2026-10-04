@@ -2017,7 +2017,7 @@ class EhFrameControls(unittest.TestCase):
         import io
 
         from gruntz.walls import eh_frame
-        row = dict(unit="grunt", name="?StepArrivalDrop@CGrunt@@QAEHXZ",
+        row = dict(unit="grunt", name="?MoveTo@CGrunt@@QAEHXZ",
                    rva="0x04b370", fuzzy=0.0, size=2960, verdict="BOTH",
                    cause="STATE_FLOW", extra_ctors=[], our_ctors=[], resited=[],
                    base_insn=877, tgt_insn=853, slot="[esp+0x68]",
@@ -2988,7 +2988,7 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
         from types import SimpleNamespace
 
         from gruntz.walls import diagnose as D
-        name = "?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z"
+        name = "?MoveTo@CGrunt@@QAEHHHHHHH@Z"
         callee = "?RemoveHead@CPtrList@@QAEPAXXZ"
         binding = SimpleNamespace(unit="u", name=name, rva=0x4B370)
         run = [f"{i:x}:\t90\tmov eax,0x{i:x}" for i in range(1, 11)]

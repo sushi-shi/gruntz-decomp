@@ -152,7 +152,7 @@ i32 CRollingBall::Update() {
         CWwdSpriteObject* lg2 = m_object;
         i32 playerIndex;
         i32 unitIndex;
-        if (g_gameReg->GetTriggerMgr()->FindGruntAt(
+        if (g_gameReg->GetTriggerMgr()->FindGruntInArea(
                 lg2->m_screenX,
                 lg2->m_screenY,
                 &lg2->m_area,

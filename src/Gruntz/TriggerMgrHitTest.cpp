@@ -1022,76 +1022,83 @@ GruntDirectionCell __stdcall TmDeflectStep(
 
 // @early-stop
 RVA(0x00075af0, 0x111)
-CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
-    i32 ix = x >> TILE_SHIFT_PX;
-    i32 iy = y >> TILE_SHIFT_PX;
-    CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
-    i32 attr = plane->OccupantAt(ix, iy);
-    if (attr == -1) {
+CGrunt* CTriggerMgr::FindGruntAtPoint(
+    i32 worldX,
+    i32 worldY,
+    i32* outPlayerIndex,
+    i32* outUnitIndex,
+    i32 requireExactPosition
+) {
+    i32 tileX = worldX >> TILE_SHIFT_PX;
+    i32 tileY = worldY >> TILE_SHIFT_PX;
+    CGruntzMapMgr* tileGrid = g_gameReg->GetTileGrid();
+    i32 packedIdentity = tileGrid->OccupantAt(tileX, tileY);
+    if (packedIdentity == -1) {
         return NULL;
     }
-    i32 playerIndex = GruntIdentity::UnpackPlayerIndex(attr);
-    i32 unitIndex = GruntIdentity::UnpackUnitIndex(attr);
-    CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->IsEntranceCommitted() == false) {
+    i32 playerIndex = GruntIdentity::UnpackPlayerIndex(packedIdentity);
+    i32 unitIndex = GruntIdentity::UnpackUnitIndex(packedIdentity);
+    CGrunt* grunt = UnitAt(playerIndex, unitIndex);
+    if (grunt == NULL || grunt->IsEntranceCommitted() == false) {
         return NULL;
     }
 
-    if (exact == 0) {
-        CGameObject* o = cell->m_object;
-        RECT box;
-        box.top = y - 7;
-        box.bottom = y + 7;
-        box.left = x - 7;
-        box.right = x + 7;
-        i32 ox = o->m_screenX - 7;
-        i32 oy = o->m_screenY - 7;
-        if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy) {
+    if (requireExactPosition == 0) {
+        CGameObject* object = grunt->m_object;
+        RECT queryBounds;
+        queryBounds.top = worldY - 7;
+        queryBounds.bottom = worldY + 7;
+        queryBounds.left = worldX - 7;
+        queryBounds.right = worldX + 7;
+        i32 gruntLeft = object->m_screenX - 7;
+        i32 gruntTop = object->m_screenY - 7;
+        if (queryBounds.left > gruntLeft + 14 || queryBounds.right < gruntLeft
+            || queryBounds.top > gruntTop + 14 || queryBounds.bottom < gruntTop) {
             return NULL;
         }
         *outPlayerIndex = playerIndex;
         *outUnitIndex = unitIndex;
-        return cell;
+        return grunt;
     }
-    CGameObject* o = cell->m_object;
-    if (o->m_screenX != x || o->m_screenY != y) {
+    CGameObject* object = grunt->m_object;
+    if (object->m_screenX != worldX || object->m_screenY != worldY) {
         return NULL;
     }
     *outPlayerIndex = playerIndex;
     *outUnitIndex = unitIndex;
-    return cell;
+    return grunt;
 }
 
 RVA(0x00075c60, 0x1ba)
-CGrunt* CTriggerMgr::FindGruntAt(
-    i32 px,
-    i32 py,
-    RECT* span,
+CGrunt* CTriggerMgr::FindGruntInArea(
+    i32 worldX,
+    i32 worldY,
+    RECT* tileExtents,
     i32* outPlayerIndex,
     i32* outUnitIndex,
-    RECT* src
+    RECT* collisionBounds
 ) {
-    i32 tcol = px >> TILE_SHIFT_PX;
-    i32 trow = py >> TILE_SHIFT_PX;
+    i32 tcol = worldX >> TILE_SHIFT_PX;
+    i32 trow = worldY >> TILE_SHIFT_PX;
     RECT rc;
-    if (src) {
-        CopyRect(&rc, src);
+    if (collisionBounds) {
+        CopyRect(&rc, collisionBounds);
     } else {
         SetRect(
             &rc,
-            px - span->left * TILE_SIZE_PX - 7,
-            py - span->top * TILE_SIZE_PX - 7,
-            span->right * TILE_SIZE_PX + px + 7,
-            span->bottom * TILE_SIZE_PX + py + 7
+            worldX - tileExtents->left * TILE_SIZE_PX - 7,
+            worldY - tileExtents->top * TILE_SIZE_PX - 7,
+            tileExtents->right * TILE_SIZE_PX + worldX + 7,
+            tileExtents->bottom * TILE_SIZE_PX + worldY + 7
         );
     }
-    i32 x = tcol - span->left - 1;
-    i32 xEnd = span->right + tcol + 1;
+    i32 x = tcol - tileExtents->left - 1;
+    i32 xEnd = tileExtents->right + tcol + 1;
 
     if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
         do {
-            i32 y = trow - span->top - 1;
-            i32 yEnd = span->bottom + trow + 1;
+            i32 y = trow - tileExtents->top - 1;
+            i32 yEnd = tileExtents->bottom + trow + 1;
             for (; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->GetTileGrid()->GetWidth())) {
                     continue;

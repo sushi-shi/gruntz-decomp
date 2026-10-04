@@ -511,137 +511,143 @@ i32 CPlay::SetEffectSpriteDurations() {
 }
 
 RVA(0x000dc6d0, 0x2e0)
-i32 CPlay::BuildGruntTypeNameTable(
-    PickupType typeIdx,
-    i32 mode,
-    i32 lightGate,
-    CMulti* finishGate
+i32 CPlay::SetGruntTypeAssetsLoaded(
+    PickupType gruntType,
+    i32 loadAssets,
+    i32 showLoadingText,
+    CMulti* multiplayerSession
 ) {
-    CString name("NORMALGRUNT");
-    switch (typeIdx) {
+    CString resourceGroup("NORMALGRUNT");
+    switch (gruntType) {
         case GRUNT_BOMB:
-            name = "BOMBGRUNT";
+            resourceGroup = "BOMBGRUNT";
             break;
         case GRUNT_BOOMERANG:
-            name = "BOOMERANGGRUNT";
+            resourceGroup = "BOOMERANGGRUNT";
             break;
         case GRUNT_BRICK:
-            name = "BRICKGRUNT";
+            resourceGroup = "BRICKGRUNT";
             break;
         case GRUNT_CLUB:
-            name = "CLUBGRUNT";
+            resourceGroup = "CLUBGRUNT";
             break;
         case GRUNT_GAUNTLETZ:
-            name = "GAUNTLETZGRUNT";
+            resourceGroup = "GAUNTLETZGRUNT";
             break;
         case GRUNT_GLOVEZ:
-            name = "GLOVEZGRUNT";
+            resourceGroup = "GLOVEZGRUNT";
             break;
         case GRUNT_GOOBER:
-            name = "GOOBERGRUNT";
+            resourceGroup = "GOOBERGRUNT";
             break;
         case GRUNT_GRAVITYBOOTZ:
-            name = "GRAVITYBOOTZGRUNT";
+            resourceGroup = "GRAVITYBOOTZGRUNT";
             break;
         case GRUNT_GUNHAT:
-            name = "GUNHATGRUNT";
+            resourceGroup = "GUNHATGRUNT";
             break;
         case GRUNT_NERFGUN:
-            name = "NERFGUNGRUNT";
+            resourceGroup = "NERFGUNGRUNT";
             break;
         case GRUNT_ROCK:
-            name = "ROCKGRUNT";
+            resourceGroup = "ROCKGRUNT";
             break;
         case GRUNT_SHIELD:
-            name = "SHIELDGRUNT";
+            resourceGroup = "SHIELDGRUNT";
             break;
         case GRUNT_SHOVEL:
-            name = "SHOVELGRUNT";
+            resourceGroup = "SHOVELGRUNT";
             break;
         case GRUNT_SPRING:
-            name = "SPRINGGRUNT";
+            resourceGroup = "SPRINGGRUNT";
             break;
         case GRUNT_SPY:
-            name = "SPYGRUNT";
+            resourceGroup = "SPYGRUNT";
             break;
         case GRUNT_SWORD:
-            name = "SWORDGRUNT";
+            resourceGroup = "SWORDGRUNT";
             break;
         case GRUNT_TIMEBOMB:
-            name = "TIMEBOMBGRUNT";
+            resourceGroup = "TIMEBOMBGRUNT";
             break;
         case GRUNT_TOOB:
-            name = "TOOBGRUNT";
-            if (BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate) == 0) {
+            resourceGroup = "TOOBGRUNT";
+            if (SetAssetGroupLoaded(resourceGroup, loadAssets, showLoadingText, multiplayerSession)
+                == 0) {
                 return 0;
             }
-            name = "TOOBWATERGRUNT";
-            return BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate);
+            resourceGroup = "TOOBWATERGRUNT";
+            return SetAssetGroupLoaded(
+                resourceGroup,
+                loadAssets,
+                showLoadingText,
+                multiplayerSession
+            );
         case GRUNT_WAND:
-            name = "WANDGRUNT";
+            resourceGroup = "WANDGRUNT";
             break;
         case GRUNT_WARPSTONE:
-            name = "WARPSTONEGRUNT";
+            resourceGroup = "WARPSTONEGRUNT";
             break;
         case GRUNT_WELDER:
-            name = "WELDERGRUNT";
+            resourceGroup = "WELDERGRUNT";
             break;
         case GRUNT_WINGZ:
-            name = "WINGZGRUNT";
+            resourceGroup = "WINGZGRUNT";
             break;
         case GRUNT_BABYWALKER:
-            name = "BABYWALKERGRUNT";
+            resourceGroup = "BABYWALKERGRUNT";
             break;
         case GRUNT_BEACHBALL:
-            name = "BEACHBALLGRUNT";
+            resourceGroup = "BEACHBALLGRUNT";
             break;
         case GRUNT_BIGWHEEL:
-            name = "BIGWHEELGRUNT";
+            resourceGroup = "BIGWHEELGRUNT";
             break;
         case GRUNT_GOKART:
-            name = "GOKARTGRUNT";
+            resourceGroup = "GOKARTGRUNT";
             break;
         case GRUNT_JACKINTHEBOX:
-            name = "JACKINTHEBOXGRUNT";
+            resourceGroup = "JACKINTHEBOXGRUNT";
             break;
         case GRUNT_JUMPROPE:
-            name = "JUMPROPEGRUNT";
+            resourceGroup = "JUMPROPEGRUNT";
             break;
         case GRUNT_POGOSTICK:
-            name = "POGOSTICKGRUNT";
+            resourceGroup = "POGOSTICKGRUNT";
             break;
         case GRUNT_SCROLL:
-            name = "SCROLLGRUNT";
+            resourceGroup = "SCROLLGRUNT";
             break;
         case GRUNT_SQUEAKTOY:
-            name = "SQUEAKTOYGRUNT";
+            resourceGroup = "SQUEAKTOYGRUNT";
             break;
         case GRUNT_YOYO:
-            name = "YOYOGRUNT";
+            resourceGroup = "YOYOGRUNT";
             break;
         case GRUNT_HAREKRISHNA:
-            name = "HAREKRISHNAGRUNT";
+            resourceGroup = "HAREKRISHNAGRUNT";
             break;
         case GRUNT_REAPER:
-            name = "REAPERGRUNT";
+            resourceGroup = "REAPERGRUNT";
             break;
     }
-    return BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate);
+    return SetAssetGroupLoaded(resourceGroup, loadAssets, showLoadingText, multiplayerSession);
 }
 
 RVA(0x000dca70, 0x4a4)
-i32 CState::BuildAssetNamespacePrefixes(
-    const CString& name,
-    i32 mode,
-    i32 lightGate,
-    CMulti* finishGate
+i32 CState::SetAssetGroupLoaded(
+    const CString& resourceGroup,
+    i32 loadAssets,
+    i32 showLoadingText,
+    CMulti* multiplayerSession
 ) {
     i32 result;
-    if (mode != 0) {
-        if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
+    if (loadAssets != 0) {
+        if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup) == 0) {
             g_gameReg->VoiceMgr()->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))->DestroyAllAnims();
-            if (lightGate != 0) {
+            if (showLoadingText != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
                 RECT r = g_gameReg->World()->GetLevel()->GetViewportRect();
@@ -650,49 +656,49 @@ i32 CState::BuildAssetNamespacePrefixes(
                 DrawTextToFrontSurface(g_gameReg->World(), &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = true;
-            CRezDir* tree = m_gruntResources->GetDirFromPath("IMAGEZ_" + name);
+            CRezDir* tree = m_gruntResources->GetDirFromPath("IMAGEZ_" + resourceGroup);
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
-            m_world->GetImageRegistry()->InstallTree(tree, "GRUNTZ_" + name, "_");
+            m_world->GetImageRegistry()->InstallTree(tree, "GRUNTZ_" + resourceGroup, "_");
             g_resourceInstallActive = false;
-            if (finishGate != NULL) {
-                finishGate->SendLobbyKeepAlive();
+            if (multiplayerSession != NULL) {
+                multiplayerSession->SendLobbyKeepAlive();
             }
         }
-        if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            CRezDir* tree = m_gruntResources->GetDirFromPath("SOUNDZ_" + name);
+        if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup) == 0) {
+            CRezDir* tree = m_gruntResources->GetDirFromPath("SOUNDZ_" + resourceGroup);
             if (tree != NULL) {
 
                 m_world->SoundRegistry()
-                    ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
+                    ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + resourceGroup, "_");
             }
         }
-        if (m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            CRezDir* tree = m_gruntResources->GetDirFromPath("ANIZ_" + name);
+        if (m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup) == 0) {
+            CRezDir* tree = m_gruntResources->GetDirFromPath("ANIZ_" + resourceGroup);
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
             m_world->GetAnimationRegistry()
-                ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
+                ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + resourceGroup, "_");
         }
         result = 1;
         goto done;
     }
 
-    if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->GetImageRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
-        if (finishGate != NULL) {
-            finishGate->SendLobbyKeepAlive();
+    if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup)) {
+        m_world->GetImageRegistry()->RemoveWithPrefix("GRUNTZ_" + resourceGroup, "_");
+        if (multiplayerSession != NULL) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
-    if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup)) {
+        m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_" + resourceGroup, "_");
     }
-    if (m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->GetAnimationRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup)) {
+        m_world->GetAnimationRegistry()->RemoveWithPrefix("GRUNTZ_" + resourceGroup, "_");
     }
     result = 1;
 done:
@@ -702,69 +708,69 @@ done:
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000dd050, 0x24b)
-i32 CPlay::BuildGruntNamespaceList(CMulti* finishGate) {
+i32 CPlay::LoadGruntAssetNamespaces(CMulti* multiplayerSession) {
     CString s;
     s = "NORMALGRUNT";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     s = "DEATHZ";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     s = "ENTRANCEZ";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     s = "EXITZ";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     s = "GRUNTPUDDLE";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     s = "PICKUPS";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     s = "BOMBGRUNT";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
         return 0;
     }
     return 1;
 }
 
 RVA(0x000dd340, 0x189)
-i32 CPlay::BuildWarlordNameTable(CMulti* finishGate) {
+i32 CPlay::UnloadGruntAndWarlordAssets(CMulti* multiplayerSession) {
     for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
-        if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 0, 0, NULL)) {
+        if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 0, 0, NULL)) {
             return 0;
         }
     }
-    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 0, 0, finishGate)) {
+    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 0, 0, multiplayerSession)) {
         return 0;
     }
-    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 0, 0, finishGate)) {
+    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 0, 0, multiplayerSession)) {
         return 0;
     }
     CString s("WARLORDZ_NAPOLEAN");
-    if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 0, 0, multiplayerSession)) {
         return 0;
     }
     s = "WARLORDZ_VIKING";
-    if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 0, 0, multiplayerSession)) {
         return 0;
     }
     s = "WARLORDZ_PATTON";
-    if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
+    if (!SetAssetGroupLoaded(s, 0, 0, multiplayerSession)) {
         return 0;
     }
     return 1;
 }
 
 RVA(0x000dd540, 0x241)
-i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
+i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
     CPlay* self = this;
     if (!self->m_world) {
         return 0;
@@ -777,8 +783,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_NORMALGRUNT", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -788,8 +794,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_DEATHZ", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -799,8 +805,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_ENTRANCEZ", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -810,8 +816,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_EXITZ", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -821,8 +827,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_GRUNTPUDDLE", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -832,8 +838,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_PICKUPS", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -843,8 +849,8 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             return 0;
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_BOMBGRUNT", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     g_resourceInstallActive = false;
@@ -852,7 +858,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
 }
 
 RVA(0x000dd830, 0x1e3)
-i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
+i32 CPlay::LoadGruntSoundNamespaces(CMulti* multiplayerSession) {
     CPlay* self = this;
     if (!self->m_world) {
         return 0;
@@ -889,8 +895,8 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
             (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
         }
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
@@ -900,8 +906,8 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
             (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
@@ -911,8 +917,8 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
             (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_PICKUPS", "_");
         }
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
@@ -922,15 +928,15 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
             (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     return 1;
 }
 
 RVA(0x000ddaa0, 0x228)
-i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
+i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
     CPlay* self = this;
     if (!self->m_world) {
         return 0;
@@ -942,8 +948,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_DEATHZ")) {
@@ -953,8 +959,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_DEATHZ", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
@@ -964,8 +970,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_EXITZ")) {
@@ -975,8 +981,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
@@ -986,8 +992,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_PICKUPS")) {
@@ -997,8 +1003,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_PICKUPS", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
@@ -1008,8 +1014,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         }
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
-        if (notify) {
-            notify->SendLobbyKeepAlive();
+        if (multiplayerSession) {
+            multiplayerSession->SendLobbyKeepAlive();
         }
     }
     return 1;

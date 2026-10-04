@@ -86,11 +86,21 @@ public:
 
     void UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel);
 
-    CGrunt*
-    CellHitTest(i32 px, i32 py, i32* outPlayerIndex, i32* outUnitIndex, i32 startPlayerIndex);
+    CGrunt* PickGruntAtWorldPoint(
+        i32 worldX,
+        i32 worldY,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        i32 playerSelector
+    );
 
-    CGrunt*
-    ScreenToCell(i32 sx, i32 sy, i32* outPlayerIndex, i32* outUnitIndex, i32 startPlayerIndex);
+    CGrunt* PickGruntAtScreenPoint(
+        i32 screenX,
+        i32 screenY,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        i32 playerSelector
+    );
 
     void Cleanup();
 
@@ -106,8 +116,14 @@ public:
 
     i32 RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 removeFromGroups);
 
-    i32
-    SpawnPuddle(i32 x, i32 y, i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
+    i32 SpawnPuddle(
+        i32 x,
+        i32 y,
+        i32 playerIndex,
+        i32 colorIndex,
+        b32 animatePlacement,
+        i32 gaugePoints
+    );
 
     i32 PlacePuddle(CGameObject* sprite, b32 animatePlacement);
 
@@ -130,7 +146,7 @@ public:
         i32 y,
         i32 z,
         GruntEntranceMode mode,
-        i32 kindDefault,
+        i32 defaultColorIndex,
         i32 typeKind,
         i32 carriedToyType,
         i32 aiType,
@@ -162,12 +178,24 @@ public:
         RECT* m_span;
         i32 m_outPlayerIndex;
     };
-    void HitTestApply(i32 x, i32 y, HitSpanArg span);
+    void CheckWarpStoneExit(i32 x, i32 y, HitSpanArg span);
 
-    CGrunt* HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact);
+    CGrunt* FindGruntAtPoint(
+        i32 worldX,
+        i32 worldY,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        i32 requireExactPosition
+    );
 
-    CGrunt*
-    FindGruntAt(i32 px, i32 py, RECT* span, i32* outPlayerIndex, i32* outUnitIndex, RECT* src);
+    CGrunt* FindGruntInArea(
+        i32 worldX,
+        i32 worldY,
+        RECT* tileExtents,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        RECT* collisionBounds
+    );
 
     void EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY);
     void EnqueueSelectedToolUse(b32 isLocalCommand, i32 targetX, i32 targetY, b32 targetIsGrunt);
@@ -197,11 +225,11 @@ public:
 
     i32 HandleActionOptionsPointer(i32 x, i32 y);
 
-    i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
+    i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 colorIndex);
 
     void LoseLevelWarpStone();
 
-    i32 CycleMoveIcons(i32 skipPlayerIndex, b32 enable);
+    i32 SetRandomGruntColors(i32 skipPlayerIndex, b32 enable);
 
     i32 SaveSelectionGroup(i32 idx);
 
@@ -342,6 +370,6 @@ public:
     b32 m_playerControlEnabled;
 };
 
-extern i32 g_groupSentinel;
+extern i32 g_defaultGruntColorIndex;
 
 #endif

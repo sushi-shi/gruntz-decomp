@@ -38,8 +38,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
-    m_struckCount = 0;
-    m_struckTiming.Clear();
+    m_selectionClickCount = 0;
+    m_selectionClickResetTimer.Clear();
 
     SERIALREF(m_selectedSprite);
     SERIALREF(m_toySprite);
@@ -93,8 +93,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalPending, sizeof(m_arrivalPending));
     ar->Read(&m_playerIndex, sizeof(m_playerIndex));
     ar->Read(&m_unitIndex, sizeof(m_unitIndex));
-    ar->Read(&m_moveIcon, sizeof(m_moveIcon));
-    ar->Read(&m_savedMoveIcon, sizeof(m_savedMoveIcon));
+    ar->Read(&m_colorIndex, sizeof(m_colorIndex));
+    ar->Read(&m_savedColorIndex, sizeof(m_savedColorIndex));
     ar->Read(&m_entranceCommitted, sizeof(m_entranceCommitted));
     ar->Read(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
     ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
@@ -106,7 +106,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_daFlag, sizeof(m_daFlag));
     ar->Read(&m_toyBreakStarted, sizeof(m_toyBreakStarted));
     ar->Read(&m_bombRunStarting, sizeof(m_bombRunStarting));
-    ar->Read(&m_arrivalActive, sizeof(m_arrivalActive));
+    ar->Read(&m_actionTargetsGrunt, sizeof(m_actionTargetsGrunt));
     ar->Read(&m_reachRect, sizeof(m_reachRect));
     ar->Read(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
     ar->Read(&m_toyUseRect, sizeof(m_toyUseRect));
@@ -210,7 +210,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     b32 flag = (m_activePickupType >= PICKUP_TOYZ_FIRST);
-    CShadeTable* r = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), flag);
+    CShadeTable* r = g_gameReg->GruntPalettes()->GetShadeTable(IDX(m_colorIndex), flag);
     CWwdSpriteObject* cb = m_object;
     cb->SetDrawFill(SHADE_PAL_16, r);
 

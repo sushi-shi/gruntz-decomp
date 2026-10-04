@@ -204,14 +204,14 @@ i32 CGruntPuddle::Idle() {
 }
 
 RVA(0x00040c30, 0xb3)
-i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints) {
+i32 CGruntPuddle::Place(i32 playerIndex, i32 colorIndex, b32 animatePlacement, i32 gaugePoints) {
     CWwdSpriteObject* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
     m_tileY = o->m_screenY >> TILE_SHIFT_PX;
     m_gaugePoints = gaugePoints;
     m_playerIndex = playerIndex;
-    m_moveIcon = moveIcon;
-    CShadeTable* shade = g_gameReg->SpriteTable()->GetSel(moveIcon, 0);
+    m_colorIndex = colorIndex;
+    CShadeTable* shade = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
     CWwdSpriteObject* sprite = m_object;
     sprite->SetDrawFill(SHADE_PAL_16, shade);
     m_wwdObject->Show();
@@ -275,7 +275,7 @@ i32 CGruntPuddle::SerializeDispatch(
             ar->Write(&m_placed, sizeof(m_placed));
             ar->Write(&m_gaugePoints, sizeof(m_gaugePoints));
             ar->Write(&m_playerIndex, sizeof(m_playerIndex));
-            ar->Write(&m_moveIcon, sizeof(m_moveIcon));
+            ar->Write(&m_colorIndex, sizeof(m_colorIndex));
             break;
         case SERIAL_LOAD:
             ar->Read(&m_tileX, sizeof(m_tileX));
@@ -284,12 +284,12 @@ i32 CGruntPuddle::SerializeDispatch(
             ar->Read(&m_placed, sizeof(m_placed));
             ar->Read(&m_gaugePoints, sizeof(m_gaugePoints));
             ar->Read(&m_playerIndex, sizeof(m_playerIndex));
-            ar->Read(&m_moveIcon, sizeof(m_moveIcon));
+            ar->Read(&m_colorIndex, sizeof(m_colorIndex));
             break;
         case SERIAL_POSTLOAD: {
-            CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(m_moveIcon, 0);
+            CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(m_colorIndex, 0);
             if (sel == NULL) {
-                sel = g_gameReg->SpriteTable()->GetSel(1, 0);
+                sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
             }
             CGameObject* obj = m_object;
             obj->SetDrawFill(SHADE_PAL_16, sel);
@@ -440,8 +440,8 @@ i32 CTeleporter::Update() {
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found =
-        mgr->GetTriggerMgr()->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* found = mgr->GetTriggerMgr()
+                        ->FindGruntAtPoint(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (found == NULL) {
         return 0;
     }

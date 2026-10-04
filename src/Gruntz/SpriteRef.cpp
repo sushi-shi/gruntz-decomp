@@ -13,9 +13,9 @@
 #include <Io/GameSave.h>
 
 RVA(0x000e2df0, 0x3f0)
-i32 CSpriteRef::Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind) {
+i32 CGruntPalette::Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind) {
     m_cache = cache;
-    m_alphaKey = shade;
+    m_shadeTable = shade;
     u8 r1, g1, b1;
     u8 r2, g2, b2;
     u8 r3, g3, b3;
@@ -229,11 +229,11 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kin
 }
 
 RVA(0x000e32e0, 0x25)
-void CSpriteRef::Free() {
+void CGruntPalette::Free() {
     CShadeTableCache* cache = m_cache;
-    if (cache && m_alphaKey) {
-        cache->FindRemove(m_alphaKey);
+    if (cache && m_shadeTable) {
+        cache->FindRemove(m_shadeTable);
         m_cache = NULL;
-        m_alphaKey = NULL;
+        m_shadeTable = NULL;
     }
 }

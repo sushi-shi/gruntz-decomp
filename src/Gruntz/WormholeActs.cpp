@@ -64,12 +64,12 @@ i32 CExitTrigger::AdvanceAnim() {
         CWwdSpriteObject* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
-        g_gameReg->GetTriggerMgr()->HitTestApply(trig->m_screenX, trig->m_screenY, span);
+        g_gameReg->GetTriggerMgr()->CheckWarpStoneExit(trig->m_screenX, trig->m_screenY, span);
     } else if (m_resolved != false) {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
         CWwdSpriteObject* obj = m_object;
-        if (g_gameReg->GetTriggerMgr()->FindGruntAt(
+        if (g_gameReg->GetTriggerMgr()->FindGruntInArea(
                 obj->m_screenX,
                 obj->m_screenY,
                 &obj->m_area,
@@ -122,7 +122,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchGruntCreationPointLogic
                     && cur->GetSmarts() == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
-                    CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
+                    CShadeTable* tbl = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->GetPlayer(hitPlayerIndex).GetColor()),
                         0
                     );
@@ -139,7 +139,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchFortressFlagLogic
                     && cur->GetSmarts() == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
-                    CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
+                    CShadeTable* tbl = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->GetPlayer(hitPlayerIndex).GetColor()),
                         0
                     );

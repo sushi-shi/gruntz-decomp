@@ -393,9 +393,9 @@ i32 CInGameIcon::HandleInput() {
         if (icon < 0 || icon >= TINT_COUNT) {
             icon = IDX(TINT_ORANGE);
         }
-        rec = g_gameReg->SpriteTable()->GetSel(icon, 0);
+        rec = g_gameReg->GruntPalettes()->GetShadeTable(icon, 0);
         if (rec == NULL) {
-            rec = g_gameReg->SpriteTable()->GetSel(IDX(TINT_GREEN), 0);
+            rec = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
         }
     } else if (cmd == PICKUP_SCROLL || cmd == PICKUP_WAND) {
         i32 icon;
@@ -422,9 +422,9 @@ i32 CInGameIcon::HandleInput() {
                 icon = IDX(TINT_BLACK);
                 break;
         }
-        rec = g_gameReg->SpriteTable()->GetSel(icon, 0);
+        rec = g_gameReg->GruntPalettes()->GetShadeTable(icon, 0);
         if (rec == NULL) {
-            rec = g_gameReg->SpriteTable()->GetSel(IDX(TINT_GREEN), 0);
+            rec = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
         }
     } else {
         return 1;
@@ -526,7 +526,7 @@ i32 CInGameIcon::PeekCycle() {
         return 0;
     }
     if (m_peekTiming.Expired()) {
-        CShadeTable* rec = g_gameReg->SpriteTable()->GetSel(GetRandomNumber() % 0x11, 0);
+        CShadeTable* rec = g_gameReg->GruntPalettes()->GetShadeTable(GetRandomNumber() % 0x11, 0);
         CWwdSpriteObject* o = m_object;
         o->SetDrawFill(SHADE_PAL_16, rec);
         m_peekTiming.Start(0xfa);
@@ -809,9 +809,13 @@ i32 CInGameText::Update() {
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found =
-        g_gameReg->GetTriggerMgr()
-            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
+        m_object->m_screenX,
+        m_object->m_screenY,
+        &playerIndex,
+        &unitIndex,
+        1
+    );
 
     if (found != NULL) {
         if (playerIndex != g_curPlayer) {

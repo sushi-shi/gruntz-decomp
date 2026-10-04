@@ -496,16 +496,18 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
 }
 
 RVA(0x00057800, 0x64)
-void CGrunt::SelectMoveIcon(i32 moveIconId) {
-    if (IDX(m_moveIcon) == moveIconId) {
+void CGrunt::SetColorIndex(i32 colorIndex) {
+    if (IDX(m_colorIndex) == colorIndex) {
         return;
     }
-    m_moveIcon = static_cast<PickupType>(moveIconId);
-    if (moveIconId < 0 || moveIconId >= IDX(PICKUP_TIMEBOMB)) {
-        m_moveIcon = PICKUP_NONE;
+    m_colorIndex = static_cast<PickupType>(colorIndex);
+    if (colorIndex < 0 || colorIndex >= IDX(PICKUP_TIMEBOMB)) {
+        m_colorIndex = PICKUP_NONE;
     }
-    CShadeTable* sel =
-        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_activePickupType >= PICKUP_TOYZ_FIRST);
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
+        IDX(m_colorIndex),
+        m_activePickupType >= PICKUP_TOYZ_FIRST
+    );
     CWwdSpriteObject* h = m_object;
     h->SetDrawFill(SHADE_PAL_16, sel);
 }
@@ -808,32 +810,32 @@ i32 CGrunt::PathScan() {
 }
 
 RVA(0x000588f0, 0x1ea)
-void CGrunt::OnStruck(b32 wasHit) {
-    m_struckTiming.Start(0xfa0);
-    i32 c = ++m_struckCount;
+void CGrunt::PlaySelectionVoice(b32 isOwnedByLocalPlayer) {
+    m_selectionClickResetTimer.Start(0xfa0);
+    i32 clickCount = ++m_selectionClickCount;
 
-    if (wasHit == false) {
+    if (isOwnedByLocalPlayer == false) {
         if (m_powerupType == GRUNT_GHOST) {
             return;
         }
-        if (c < 5) {
+        if (clickCount < 5) {
             PLAY_VOICE_IN_VIEW(0x370);
             return;
         }
         PLAY_VOICE_IN_VIEW(0x371);
-        m_struckCount = 0;
+        m_selectionClickCount = 0;
         return;
     }
 
-    if (c < 5) {
+    if (clickCount < 5) {
         PLAY_VOICE_IN_VIEW(0x320);
         return;
     }
-    if (c < 0xa) {
+    if (clickCount < 0xa) {
         PLAY_VOICE_IN_VIEW(0x321);
         return;
     }
-    m_struckCount = 0;
+    m_selectionClickCount = 0;
     PLAY_VOICE_IN_VIEW(0x322);
 }
 
@@ -912,7 +914,7 @@ i32 CGrunt::HandleCombatContact(
 
         i32 arrivalAction = m_arrivalAction;
         if ((arrivalAction == ARRIVAL_ACTION_USE_TOY || arrivalAction == ARRIVAL_ACTION_USE_TOOL)
-            && m_arrivalActive != false) {
+            && m_actionTargetsGrunt != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
@@ -1133,7 +1135,7 @@ i32 CGrunt::ApplyCombatHitEffects(
                    this->m_playerIndex,
                    this->m_unitIndex,
                    srcPlayerIndex,
-                   IDX(enemy->GetMoveIcon())
+                   IDX(enemy->GetColorIndex())
                ) != 0) {
             i32 h = enemy->GetHealth() + 0x19;
             enemy->SetHealth(min(h, HEALTH_FULL));
@@ -1712,8 +1714,8 @@ static inline void ExpireBattlezCombatState(CGrunt* grunt) {
 
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
-    if (m_struckTiming.Expired()) {
-        m_struckCount = 0;
+    if (m_selectionClickResetTimer.Expired()) {
+        m_selectionClickCount = 0;
     }
     m_dwell += g_frameDelta;
 
@@ -1991,7 +1993,7 @@ afterTile:
                     i32 baseCol = sx >> TILE_SHIFT_PX;
                     i32 wanderRow = rand() % 6 + baseRow - 3;
                     i32 wanderCol = rand() % 6 + baseCol - 3;
-                    TileSwitch(wanderCol, wanderRow, 0, m_arrivalFlags, 0, 0);
+                    MoveToTile(wanderCol, wanderRow, 0, m_arrivalFlags, 0, 0);
                     m_dwell = 0;
                 }
                 goto afterArrival;
@@ -2147,11 +2149,13 @@ updatePowerup:
 
             if (m_shimmerTiming.Expired()) {
                 i32 pick = rand() % 16;
-                if (pick == IDX(m_moveIcon)) {
+                if (pick == IDX(m_colorIndex)) {
                     pick = 0x10;
                 }
-                CShadeTable* sel =
-                    g_gameReg->SpriteTable()->GetSel(pick, m_activePickupType >= PICKUP_TOYZ_FIRST);
+                CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
+                    pick,
+                    m_activePickupType >= PICKUP_TOYZ_FIRST
+                );
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 obj->SetDrawFill(cmd, sel);
@@ -2407,7 +2411,7 @@ void CGrunt::AdvanceMotion() {
             if (m_arrivalAction != ARRIVAL_ACTION_NONE) {
                 i32 result = -1;
                 if (m_arrivalAction == ARRIVAL_ACTION_USE_TOOL) {
-                    if (m_arrivalActive != false) {
+                    if (m_actionTargetsGrunt != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
@@ -2416,7 +2420,7 @@ void CGrunt::AdvanceMotion() {
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.Set(x, y);
-                                if (StepArrivalDrop(x, y, ARRIVAL_ACTION_USE_TOOL, -1, 1, 0)
+                                if (MoveTo(x, y, ARRIVAL_ACTION_USE_TOOL, -1, 1, 0)
                                     == ARRIVAL_ACTION_NONE) {
                                     m_arrivalAction = ARRIVAL_ACTION_NONE;
                                 }
@@ -2450,7 +2454,7 @@ void CGrunt::AdvanceMotion() {
                         );
                     }
                 } else if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY) {
-                    if (m_arrivalActive != false) {
+                    if (m_actionTargetsGrunt != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
@@ -2459,7 +2463,7 @@ void CGrunt::AdvanceMotion() {
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.Set(x, y);
-                                if (StepArrivalDrop(x, y, ARRIVAL_ACTION_USE_TOY, -1, 1, 0)
+                                if (MoveTo(x, y, ARRIVAL_ACTION_USE_TOY, -1, 1, 0)
                                     == ARRIVAL_ACTION_NONE) {
                                     m_arrivalAction = ARRIVAL_ACTION_NONE;
                                 }

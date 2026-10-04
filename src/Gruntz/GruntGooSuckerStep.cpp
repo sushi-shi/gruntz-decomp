@@ -157,7 +157,7 @@ L_ed006b:
     {
         Coord cc;
         g->GetScreenPos(&cc);
-        if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
+        if (MoveToTile(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
             != 0) {
             if (m_blockedVoicePending != false) {
                 PLAY_VOICE_IF_VISIBLE(0x366);
@@ -235,7 +235,7 @@ L_scanb:
                 );
                 SetEntrancePos(1, 1);
             } else {
-                TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
+                MoveToTile(bestX, bestY, 0, m_arrivalFlags, 1, 0);
             }
         }
         grid->Clip(NULL);

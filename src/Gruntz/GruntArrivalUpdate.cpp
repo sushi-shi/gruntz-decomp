@@ -107,7 +107,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
                 if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
                     g->GetScreenPos(&c);
-                    if (TileSwitch(
+                    if (MoveToTile(
                             c.m_x >> TILE_SHIFT_PX,
                             c.m_y >> TILE_SHIFT_PX,
                             0,
@@ -131,7 +131,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
                     if (lo < g_gameReg->GetTileGrid()->GetWidth()
                         && lo2 < g_gameReg->GetTileGrid()->GetHeight()) {
-                        TileSwitch(
+                        MoveToTile(
                             static_cast<i32>(lo),
                             static_cast<i32>(lo2),
                             0,
@@ -161,7 +161,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
                     this->m_aiState = AISTATE_SEEK;
                 } else {
-                    StepArrivalDrop(
+                    MoveTo(
                         slot->m_lastTilePx.m_x,
                         slot->m_lastTilePx.m_y,
                         0,
