@@ -106,13 +106,13 @@ RVA(0x00115440, 0x45)
 i32 DrawTextToFrontSurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    RECT* bounds,
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 ) {
     CDDrawFrontSurface* frontSurface = surfaceMgr->GetDisplayBuffers()->GetFrontSurface();
 
@@ -122,14 +122,14 @@ i32 DrawTextToFrontSurface(
     return EngStr_RenderText(
         surfaceMgr,
         text,
-        box,
+        bounds,
         frontSurface->GetSurface(),
-        fontSel,
-        shadow,
-        r,
-        g,
-        b,
-        flag
+        fontSelection,
+        drawShadow,
+        red,
+        green,
+        blue,
+        centerText
     );
 }
 
@@ -137,13 +137,13 @@ RVA(0x001154b0, 0x45)
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    RECT* bounds,
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 ) {
     CRenderBuffer* overlaySurface = surfaceMgr->GetDisplayBuffers()->m_overlayBuffer;
 
@@ -153,27 +153,27 @@ i32 DrawTextToOverlaySurface(
     return EngStr_RenderText(
         surfaceMgr,
         text,
-        box,
+        bounds,
         overlaySurface->GetSurface(),
-        fontSel,
-        shadow,
-        r,
-        g,
-        b,
-        flag
+        fontSelection,
+        drawShadow,
+        red,
+        green,
+        blue,
+        centerText
     );
 }
 RVA(0x00115520, 0x45)
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
+    RECT* bounds,
+    i32 fontSelection,
+    i32 drawShadow,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 centerText
 ) {
     CRenderBuffer* backSurface = surfaceMgr->GetDisplayBuffers()->GetBackBuffer();
     if (backSurface == NULL) {
@@ -182,13 +182,13 @@ i32 DrawTextToBackSurface(
     return EngStr_RenderText(
         surfaceMgr,
         text,
-        box,
+        bounds,
         backSurface->GetSurface(),
-        fontSel,
-        shadow,
-        r,
-        g,
-        b,
-        flag
+        fontSelection,
+        drawShadow,
+        red,
+        green,
+        blue,
+        centerText
     );
 }

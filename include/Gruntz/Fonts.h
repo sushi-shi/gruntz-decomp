@@ -5,7 +5,7 @@
 
 i32 InitializeFonts();
 
-extern b32 g_loadedFlag;
+extern b32 g_fontsInitialized;
 i32 FreeFontsMemory();
 
 #endif // GRUNTZ_GRUNTZ_FONTS_H
