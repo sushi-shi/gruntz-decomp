@@ -134,7 +134,7 @@ i32 CStaticHazard::UpdateIdleState() {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;
-    u32 base = static_cast<u32>(m_object->m_points);
+    u32 base = static_cast<u32>(m_object->GetPoints());
     if (phase <= base) {
         return 0;
     }
@@ -151,7 +151,7 @@ i32 CStaticHazard::UpdateIdleState() {
 
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::UpdateActiveState() {
-    u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
+    u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->GetPoints());
     u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
     if (rem > static_cast<u32>(m_activeWindow)) {
 

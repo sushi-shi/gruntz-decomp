@@ -431,8 +431,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
             northBall->m_smarts = 0;
-            northBall->m_points =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            northBall->SetPoints(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
+            );
 
             CWwdSpriteObject* eastBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
@@ -448,8 +449,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
             eastBall->m_smarts = 0;
-            eastBall->m_points =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            eastBall->SetPoints(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
+            );
 
             CWwdSpriteObject* southBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
@@ -465,8 +467,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
             southBall->m_smarts = 0;
-            southBall->m_points =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            southBall->SetPoints(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
+            );
 
             CWwdSpriteObject* westBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
@@ -482,8 +485,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
             westBall->m_smarts = 0;
-            westBall->m_points =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            westBall->SetPoints(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
+            );
             return 1;
         }
         default:

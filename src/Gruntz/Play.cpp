@@ -4510,7 +4510,7 @@ b32 CPlay::PlaceStartGruntz() {
                     obj->GetScore(),
                     obj->m_powerup,
                     obj->m_damage,
-                    obj->m_points,
+                    obj->GetPoints(),
                     obj->m_direction,
                     record->m_minX,
                     record->m_maxX,
@@ -4945,7 +4945,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->GetLogicRecord()->GetUserRect2(),
                         0,
                         obj->m_damage,
-                        obj->m_points,
+                        obj->GetPoints(),
                         obj->m_health
                     )) {
                     MODAL_REPORT_AT(
@@ -4972,7 +4972,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->GetLogicRecord()->GetUserRect2(),
                         obj->GetSmarts(),
                         obj->m_damage,
-                        obj->m_points,
+                        obj->GetPoints(),
                         0
                     )) {
                     MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
@@ -4998,7 +4998,7 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->GetLogicRecord()->GetUserRect2(),
                     obj->GetSmarts(),
                     obj->m_damage,
-                    obj->m_points,
+                    obj->GetPoints(),
                     0
                 )) {
                 MODAL_REPORT_AT(
@@ -5015,7 +5015,7 @@ i32 CPlay::ValidateLevelTiles() {
             if (m_levelTimer != NULL && m_mgr->GetGameMode() != GAMEMODE_MULTIPLAYER
                 && g_gameReg->GetEasyMode() != false
                 && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                i32 seconds = obj->m_points;
+                i32 seconds = obj->GetPoints();
                 i32 minutes = obj->GetScore();
                 seconds += seconds;
                 minutes += minutes;
@@ -5029,7 +5029,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (dispatch == DispatchInGameIconLogic) {
             if (obj->GetSmarts() == IDX(PICKUP_MEGAPHONE)) {
 
-                m_statusBar->QueuePickupReward(obj->m_points, obj->GetScore());
+                m_statusBar->QueuePickupReward(obj->GetPoints(), obj->GetScore());
             }
         } else if (dispatch == DispatchGruntCreationPointLogic) {
             if (obj->GetSmarts() == g_curPlayer) {
@@ -5176,7 +5176,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_id,
                     buf,
                     p->m_powerup,
-                    p->m_points,
+                    p->GetPoints(),
                     p->m_faceDirection
                 )
                 == NULL) {
@@ -5184,7 +5184,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->m_points, p->GetScore());
+                m_statusBar->QueuePickupReward(p->GetPoints(), p->GetScore());
             }
             p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchCoveredPowerupLogic) {
@@ -5230,7 +5230,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->GetLogicRecord()->GetUserRect2(),
                     p->GetSmarts(),
                     p->m_powerup,
-                    p->m_points,
+                    p->GetPoints(),
                     p->m_faceDirection
                 )
                 == NULL) {
@@ -5238,7 +5238,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->m_points, p->GetScore());
+                m_statusBar->QueuePickupReward(p->GetPoints(), p->GetScore());
             }
             p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
@@ -5276,7 +5276,7 @@ i32 CPlay::AddLevelGruntz() {
                 g->GetScore(),
                 g->m_powerup,
                 g->m_damage,
-                g->m_points,
+                g->GetPoints(),
                 g->m_direction,
                 g->GetLogicRecord()->m_minX,
                 g->GetLogicRecord()->m_maxX,
@@ -5610,7 +5610,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[v] = 1;
                     }
                 }
-                EnemyAiType aiType = static_cast<EnemyAiType>(obj->m_points);
+                EnemyAiType aiType = static_cast<EnemyAiType>(obj->GetPoints());
                 switch (aiType) {
                     case AI_BOMBER:
                         if (!BuildGruntTypeNameTable(PICKUP_BOMB, 1, 0, ctx)) {
@@ -5688,7 +5688,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             } else if (dispatch == DispatchInGameIconLogic) {
                 PickupType smarts = static_cast<PickupType>(obj->GetSmarts());
                 PickupType cv =
-                    smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
+                    smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->GetPoints()) : smarts;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
                     m_mgr->GetGameStats()->m_toolzAvailable++;
@@ -5727,36 +5727,37 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     }
                 } else if (item == PICKUP_TOYBOX) {
                     if (!BuildGruntTypeNameTable(
-                            static_cast<PickupType>(obj->m_points),
+                            static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
                             ctx
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->m_points] == 0) {
+                    if (loaded[obj->GetPoints()] == 0) {
                         BuildHelpReveal(false);
-                        loaded[obj->m_points] = 1;
+                        loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
-                            static_cast<PickupType>(obj->m_points),
+                            static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
                             ctx
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->m_points] == 0) {
+                    if (loaded[obj->GetPoints()] == 0) {
                         BuildHelpReveal(false);
-                        loaded[obj->m_points] = 1;
+                        loaded[obj->GetPoints()] = 1;
                     }
                 }
             } else if (dispatch == DispatchCoveredPowerupLogic
                        || dispatch == DispatchGiantRockLogic) {
                 PickupType powerup = static_cast<PickupType>(obj->m_powerup);
-                PickupType cv =
-                    powerup == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : powerup;
+                PickupType cv = powerup == PICKUP_MEGAPHONE
+                                    ? static_cast<PickupType>(obj->GetPoints())
+                                    : powerup;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
                     m_mgr->GetGameStats()->m_toolzAvailable++;
@@ -5795,29 +5796,29 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     }
                 } else if (item == PICKUP_TOYBOX) {
                     if (!BuildGruntTypeNameTable(
-                            static_cast<PickupType>(obj->m_points),
+                            static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
                             ctx
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->m_points] == 0) {
+                    if (loaded[obj->GetPoints()] == 0) {
                         BuildHelpReveal(false);
-                        loaded[obj->m_points] = 1;
+                        loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
-                            static_cast<PickupType>(obj->m_points),
+                            static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
                             ctx
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->m_points] == 0) {
+                    if (loaded[obj->GetPoints()] == 0) {
                         BuildHelpReveal(false);
-                        loaded[obj->m_points] = 1;
+                        loaded[obj->GetPoints()] = 1;
                     }
                 }
             }

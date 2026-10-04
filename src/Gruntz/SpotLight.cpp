@@ -80,7 +80,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     if (m_object->m_direction == 1) {
         m_angularVelocity = m_angularVelocity * DATA_COMPGEN(0x001ea3f8, -1.0);
     }
-    if (m_object->m_points == 1) {
+    if (m_object->GetPoints() == 1) {
         m_angle = 3.1415927;
     } else {
         m_angle = 0;
