@@ -150,14 +150,14 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
 
                 if (grunt->m_combatTiming.Expired() || grunt->GetPlayerIndex() != g_curPlayer) {
                     m_gameMgr->m_spriteFactory
-                        ->GetToolColor(IDX(grunt->m_moveIcon), teamColor, *pixel);
+                        ->GetToolColor(IDX(grunt->GetMoveIcon()), teamColor, *pixel);
                 } else if (static_cast<u32>(g_period100CountdownMs)
                            < MINIMAP_COMBAT_BLINK_PHASE_MS) {
 
                     GetTileColor(m_mapMgr->TileIdAt(x, y), *pixel);
                 } else {
                     m_gameMgr->m_spriteFactory
-                        ->GetToolColor(IDX(grunt->m_moveIcon), SPRITE_TEAM_COLOR_SECONDARY, *pixel);
+                        ->GetToolColor(IDX(grunt->GetMoveIcon()), SPRITE_TEAM_COLOR_SECONDARY, *pixel);
                 }
             } else {
                 u16 color;

@@ -26,6 +26,10 @@ public:
     CGruntPuddle() {}
     CGruntPuddle(CGameObject* obj);
 
+    i32 GetMoveIcon() const {
+        return m_moveIcon;
+    }
+
     i32 GetTileX() const {
         return m_tileX;
     }

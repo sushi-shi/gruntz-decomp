@@ -1122,7 +1122,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                    this->m_playerIndex,
                    this->m_unitIndex,
                    srcPlayerIndex,
-                   IDX(enemy->m_moveIcon)
+                   IDX(enemy->GetMoveIcon())
                ) != 0) {
             i32 h = enemy->m_health + 0x19;
             enemy->m_health = min(h, HEALTH_FULL);

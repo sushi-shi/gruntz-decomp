@@ -1821,7 +1821,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                     (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                     0x186a0,
                     GRUNT_ENTRANCE_RESURRECT,
-                    g->m_moveIcon,
+                    g->GetMoveIcon(),
                     0,
                     0,
                     aiType,
@@ -1842,7 +1842,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                         (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                         0x186a0,
                         GRUNT_ENTRANCE_RESURRECT,
-                        g->m_moveIcon,
+                        g->GetMoveIcon(),
                         0,
                         0,
                         0,
@@ -1955,7 +1955,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
                     if (enable != false) {
                         i32 t = rand() % 0x11;
                         if (g->m_savedMoveIcon == -1) {
-                            g->m_savedMoveIcon = IDX(g->m_moveIcon);
+                            g->m_savedMoveIcon = IDX(g->GetMoveIcon());
                         }
                         (static_cast<CGrunt*>(g))->SelectMoveIcon(t);
                         (static_cast<CPlay*>(g_gameReg->m_curState))->SetRandomMoveIconsCurse(true);

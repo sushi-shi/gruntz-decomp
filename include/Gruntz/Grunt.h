@@ -240,6 +240,10 @@ public:
         return m_entrancePx;
     }
 
+    PickupType GetMoveIcon() const {
+        return m_moveIcon;
+    }
+
     Coord LastTilePx() {
         return m_lastTilePx;
     }
