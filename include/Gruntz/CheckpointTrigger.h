@@ -21,10 +21,10 @@ public:
 
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
-    i32 Act();
+    i32 TryActivateCheckpoint();
     i32 AdvanceCheckpointAnimation();
-    i32 m_state[15];
-    i32 m_firstEmpty;
+    i32 m_switchKeys[15];
+    i32 m_switchCount;
 };
 
 #endif // GRUNTZ_CCHECKPOINTTRIGGER_H
