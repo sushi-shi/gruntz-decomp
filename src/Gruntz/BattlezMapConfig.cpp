@@ -3495,17 +3495,18 @@ i32 CBattlezAiController::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
 // @early-stop
 RVA(0x00030f20, 0x16d)
-Coord* CBattlezAiController::PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex) {
+Coord CBattlezAiController::PickAttackWaypoint(CGrunt* unit, i32 targetPlayerIndex) {
+    Coord result;
     if (targetPlayerIndex < 0 || targetPlayerIndex >= 4) {
         CGameObject* object = unit->m_object;
         i32 currentTileX = object->m_screenX >> TILE_SHIFT_PX;
         i32 currentTileY = object->m_screenY >> TILE_SHIFT_PX;
-        out->Set(currentTileX, currentTileY);
-        return out;
+        result.Set(currentTileX, currentTileY);
+        return result;
     }
-    CGameObject* object = unit->m_object;
-    i32 tileX = object->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = object->m_screenY >> TILE_SHIFT_PX;
+    Coord current = ScreenTile(unit);
+    i32 tileX = current.m_x;
+    i32 tileY = current.m_y;
     CPtrArray* attackWaypoints =
         m_game->GetPlayer(targetPlayerIndex).GetBattlezAiController()->GetAttackWaypoints();
     i32 waypointCount = attackWaypoints->GetSize();
@@ -3526,8 +3527,7 @@ Coord* CBattlezAiController::PickAttackWaypoint(Coord* out, CGrunt* unit, i32 ta
                 }
             }
             if (available != false) {
-                *out = waypoint;
-                return out;
+                return waypoint;
             }
             waypointIndex = (waypointIndex + 1) % waypointCount;
         }
@@ -3536,8 +3536,8 @@ Coord* CBattlezAiController::PickAttackWaypoint(Coord* out, CGrunt* unit, i32 ta
         tileX = waypoint->m_x;
         tileY = waypoint->m_y;
     }
-    out->Set(tileX, tileY);
-    return out;
+    result.Set(tileX, tileY);
+    return result;
 }
 
 template CString& zDArray<CString>::operator[](i32 i);

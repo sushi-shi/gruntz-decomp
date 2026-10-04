@@ -43,7 +43,7 @@ public:
     i32 RouteToNearestGooPuddle(CGrunt* unit);
     i32 HasAvailableGooPuddleAt(i32 tileX, i32 tileY);
     i32 ForcePlaceFromReserve(CGrunt*);
-    Coord* PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex);
+    Coord PickAttackWaypoint(CGrunt* unit, i32 targetPlayerIndex);
 
     i32 RouteUnitTo(
         CGrunt* unit,
