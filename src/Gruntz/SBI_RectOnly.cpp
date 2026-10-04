@@ -731,7 +731,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
 // @early-stop
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
-    if (g_gameReg->m_soundEnabled != false) {
+    if (g_gameReg->IsSoundEnabled() != false) {
         if (m_destructWarningState != DESTRUCT_WARNING_INACTIVE
             && m_destructButtonLocked == false) {
             if (m_destructWarningSound == NULL) {

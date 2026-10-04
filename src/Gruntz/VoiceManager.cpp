@@ -695,5 +695,5 @@ void CVoiceManager::ResetVoiceSelections() {
 
 RVA(0x0011c830, 0x12)
 BOOL CVoiceManager::IsVoiceEnabled() {
-    return m_game->m_isVoiceEnabled != false;
+    return m_game->IsVoiceEnabled() != false;
 }

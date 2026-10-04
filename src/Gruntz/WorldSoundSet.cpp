@@ -349,7 +349,7 @@ void CAmbientSound::StartPlayback() {
     if (m_isPlaying != false) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == false) {
+    if (g_gameReg->IsSoundEnabled() == false) {
         return;
     }
     if (g_gameReg->m_worldSounds->m_enabled == false) {
@@ -379,7 +379,7 @@ void CAmbientSound::Update(i32 x, i32 y, b32 immediate) {
         if (lvl == 0) {
             return;
         }
-        if (g_gameReg->m_soundEnabled == false) {
+        if (g_gameReg->IsSoundEnabled() == false) {
             return;
         }
         if (g_gameReg->m_worldSounds->m_enabled == false) {
@@ -408,7 +408,7 @@ void CAmbientSound::Update(i32 x, i32 y, b32 immediate) {
         if (inRange == 0) {
             return;
         }
-        if (g_gameReg->m_soundEnabled == false) {
+        if (g_gameReg->IsSoundEnabled() == false) {
             return;
         }
         if (g_gameReg->m_worldSounds->m_enabled == false) {
@@ -454,7 +454,7 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         if (m_isPlaying != false) {
             return;
         }
-        if (g_gameReg->m_soundEnabled == false) {
+        if (g_gameReg->IsSoundEnabled() == false) {
             return;
         }
         if (g_gameReg->m_worldSounds->m_enabled == false) {
@@ -574,7 +574,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     if (m_sound == NULL) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == false) {
+    if (g_gameReg->IsSoundEnabled() == false) {
         return;
     }
     if (g_gameReg->m_worldSounds->m_enabled == false) {

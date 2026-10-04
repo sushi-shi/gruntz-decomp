@@ -220,25 +220,25 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     }
     g_savedEasyMode = g_gameReg->GetEasyMode();
     g_savedSoundVolume = g_gameReg->GetSoundVolume();
-    g_savedSoundEnabled = g_gameReg->m_soundEnabled;
+    g_savedSoundEnabled = g_gameReg->IsSoundEnabled();
     g_savedVoiceVolume = g_gameReg->GetVoiceVolume();
-    g_savedVoiceEnabled = g_gameReg->m_isVoiceEnabled;
+    g_savedVoiceEnabled = g_gameReg->IsVoiceEnabled();
     g_savedMidiVolume = g_gameReg->GetMidiManager()->GetMasterVolume();
-    g_savedMusicEnabled = g_gameReg->m_musicEnabled;
-    g_savedScrollSpeed = g_gameReg->m_scrollSpeed;
-    g_unusedMusicEnabledSnapshot = g_gameReg->m_musicEnabled;
+    g_savedMusicEnabled = g_gameReg->IsMusicEnabled();
+    g_savedScrollSpeed = g_gameReg->GetScrollSpeed();
+    g_unusedMusicEnabledSnapshot = g_gameReg->IsMusicEnabled();
     g_savedResolutionMode = GetResolutionCode();
     g_videoResolutionMode = GetResolutionCode();
 
     CheckDlgButton(hDlg, 0x455, g_gameReg->GetEasyMode());
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
-    CheckDlgButton(hDlg, 0x46d, g_gameReg->m_soundEnabled);
+    CheckDlgButton(hDlg, 0x46d, g_gameReg->IsSoundEnabled());
     ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->GetSoundVolume(), 0x50);
-    CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
+    CheckDlgButton(hDlg, 0x475, g_gameReg->IsVoiceEnabled());
     ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->GetVoiceVolume(), 0x50);
-    CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
+    CheckDlgButton(hDlg, 0x471, g_gameReg->IsMusicEnabled());
     ConfigureDialogScrollBar(hDlg, 0x472, g_gameReg->GetMidiManager()->GetMasterVolume(), 0x64);
-    ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->m_scrollSpeed, 0x64);
+    ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->GetScrollSpeed(), 0x64);
 }
 
 // @early-stop
@@ -276,7 +276,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
     i32 qv = GetDialogScrollPosition(hDlg, 0x478);
     if (qv >= 0 && qv <= 100) {
-        g_gameReg->m_scrollSpeed = qv;
+        g_gameReg->SetScrollSpeed(qv);
     }
 }
 
@@ -303,7 +303,7 @@ void ApplyGameOptions() {
             g_gameReg->GetMidiManager()->SetMasterVolume(g_savedMidiVolume);
         }
     }
-    g_gameReg->m_scrollSpeed = g_savedScrollSpeed;
+    g_gameReg->SetScrollSpeed(g_savedScrollSpeed);
 }
 
 RVA(0x00036d00, 0x40)
@@ -319,7 +319,7 @@ RVA(0x00036d50, 0x3c)
 void OnToggleVoiceOption(HWND hWnd) {
     if (g_gameReg) {
         i32 checked = IsDlgButtonChecked(hWnd, 0x475);
-        g_gameReg->m_isVoiceEnabled = checked;
+        g_gameReg->SetVoiceEnabled(checked);
         EnableWindow(GetDlgItem(hWnd, 0x476), checked);
     }
 }
@@ -441,7 +441,6 @@ void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
     }
 }
 
-// @early-stop
 RVA(0x00037260, 0x220)
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     if (!hCtrl) {
@@ -451,27 +450,21 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     si.cbSize = sizeof(si);
     si.fMask = SIF_POS;
     GetScrollInfo(hCtrl, SB_CTL, &si);
-    i32 newpos;
-    if (code == SB_THUMBTRACK) {
-        newpos = pos;
-    } else {
-        newpos = si.nPos;
-        if (code == SB_THUMBPOSITION) {
-            newpos = pos;
-        }
+    if (code != SB_THUMBTRACK && code != SB_THUMBPOSITION) {
+        pos = si.nPos;
     }
     switch (code) {
         case SB_LINEUP:
-            newpos--;
+            pos--;
             break;
         case SB_LINEDOWN:
-            newpos++;
+            pos++;
             break;
         case SB_PAGEUP:
-            newpos -= 10;
+            pos -= 10;
             break;
         case SB_PAGEDOWN:
-            newpos += 10;
+            pos += 10;
             break;
         case SB_THUMBPOSITION:
             break;
@@ -481,18 +474,18 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
     }
     si.fMask = SIF_POS;
-    si.nPos = newpos;
+    si.nPos = pos;
     SetScrollInfo(hCtrl, SB_CTL, &si, true);
     if (hCtrl == GetDlgItem(hDlg, 0x472)) {
-        g_gameReg->GetMidiManager()->SetMasterVolume(newpos);
+        g_gameReg->GetMidiManager()->SetMasterVolume(pos);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x478)) {
-        g_gameReg->m_scrollSpeed = newpos;
+        g_gameReg->SetScrollSpeed(pos);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x476)) {
-        g_gameReg->SetVoiceVolume(newpos);
+        g_gameReg->SetVoiceVolume(pos);
         if (code == SB_THUMBTRACK) {
             return;
         }
@@ -500,13 +493,13 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (registry->IsSilent() == false) {
             SoundCue* cue = registry->FindCue("GAME_VOICE");
             if (cue != NULL) {
-                PlaySoundCueIfElapsed(cue, newpos, 0, 0, false);
+                PlaySoundCueIfElapsed(cue, pos, 0, 0, false);
             }
         }
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
-        g_gameReg->SetSoundVolume(newpos);
+        g_gameReg->SetSoundVolume(pos);
         if (code == SB_THUMBTRACK) {
             return;
         }

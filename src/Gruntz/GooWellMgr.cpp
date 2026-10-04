@@ -28,7 +28,7 @@
 // @early-stop
 RVA(0x0006eb80, 0x5ef)
 i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
-    if (g_gameReg->m_soundEnabled) {
+    if (g_gameReg->IsSoundEnabled()) {
 
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {

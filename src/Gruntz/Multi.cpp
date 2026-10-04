@@ -2593,7 +2593,7 @@ i32 CMulti::WaitForOtherPlayers() {
 
             g_roundStartTimeMs = timeGetTime();
 
-            if (g_gameReg->m_musicEnabled != false) {
+            if (g_gameReg->IsMusicEnabled() != false) {
                 char buf[0x40];
                 wsprintfA(buf, "AMBIENT%d", GetMusicVariant());
                 NetGameMgr()->GetMidiManager()->PlaySequence(buf, true);

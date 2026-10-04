@@ -4,12 +4,11 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/BrickTileId.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerSlot.h>
 #include <Gruntz/SerialArchive.h>
-
-GZ_ENUM_FORWARD(BrickTileId);
 
 class CTileTriggerContainer;
 class CGrunt;
@@ -53,6 +52,25 @@ public:
 
     BrickTileId GetBrickTile() const {
         return m_brickTile;
+    }
+
+    i32 IsClaimCandidate(i32 playerIndex) const {
+        BrickTileId id = GetBrickTile();
+        i32 occ = IsRevealedToPlayer(playerIndex);
+        i32 special = 0;
+        if (occ == 0) {
+            special = 1;
+        }
+        if (occ != 0) {
+            if (id == BRICKTILE_RED_1 || id == BRICKTILE_RED_2_TOP || id == BRICKTILE_RED_3_TOP
+                || id == BRICKTILE_BLACK_1 || id == BRICKTILE_BLACK_2_TOP
+                || id == BRICKTILE_BLACK_3_TOP || id == BRICKTILE_BLUE_1
+                || id == BRICKTILE_BLUE_2_TOP || id == BRICKTILE_BLUE_3_TOP
+                || id == BRICKTILE_BROWN_1 || id == BRICKTILE_BROWN_2 || id == BRICKTILE_BROWN_3) {
+                special = 1;
+            }
+        }
+        return special;
     }
 
     i32 SetBrickTile(BrickTileId code);

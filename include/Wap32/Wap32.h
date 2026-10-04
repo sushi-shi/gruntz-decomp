@@ -117,6 +117,14 @@ public:
     void ResetFpsSampleWindow(i32 reset);
     void ResetFrameTiming();
 
+    const b32& IsSoundEnabled() const {
+        return m_soundEnabled;
+    }
+
+    b32 IsMusicEnabled() const {
+        return m_musicEnabled;
+    }
+
     b32 GetFrameGate() const {
         return m_frameGate;
     }

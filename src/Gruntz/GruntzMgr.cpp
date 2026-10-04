@@ -373,8 +373,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_debugGruntMoveTop = 0;
     g_debugGruntMoveBottom = 0;
 
-    i32 vMusic = m_settings->Get("Music", m_musicEnabled);
-    i32 vSound = m_settings->Get("Sound", m_soundEnabled);
+    i32 vMusic = m_settings->Get("Music", IsMusicEnabled());
+    i32 vSound = m_settings->Get("Sound", IsSoundEnabled());
     i32 vVoice = m_settings->Get("Voice", m_isVoiceEnabled);
     i32 vAmbient = m_settings->Get("Ambient", m_isAmbientEnabled);
     i32 vInterlaced = m_settings->Get("Interlaced", m_isInterlaced);
@@ -778,10 +778,10 @@ void CGruntzMgr::Close() {
     if (m_settings) {
         m_settings->Set("Num Runs", m_numRuns);
         m_settings->Set("Num Movies", m_numMovies);
-        m_settings->Set("Sound", m_soundEnabled);
+        m_settings->Set("Sound", IsSoundEnabled());
         m_settings->Set("Voice", m_isVoiceEnabled);
         m_settings->Set("Ambient", m_isAmbientEnabled);
-        m_settings->Set("Music", m_musicEnabled);
+        m_settings->Set("Music", IsMusicEnabled());
         m_settings->Set("Interlaced", m_isInterlaced);
         m_settings->Set("High Detail", m_isHighDetail);
         m_settings->Set("Effects", m_isEffectsEnabled);
@@ -1657,14 +1657,14 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
         return 1;
     }
 
-    if (m_musicEnabled) {
+    if (IsMusicEnabled()) {
         if (CheckPlayState()) {
             m_midi->ResumeCurrent(1);
         }
     }
-    if (m_soundEnabled) {
+    if (IsSoundEnabled()) {
         m_worldSounds->Resume();
-        if (m_triggerMgr && m_soundEnabled) {
+        if (m_triggerMgr && IsSoundEnabled()) {
             m_triggerMgr->DestroyAllAnims();
         }
     }
@@ -2038,7 +2038,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
         if (GetFrameGate() != false) {
             return;
         }
-        if (m_musicEnabled == false) {
+        if (IsMusicEnabled() == false) {
             return;
         }
         if (CheckPlayState() == 0
@@ -2049,7 +2049,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
         return;
     }
 
-    if (m_musicEnabled == false) {
+    if (IsMusicEnabled() == false) {
         return;
     }
     if (m_midi->IsCurrentPlaying() == false) {
@@ -2321,7 +2321,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
-    if (m_triggerMgr && m_soundEnabled) {
+    if (m_triggerMgr && IsSoundEnabled()) {
         m_triggerMgr->DestroyAllAnims();
     }
     if (m_world) {
@@ -2369,7 +2369,7 @@ i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
-    if (m_triggerMgr && m_soundEnabled) {
+    if (m_triggerMgr && IsSoundEnabled()) {
         m_triggerMgr->DestroyAllAnims();
     }
     if (m_world) {
@@ -2855,7 +2855,7 @@ void CGruntzMgr::MuteMusicIfActive(i32 durationMs) {
     if (m_midi == NULL) {
         return;
     }
-    if (m_musicEnabled == false) {
+    if (IsMusicEnabled() == false) {
         return;
     }
     if (m_midi->IsCurrentPlaying() == false) {
@@ -2871,7 +2871,7 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
     if (m_midi == NULL) {
         return;
     }
-    if (m_musicEnabled == false) {
+    if (IsMusicEnabled() == false) {
         return;
     }
     if (m_midi->IsCurrentPlaying() == false) {
@@ -3097,14 +3097,14 @@ i32 CGruntzMgr::ToggleColorDepth() {
 
 RVA(0x00092000, 0x16)
 void CGruntzMgr::PauseMusicIfEnabled() {
-    if (m_midi && m_musicEnabled) {
+    if (m_midi && IsMusicEnabled()) {
         m_midi->PauseCurrent();
     }
 }
 
 RVA(0x00092030, 0x18)
 void CGruntzMgr::ResumeMusicIfEnabled() {
-    if (m_midi && m_musicEnabled) {
+    if (m_midi && IsMusicEnabled()) {
         m_midi->ResumeCurrent(0);
     }
 }
@@ -3216,7 +3216,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
 
 RVA(0x00092340, 0x49)
 void CGruntzMgr::SetSoundEnabled(b32 enabled) {
-    if (enabled == m_soundEnabled) {
+    if (enabled == IsSoundEnabled()) {
         return;
     }
     m_soundEnabled = enabled;
@@ -3228,9 +3228,9 @@ void CGruntzMgr::SetSoundEnabled(b32 enabled) {
         soundStream->StopAllStreams();
     }
 
-    b32 soundEnabled = m_soundEnabled;
+    b32 soundEnabled = IsSoundEnabled();
     g_soundEnabled = soundEnabled;
-    if (m_soundEnabled) {
+    if (IsSoundEnabled()) {
         m_worldSounds->Resume();
     } else {
         m_worldSounds->Stop();
@@ -3239,7 +3239,7 @@ void CGruntzMgr::SetSoundEnabled(b32 enabled) {
 
 RVA(0x000923b0, 0x47)
 void CGruntzMgr::SetMusicEnabled(b32 enabled) {
-    if (enabled == m_musicEnabled) {
+    if (enabled == IsMusicEnabled()) {
         return;
     }
     m_musicEnabled = enabled;
