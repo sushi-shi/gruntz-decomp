@@ -103,7 +103,7 @@ public:
     i32 ActivateVisibleObjects();
     i32 DeactivateDistantObjects();
     i32 ActivateKeepActiveObjects();
-    i32 FlushAllObjects();
+    i32 ActivateAllObjects();
     void UpdateActiveRegionSizes();
     i32 ValidateTiles(char* errOut);
     void ResolveColorKey();

@@ -2810,7 +2810,7 @@ levelplane	?CanLoad@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	42b
 levelplane	?CanSave@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	84573fd5e297	0x163770	100.0000	
 levelplane	?DeactivateDistantObjects@CLevelPlane@@QAEHXZ	100.0000	99.9286	4	600408c8fc53	0x163370	100.0000	
 levelplane	?Draw@CLevelPlane@@QAEXPAVCRenderBuffer@@@Z	83.2420	83.2420	10	c980087f5d6b	0x162010	87.7566	
-levelplane	?FlushAllObjects@CLevelPlane@@QAEHXZ	100.0000	100.0000	3	08d246d2a3fc	0x163400	100.0000	
+levelplane	?ActivateAllObjects@CLevelPlane@@QAEHXZ	100.0000	100.0000	3	08d246d2a3fc	0x163400	100.0000	
 levelplane	?InitGeometry@CLevelPlane@@UAEHHHHHHHPAUtagRECT@@PAD@Z	97.7143	97.7143	9	abecbc8ba1e9	0x1619f0	97.7143	
 levelplane	?Load@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	f1441657912a	0x1638c0	100.0000	
 levelplane	?LoadObjectRecords@CLevelPlane@@QAEHPBDH@Z	96.8533	96.8533	9	4ffe9c51b8f0	0x1628f0	96.8533	
@@ -4749,8 +4749,8 @@ wwdspatialmgr	?ActivateAt@CWwdSpatialMgr@@QAEHHH@Z	100.0000	100.0000	10	cae0ad4e
 wwdspatialmgr	?ActivateKeepActiveFromGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	5	c73c7b75ea48	0x168460	100.0000	
 wwdspatialmgr	?ActivateKeepActiveObjects@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	7ca861e4b12c	0x168430	100.0000	
 wwdspatialmgr	?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z	100.0000	100.0000	12	cd98775bbd62	0x168500	100.0000	
-wwdspatialmgr	?FlushAll@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	5b1851c1be44	0x168960	100.0000	
-wwdspatialmgr	?FlushGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	3	48559645b844	0x168990	100.0000	
+wwdspatialmgr	?ActivateAllObjects@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	5b1851c1be44	0x168960	100.0000	
+wwdspatialmgr	?ActivateObjectsFromGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	3	48559645b844	0x168990	100.0000	
 wwdspatialmgr	?ForEach@CWwdSpatialMgr@@QAEHP6AXPAUCGameObject@@@Z@Z	100.0000	100.0000	2	afc30000dc69	0x168a20	100.0000	
 wwdspatialmgr	?ForEachGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@P6AXPAUCGameObject@@@Z@Z	100.0000	100.0000	1	ce50e3faf570	0x168a70	100.0000	
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	3	7c142d299a3c	0x1682f0	100.0000	
