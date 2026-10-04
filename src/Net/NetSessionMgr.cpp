@@ -142,7 +142,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 "[toy=%d][da=%d][wp=%d][iic=%d][qat=%d][qax=%d][ia=%d][iad=%d][rnd=%d]\n",
                 player,
                 g,
-                grunt->m_health,
+                grunt->GetHealth(),
                 grunt->m_object->m_screenX,
                 grunt->m_object->m_screenY,
                 grunt->m_facing.m_direction,
@@ -693,9 +693,9 @@ i32 CNetSession::ComputeChecksum() {
             CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
                 sum += IDX(grunt->m_facing.m_direction) + grunt->m_stamina + grunt->m_toyTime
-                       + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
-                       + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
-                       + grunt->LastTilePx().m_y;
+                       + grunt->GetHealth() + grunt->m_object->m_screenY
+                       + grunt->m_object->m_sortKey + grunt->m_object->m_screenX
+                       + grunt->LastTilePx().m_x + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->GetActivePickupType();
                 PickupType effective = grunt->ResolveEquippedToolType(carried);
