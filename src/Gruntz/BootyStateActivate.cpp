@@ -1070,7 +1070,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
 // @early-stop
 RVA(0x0001b450, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
-    if (g_gameReg->GetGameStats()->m_isCustomLevel != false) {
+    if (g_gameReg->GetGameStats()->IsCustomLevel() != false) {
         return 1;
     }
     if (g_gameReg->GetGameStats()->GetLevelNumber() > IDX(QUESTLEVEL_LAST)) {
@@ -1112,7 +1112,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 RVA(0x0001b690, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
     CGameStats* gameStats = g_gameReg->GetGameStats();
-    if (gameStats->m_isCustomLevel != false) {
+    if (gameStats->IsCustomLevel() != false) {
         return 1;
     }
     i32 levelNumber = gameStats->GetLevelNumber();
@@ -1391,7 +1391,7 @@ i32 CBootyState::Render() {
             UpdateBootyWalkingGruntz();
             CheckPerfectBonus();
             if (m_secretHudHandled == false
-                && g_gameReg->GetGameStats()->m_isCustomLevel == false) {
+                && g_gameReg->GetGameStats()->IsCustomLevel() == false) {
                 CString s;
                 RECT rc;
                 CGameStats* gameStats = g_gameReg->GetGameStats();
@@ -1422,7 +1422,7 @@ i32 CBootyState::Render() {
                 m_secretGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
                 m_secretHudHandled = true;
-            } else if (g_gameReg->GetGameStats()->m_isCustomLevel != false) {
+            } else if (g_gameReg->GetGameStats()->IsCustomLevel() != false) {
                 m_secretHudHandled = true;
             }
             break;
@@ -1501,7 +1501,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    if (g_gameReg->GetGameStats()->m_isCustomLevel == false && m_secretGate != false) {
+    if (g_gameReg->GetGameStats()->IsCustomLevel() == false && m_secretGate != false) {
         CString s;
         RECT r;
         CGameStats* gameStats = g_gameReg->GetGameStats();
@@ -1554,7 +1554,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         return 1;
     }
     CGameStats* gameStats = g_gameReg->GetGameStats();
-    if (gameStats->m_isCustomLevel != false) {
+    if (gameStats->IsCustomLevel() != false) {
         PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
         if (m_initOnce == false) {

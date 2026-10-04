@@ -24,6 +24,12 @@ public:
     b32 IsCurrentAreaComplete() const {
         return m_currentAreaComplete;
     }
+    b32 IsCustomLevel() const {
+        return m_isCustomLevel;
+    }
+    void SetCustomLevel(b32 customLevel) {
+        m_isCustomLevel = customLevel;
+    }
     void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void ClearFlagCaptures();
 

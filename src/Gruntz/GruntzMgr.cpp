@@ -870,7 +870,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
 
     if (!m_strWorldFile.IsEmpty()) {
         m_gameStats->SetLevelNumber(1);
-        m_gameStats->m_isCustomLevel = true;
+        m_gameStats->SetCustomLevel(true);
         return;
     }
 
@@ -885,7 +885,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
         g_gameReg->m_saveGame->Save(NULL, 0x81a6);
     }
     m_gameStats->SetLevelNumber(currentState->m_levelIndex);
-    m_gameStats->m_isCustomLevel = false;
+    m_gameStats->SetCustomLevel(false);
 }
 
 RVA(0x000861e0, 0xc5)
