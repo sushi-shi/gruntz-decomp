@@ -122,7 +122,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchGruntCreationPointLogic
                     && cur->GetSmarts() == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
-                    CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
+                    CShadeTable* tbl = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->GetPlayer(hitPlayerIndex).GetColor()),
                         0
                     );
@@ -139,7 +139,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchFortressFlagLogic
                     && cur->GetSmarts() == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
-                    CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
+                    CShadeTable* tbl = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->GetPlayer(hitPlayerIndex).GetColor()),
                         0
                     );

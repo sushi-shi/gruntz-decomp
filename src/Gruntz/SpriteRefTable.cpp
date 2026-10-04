@@ -17,81 +17,81 @@
 #include <stdio.h>
 
 RVA(0x000e2250, 0x26)
-i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
+i32 CGruntPaletteTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
     if (!cache) {
         return 0;
     }
-    m_factory = cache;
+    m_shadeCache = cache;
     m_spriteMgrHolder = holder;
     m_built = false;
     return 1;
 }
 
 RVA(0x000e2290, 0x2a)
-void CSpriteRefTable::Reset() {
+void CGruntPaletteTable::Reset() {
     Clear();
-    m_factory = NULL;
+    m_shadeCache = NULL;
     m_spriteMgrHolder = NULL;
     m_built = false;
     for (i32 i = 0; i < 0x11; i++) {
-        m_toolRefs[i] = NULL;
-        m_toyRefs[i] = NULL;
+        m_toolPalettes[i] = NULL;
+        m_toyPalettes[i] = NULL;
     }
 }
 
 RVA(0x000e22d0, 0x6e)
-void CSpriteRefTable::Clear() {
-    if (m_factory) {
+void CGruntPaletteTable::Clear() {
+    if (m_shadeCache) {
         for (i32 i = 0; i < 0x11; i++) {
-            CSpriteRef* a = GetTool(i);
+            CGruntPalette* a = GetTool(i);
             if (a) {
                 a->Free();
                 delete a;
             }
-            CSpriteRef* b = GetToy(i);
+            CGruntPalette* b = GetToy(i);
             if (b) {
                 b->Free();
                 delete b;
             }
         }
         for (i32 j = 0; j < 0x11; j++) {
-            m_toolRefs[j] = NULL;
-            m_toyRefs[j] = NULL;
+            m_toolPalettes[j] = NULL;
+            m_toyPalettes[j] = NULL;
         }
         m_built = false;
     }
 }
 
 RVA(0x000e2360, 0x15)
-CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
+CGruntPalette* CGruntPaletteTable::GetTool(i32 colorId) {
     if (static_cast<u32>(colorId) >= TINT_COUNT) {
         return NULL;
     }
-    return m_toolRefs[colorId];
+    return m_toolPalettes[colorId];
 }
 
 RVA(0x000e2390, 0x15)
-CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
+CGruntPalette* CGruntPaletteTable::GetToy(i32 colorId) {
     if (static_cast<u32>(colorId) >= TINT_COUNT) {
         return NULL;
     }
-    return m_toyRefs[colorId];
+    return m_toyPalettes[colorId];
 }
 
 RVA(0x000e23c0, 0x2d)
-CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
-    if (static_cast<u32>(i) >= 0x11) {
+CShadeTable* CGruntPaletteTable::GetShadeTable(i32 colorIndex, i32 usingToy) {
+    if (static_cast<u32>(colorIndex) >= 0x11) {
         return NULL;
     }
-    CSpriteRef* node = bAlt ? m_toyRefs[i] : m_toolRefs[i];
-    if (!node) {
+    CGruntPalette* palette = usingToy ? m_toyPalettes[colorIndex] : m_toolPalettes[colorIndex];
+    if (!palette) {
         return NULL;
     }
-    return node->m_alphaKey;
+    return palette->m_shadeTable;
 }
 
 RVA(0x000e2400, 0x39e)
-i32 CSpriteRefTable::BuildToolToyColorTable(CRezMgr* src) {
+i32 CGruntPaletteTable::BuildToolToyColorTable(CRezMgr* src) {
     if (!src) {
         return 0;
     }
@@ -101,183 +101,183 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezMgr* src) {
     if (!LoadToolToyPalettes(src)) {
         return 0;
     }
-    CSpriteRef* r;
+    CGruntPalette* r;
     r = Add("BLACKTOOL", TINT_BLACK);
     if (!r) {
         return 0;
     }
-    m_toolRefs[7] = r;
+    m_toolPalettes[7] = r;
     r = Add("BLACKTOY", TINT_BLACK);
     if (!r) {
         return 0;
     }
-    m_toyRefs[7] = r;
+    m_toyPalettes[7] = r;
     r = Add("DKBLUETOOL", TINT_DKBLUE);
     if (!r) {
         return 0;
     }
-    m_toolRefs[8] = r;
+    m_toolPalettes[8] = r;
     r = Add("DKBLUETOY", TINT_DKBLUE);
     if (!r) {
         return 0;
     }
-    m_toyRefs[8] = r;
+    m_toyPalettes[8] = r;
     r = Add("DKGREENTOOL", TINT_DKGREEN);
     if (!r) {
         return 0;
     }
-    m_toolRefs[9] = r;
+    m_toolPalettes[9] = r;
     r = Add("DKGREENTOY", TINT_DKGREEN);
     if (!r) {
         return 0;
     }
-    m_toyRefs[9] = r;
+    m_toyPalettes[9] = r;
     r = Add("TURQTOOL", TINT_TURQ);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0xa] = r;
+    m_toolPalettes[0xa] = r;
     r = Add("TURQTOY", TINT_TURQ);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0xa] = r;
+    m_toyPalettes[0xa] = r;
     r = Add("DKREDTOOL", TINT_DKRED);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0xb] = r;
+    m_toolPalettes[0xb] = r;
     r = Add("DKREDTOY", TINT_DKRED);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0xb] = r;
+    m_toyPalettes[0xb] = r;
     r = Add("PURPLETOOL", TINT_PURPLE);
     if (!r) {
         return 0;
     }
-    m_toolRefs[4] = r;
+    m_toolPalettes[4] = r;
     r = Add("PURPLETOY", TINT_PURPLE);
     if (!r) {
         return 0;
     }
-    m_toyRefs[4] = r;
+    m_toyPalettes[4] = r;
     r = Add("DKYELLOWTOOL", TINT_DKYELLOW);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0xd] = r;
+    m_toolPalettes[0xd] = r;
     r = Add("DKYELLOWTOY", TINT_DKYELLOW);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0xd] = r;
+    m_toyPalettes[0xd] = r;
     r = Add("GREYTOOL", TINT_GREY);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0xe] = r;
+    m_toolPalettes[0xe] = r;
     r = Add("GREYTOY", TINT_GREY);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0xe] = r;
+    m_toyPalettes[0xe] = r;
     r = Add("BLUETOOL", TINT_BLUE);
     if (!r) {
         return 0;
     }
-    m_toolRefs[2] = r;
+    m_toolPalettes[2] = r;
     r = Add("BLUETOY", TINT_BLUE);
     if (!r) {
         return 0;
     }
-    m_toyRefs[2] = r;
+    m_toyPalettes[2] = r;
     r = Add("GREENTOOL", TINT_GREEN);
     if (!r) {
         return 0;
     }
-    m_toolRefs[1] = r;
+    m_toolPalettes[1] = r;
     r = Add("GREENTOY", TINT_GREEN);
     if (!r) {
         return 0;
     }
-    m_toyRefs[1] = r;
+    m_toyPalettes[1] = r;
     r = Add("CYANTOOL", TINT_CYAN);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0xf] = r;
+    m_toolPalettes[0xf] = r;
     r = Add("CYANTOY", TINT_CYAN);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0xf] = r;
+    m_toyPalettes[0xf] = r;
     r = Add("REDTOOL", TINT_RED);
     if (!r) {
         return 0;
     }
-    m_toolRefs[3] = r;
+    m_toolPalettes[3] = r;
     r = Add("REDTOY", TINT_RED);
     if (!r) {
         return 0;
     }
-    m_toyRefs[3] = r;
+    m_toyPalettes[3] = r;
     r = Add("PINKTOOL", TINT_PINK);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0xc] = r;
+    m_toolPalettes[0xc] = r;
     r = Add("PINKTOY", TINT_PINK);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0xc] = r;
+    m_toyPalettes[0xc] = r;
     r = Add("YELLOWTOOL", TINT_YELLOW);
     if (!r) {
         return 0;
     }
-    m_toolRefs[5] = r;
+    m_toolPalettes[5] = r;
     r = Add("YELLOWTOY", TINT_YELLOW);
     if (!r) {
         return 0;
     }
-    m_toyRefs[5] = r;
+    m_toyPalettes[5] = r;
     r = Add("WHITETOOL", TINT_WHITE);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0x10] = r;
+    m_toolPalettes[0x10] = r;
     r = Add("WHITETOY", TINT_WHITE);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0x10] = r;
+    m_toyPalettes[0x10] = r;
     r = Add("ORANGETOOL", TINT_ORANGE);
     if (!r) {
         return 0;
     }
-    m_toolRefs[0] = r;
+    m_toolPalettes[0] = r;
     r = Add("ORANGETOY", TINT_ORANGE);
     if (!r) {
         return 0;
     }
-    m_toyRefs[0] = r;
+    m_toyPalettes[0] = r;
     r = Add("HOTPINKTOOL", TINT_HOTPINK);
     if (!r) {
         return 0;
     }
-    m_toolRefs[6] = r;
+    m_toolPalettes[6] = r;
     r = Add("HOTPINKTOY", TINT_HOTPINK);
     if (!r) {
         return 0;
     }
-    m_toyRefs[6] = r;
+    m_toyPalettes[6] = r;
     m_built = true;
     return 1;
 }
 
 RVA(0x000e2890, 0xb6)
-CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
+CGruntPalette* CGruntPaletteTable::Add(char* szName, ColorTint kind) {
     CDDrawPaletteResource* rec = MapFind<CDDrawPaletteResource>(
         m_spriteMgrHolder->m_paletteRegistry->m_palettesByName,
         szName
@@ -290,12 +290,12 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     if (!entries) {
         return NULL;
     }
-    CShadeTable* alpha = m_factory->AlphaTable(entries);
+    CShadeTable* alpha = m_shadeCache->AlphaTable(entries);
     if (!alpha) {
         return NULL;
     }
-    CSpriteRef* node = new CSpriteRef;
-    if (node->Build(m_factory, alpha, kind) == 0) {
+    CGruntPalette* node = new CGruntPalette;
+    if (node->Build(m_shadeCache, alpha, kind) == 0) {
         if (node) {
             node->Free();
             delete node;
@@ -306,7 +306,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
 }
 
 RVA(0x000e2980, 0x2cd)
-i32 CSpriteRefTable::LoadToolToyPalettes(CRezMgr* src) {
+i32 CGruntPaletteTable::LoadToolToyPalettes(CRezMgr* src) {
 
     if (src && LoadGruntzPalette(src, "BLACKTOOL") && LoadGruntzPalette(src, "BLACKTOY")
         && LoadGruntzPalette(src, "DKBLUETOOL") && LoadGruntzPalette(src, "DKBLUETOY")
@@ -331,7 +331,7 @@ i32 CSpriteRefTable::LoadToolToyPalettes(CRezMgr* src) {
 }
 
 RVA(0x000e2d10, 0xa1)
-i32 CSpriteRefTable::LoadGruntzPalette(CRezMgr* src, const char* name) {
+i32 CGruntPaletteTable::LoadGruntzPalette(CRezMgr* src, const char* name) {
     if (!src) {
         return 0;
     }

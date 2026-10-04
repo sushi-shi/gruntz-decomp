@@ -211,7 +211,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 colorIndex, b32 animatePlacement, i
     m_gaugePoints = gaugePoints;
     m_playerIndex = playerIndex;
     m_colorIndex = colorIndex;
-    CShadeTable* shade = g_gameReg->SpriteTable()->GetSel(colorIndex, 0);
+    CShadeTable* shade = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
     CWwdSpriteObject* sprite = m_object;
     sprite->SetDrawFill(SHADE_PAL_16, shade);
     m_wwdObject->Show();
@@ -287,9 +287,9 @@ i32 CGruntPuddle::SerializeDispatch(
             ar->Read(&m_colorIndex, sizeof(m_colorIndex));
             break;
         case SERIAL_POSTLOAD: {
-            CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(m_colorIndex, 0);
+            CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(m_colorIndex, 0);
             if (sel == NULL) {
-                sel = g_gameReg->SpriteTable()->GetSel(1, 0);
+                sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
             }
             CGameObject* obj = m_object;
             obj->SetDrawFill(SHADE_PAL_16, sel);

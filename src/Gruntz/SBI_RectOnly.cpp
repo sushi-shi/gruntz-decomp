@@ -1634,12 +1634,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     );
                     AddTabItem(2, set);
                     *aptr = set;
-                    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
+                    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->m_players[g_curPlayer].GetColor()),
                         0
                     );
                     if (sel == NULL) {
-                        sel = g_gameReg->SpriteTable()->GetSel(1, 0);
+                        sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                     }
                     set->GetFrameSet()->SetAllTypes(SHADE_PAL_16);
                     set->GetFrameSet()->SetAllFormats(sel);
@@ -2033,12 +2033,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
                     if (p->HasJoinedRound() != false && p->HasDropped() == false) {
-                        sel = g_gameReg->SpriteTable()->GetSel(IDX(p->GetColor()), 0);
+                        sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(p->GetColor()), 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
                         }
                     } else {
-                        sel = g_gameReg->SpriteTable()->GetSel(1, 0);
+                        sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                         (*slot)->SetState(2);
                     }
 

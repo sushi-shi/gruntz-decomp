@@ -9,22 +9,22 @@
 #include <Gruntz/SpriteTeamColorVariant.h>
 #include <Ints.h>
 
-class CSpriteRef {
+class CGruntPalette {
 public:
-    CSpriteRef();
+    CGruntPalette();
 
     i32 Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind);
     void Free();
     CShadeTableCache* m_cache;
-    CShadeTable* m_alphaKey;
+    CShadeTable* m_shadeTable;
     u16 m_teamColor1;
     u16 m_teamColor3;
     u16 m_teamColor2;
 };
 
-inline CSpriteRef::CSpriteRef() {
+inline CGruntPalette::CGruntPalette() {
     m_cache = NULL;
-    m_alphaKey = NULL;
+    m_shadeTable = NULL;
 }
 
 class CShadeTableCache;
@@ -32,10 +32,10 @@ class CShadeTableCache;
 class CDDrawSurfaceMgr;
 
 class CRezMgr;
-class CSpriteRefTable {
+class CGruntPaletteTable {
 public:
-    CSpriteRefTable();
-    ~CSpriteRefTable();
+    CGruntPaletteTable();
+    ~CGruntPaletteTable();
 
     i32 Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder);
 
@@ -43,10 +43,10 @@ public:
 
     void Clear();
 
-    CSpriteRef* GetTool(i32 colorId);
+    CGruntPalette* GetTool(i32 colorId);
 
     void GetToolColor(i32 colorId, SpriteTeamColorVariant variant, u16& color) {
-        CSpriteRef* sprite = GetTool(colorId);
+        CGruntPalette* sprite = GetTool(colorId);
         if (sprite == NULL) {
             color = 0;
             return;
@@ -67,11 +67,11 @@ public:
         }
     }
 
-    CSpriteRef* GetToy(i32 colorId);
+    CGruntPalette* GetToy(i32 colorId);
 
-    CShadeTable* GetSel(i32 i, i32 bAlt);
+    CShadeTable* GetShadeTable(i32 colorIndex, i32 usingToy);
 
-    CSpriteRef* Add(char* szName, ColorTint kind);
+    CGruntPalette* Add(char* szName, ColorTint kind);
 
     i32 LoadGruntzPalette(CRezMgr* src, const char* name);
 
@@ -79,24 +79,24 @@ public:
 
     i32 BuildToolToyColorTable(CRezMgr* src);
 
-    CShadeTableCache* m_factory;
+    CShadeTableCache* m_shadeCache;
     CDDrawSurfaceMgr* m_spriteMgrHolder;
-    CSpriteRef* m_toolRefs[TINT_COUNT];
-    CSpriteRef* m_toyRefs[TINT_COUNT];
+    CGruntPalette* m_toolPalettes[TINT_COUNT];
+    CGruntPalette* m_toyPalettes[TINT_COUNT];
     b32 m_built;
 };
 
-inline CSpriteRefTable::CSpriteRefTable() {
-    m_factory = NULL;
+inline CGruntPaletteTable::CGruntPaletteTable() {
+    m_shadeCache = NULL;
     m_spriteMgrHolder = NULL;
     m_built = false;
     for (i32 i = 0; i < TINT_COUNT; ++i) {
-        m_toolRefs[i] = NULL;
-        m_toyRefs[i] = NULL;
+        m_toolPalettes[i] = NULL;
+        m_toyPalettes[i] = NULL;
     }
 }
 
-inline CSpriteRefTable::~CSpriteRefTable() {
+inline CGruntPaletteTable::~CGruntPaletteTable() {
     Reset();
 }
 

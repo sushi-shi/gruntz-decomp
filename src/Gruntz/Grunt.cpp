@@ -441,7 +441,7 @@ void CGrunt::BuildImageSetNames(i32 toyMode, i32 mobileToy) {
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_colorIndex), toyMode);
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(m_colorIndex), toyMode);
     CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
@@ -1681,9 +1681,9 @@ i32 CGrunt::Place(
     if (m_colorIndex < PICKUP_NONE || m_colorIndex >= PICKUP_MOVEICON_END) {
         m_colorIndex = PICKUP_NONE;
     }
-    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(IDX(m_colorIndex), 0);
+    CShadeTable* shade = g_gameReg->m_gruntPalettes->GetShadeTable(IDX(m_colorIndex), 0);
     if (shade == NULL) {
-        shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
+        shade = g_gameReg->m_gruntPalettes->GetShadeTable(1, 0);
     }
     m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {

@@ -3656,9 +3656,9 @@ i32 CPlay::LoadCursorAnimation(
     if (tintForPlayer != false) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        CShadeTable* spr = w->SpriteTable()->GetSel(IDX(w->GetPlayer(id).GetColor()), 0);
+        CShadeTable* spr = w->GruntPalettes()->GetShadeTable(IDX(w->GetPlayer(id).GetColor()), 0);
         if (spr == NULL) {
-            spr = g_gameReg->SpriteTable()->GetSel(1, 0);
+            spr = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
         }
         m_cursorSprite->SetAllTypes(SHADE_PAL_16);
         m_cursorSprite->SetAllFormats(spr);
@@ -5993,12 +5993,12 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
             if (m_cursorUsesPlayerTint) {
                 CGruntzMgr* gameManager = m_mgr;
                 i32 playerIndex = g_curPlayer;
-                CShadeTable* shadeTable = gameManager->SpriteTable()->GetSel(
+                CShadeTable* shadeTable = gameManager->GruntPalettes()->GetShadeTable(
                     IDX(gameManager->GetPlayer(playerIndex).GetColor()),
                     0
                 );
                 if (shadeTable == NULL) {
-                    shadeTable = g_gameReg->SpriteTable()->GetSel(1, 0);
+                    shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                 }
                 m_cursorSprite->SetAllTypes(SHADE_PAL_16);
                 m_cursorSprite->SetAllFormats(shadeTable);

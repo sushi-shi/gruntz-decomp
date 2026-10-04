@@ -10,7 +10,7 @@ class CDDrawSurfaceMgr;
 class CVoiceManager;
 
 class CGruntzMapMgr;
-class CSpriteRefTable;
+class CGruntPaletteTable;
 class CGameStats;
 struct tagRECT;
 

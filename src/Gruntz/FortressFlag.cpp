@@ -112,7 +112,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE);
     i32 idx = IDX(g_gameReg->GetPlayer(m_object->m_smarts).GetColor());
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(idx, 0);
     CWwdSpriteObject* spr = m_object;
     spr->SetDrawFill(SHADE_PAL_16, sel);
 }
@@ -146,7 +146,7 @@ i32 CFortressFlag::SerializeDispatch(
     if (mode == SERIAL_POSTLOAD) {
         CWwdSpriteObject* spr = m_object;
         i32 idx = IDX(g_gameReg->GetPlayer(spr->GetSmarts()).GetColor());
-        CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
+        CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(idx, 0);
         spr = m_object;
         spr->SetDrawFill(SHADE_PAL_16, sel);
     }

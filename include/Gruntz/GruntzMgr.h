@@ -337,8 +337,8 @@ public:
         return m_voiceManager;
     }
 
-    CSpriteRefTable* SpriteTable() {
-        return m_spriteFactory;
+    CGruntPaletteTable* GruntPalettes() {
+        return m_gruntPalettes;
     }
 
     CRezMgr* ResourceArchive() {
@@ -381,7 +381,7 @@ public:
     CGruntzCmdMgr* m_commandMgr;
     CGruntzMapMgr* m_tileGrid;
 
-    CSpriteRefTable* m_spriteFactory;
+    CGruntPaletteTable* m_gruntPalettes;
 
     CLightFxMgr* m_lightFxMgr;
 

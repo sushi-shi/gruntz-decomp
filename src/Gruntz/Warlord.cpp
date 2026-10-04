@@ -98,9 +98,9 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(cfg, 0);
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(cfg, 0);
     if (sel == NULL) {
-        sel = g_gameReg->SpriteTable()->GetSel(1, 0);
+        sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
     }
     CWwdSpriteObject* d = m_object;
     d->SetDrawFill(SHADE_PAL_16, sel);
@@ -281,12 +281,12 @@ i32 CWarlord::SerializeDispatch(
         }
         case SERIAL_POSTLOAD: {
 
-            CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
+            CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
                 IDX(g_gameReg->GetPlayer(m_object->GetSmarts()).GetColor()),
                 0
             );
             if (sel == NULL) {
-                sel = g_gameReg->SpriteTable()->GetSel(1, 0);
+                sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
             }
 
             CWwdSpriteObject* sprite = m_object;

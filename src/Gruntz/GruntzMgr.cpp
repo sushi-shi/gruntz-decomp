@@ -232,7 +232,7 @@ CGruntzMgr::CGruntzMgr() {
     m_triggerMgr = NULL;
     m_commandMgr = NULL;
     m_tileGrid = NULL;
-    m_spriteFactory = NULL;
+    m_gruntPalettes = NULL;
     m_lightFxMgr = NULL;
     m_lobbyResult = 0;
     m_lobbyProbed = false;
@@ -637,10 +637,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x415);
         return 0;
     }
-    m_spriteFactory = new CSpriteRefTable;
+    m_gruntPalettes = new CGruntPaletteTable;
 
-    if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
-        SAFE_DELETE(m_spriteFactory);
+    if (!m_gruntPalettes->Init(m_shadeCache, m_world)) {
+        SAFE_DELETE(m_gruntPalettes);
 
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x416);
     }
@@ -814,7 +814,7 @@ void CGruntzMgr::Close() {
     }
     ClearStateStack();
     SAFE_DELETE(m_curState)
-    SAFE_DELETE(m_spriteFactory)
+    SAFE_DELETE(m_gruntPalettes)
     SAFE_DELETE(m_triggerMgr)
     SAFE_DELETE(m_tileGrid)
     CGameStats* gameStats = m_gameStats;

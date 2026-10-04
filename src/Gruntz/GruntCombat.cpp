@@ -504,7 +504,7 @@ void CGrunt::SetColorIndex(i32 colorIndex) {
     if (colorIndex < 0 || colorIndex >= IDX(PICKUP_TIMEBOMB)) {
         m_colorIndex = PICKUP_NONE;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
+    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
         IDX(m_colorIndex),
         m_activePickupType >= PICKUP_TOYZ_FIRST
     );
@@ -2152,8 +2152,10 @@ updatePowerup:
                 if (pick == IDX(m_colorIndex)) {
                     pick = 0x10;
                 }
-                CShadeTable* sel =
-                    g_gameReg->SpriteTable()->GetSel(pick, m_activePickupType >= PICKUP_TOYZ_FIRST);
+                CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
+                    pick,
+                    m_activePickupType >= PICKUP_TOYZ_FIRST
+                );
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 obj->SetDrawFill(cmd, sel);
