@@ -298,11 +298,11 @@ i32 CBattlezAiController::LoadConfig(
 }
 
 RVA(0x00025c20, 0x55)
-i32 CBattlezAiController::StepAllRowSpawns() {
+i32 CBattlezAiController::SpawnInitialGrunts() {
     if (g_gameReg->GetPlayer(m_playerIndex).IsHumanControlled() == false
         && g_gameReg->GetPlayer(m_playerIndex).IsActive() != false) {
         for (i32 i = 0; i < m_spawnTiles.GetSize(); i++) {
-            this->StepRowSpawn(false);
+            this->TrySpawnGrunt(false);
         }
     }
     return 1;
@@ -331,7 +331,7 @@ void CBattlezAiController::FreeArrays() {
 
 // @early-stop
 RVA(0x00025d90, 0x580)
-i32 CBattlezAiController::StepBoard() {
+i32 CBattlezAiController::Update() {
     if (m_active == false) {
         return 1;
     }
@@ -339,7 +339,7 @@ i32 CBattlezAiController::StepBoard() {
         return 0;
     }
     if (m_spawnTimer - m_spawnLastFire > m_gruntCreationTime) {
-        StepRowSpawn(true);
+        TrySpawnGrunt(true);
         m_spawnLastFire = m_spawnTimer;
     }
 
@@ -476,7 +476,7 @@ i32 CBattlezAiController::StepBoard() {
         }
         m_repickLastFire = m_repickTimer;
     }
-    StepRowUnits();
+    UpdateUnits();
     m_spawnTimer += g_frameDelta;
     m_repickTimer += g_frameDelta;
     m_claimTimer += g_frameDelta;
@@ -484,7 +484,7 @@ i32 CBattlezAiController::StepBoard() {
 }
 
 RVA(0x00026470, 0x29d)
-i32 CBattlezAiController::StepRowSpawn(b32 allowReserved) {
+i32 CBattlezAiController::TrySpawnGrunt(b32 allowReserved) {
     i32 occupied = 0;
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
@@ -604,7 +604,7 @@ candidateFound:
 }
 
 RVA(0x000267c0, 0x2850)
-i32 CBattlezAiController::StepRowUnits() {
+i32 CBattlezAiController::UpdateUnits() {
     m_roundRobinTick++;
     CGrunt* unit;
     i32 hit;

@@ -5495,7 +5495,7 @@ i32 CPlay::StartLevelPlay() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->GetPlayer(i).GetBattlezAiController()->StepAllRowSpawns();
+        g_gameReg->GetPlayer(i).GetBattlezAiController()->SpawnInitialGrunts();
     }
     m_levelTimeExpired = false;
     CLevelTimer* fm = m_levelTimer;

@@ -29,7 +29,7 @@ public:
     CBattlezAiController();
     ~CBattlezAiController();
     void FreeArrays();
-    i32 StepAllRowSpawns();
+    i32 SpawnInitialGrunts();
     void Clear();
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
@@ -55,9 +55,9 @@ public:
     );
 
     i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 blockedMask, i32 passableMask);
-    i32 StepRowSpawn(b32 allowReserved);
+    i32 TrySpawnGrunt(b32 allowReserved);
     i32 CanPlaySpecialAnim(CGrunt*);
-    i32 StepBoard();
+    i32 Update();
     i32 ChooseIdleBehavior(CGrunt*);
 
     void RerouteIdleUnit(
@@ -79,7 +79,7 @@ public:
     i32 AcceptAlways(CGrunt*);
     i32 CheckQueuedSpawnTile(CGrunt*);
     i32 RetargetIdleUnit(CGrunt*);
-    i32 StepRowUnits();
+    i32 UpdateUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
     CGrunt* FindNearbyIdleGrunt(CGrunt* unit);

@@ -3625,7 +3625,7 @@ i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
     for (i32 i = 0; i < m_computerPlayerCount + 1; i++) {
         GruntzPlayer* slot = &m_players[i];
         if (cursor == i && slot->IsHumanControlled() == false && slot->IsActive() != false) {
-            slot->GetBattlezAiController()->StepBoard();
+            slot->GetBattlezAiController()->Update();
             cursor = g_battlezTurnPlayerIndex;
         }
     }

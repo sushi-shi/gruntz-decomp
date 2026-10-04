@@ -561,10 +561,10 @@ battlezmapconfig	?STUB_2d7e0@@YAXXZ	100.0000	100.0000	1	a0d376cffe95	0x2d7e0	100
 battlezmapconfig	?Serialize@CBattlezAiController@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	5ff444a2019e	0x2b420	100.0000	
 battlezmapconfig	?SerializeState@CBattlezAiController@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	5	6dfe10d8b557	0x2bfc0	100.0000	
 battlezmapconfig	?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z	100.0000	100.0000	3	8ee313cafd66	0x311e0	100.0000	
-battlezmapconfig	?StepAllRowSpawns@CBattlezAiController@@QAEHXZ	100.0000	100.0000	7	367e774d6cbf	0x25c20	100.0000	
-battlezmapconfig	?StepBoard@CBattlezAiController@@QAEHXZ	95.3292	95.3292	30	e959264dd642	0x25d90	95.4948	
-battlezmapconfig	?StepRowSpawn@CBattlezAiController@@QAEHH@Z	90.2321	90.2321	33	7863cd1c1b7d	0x26470	90.2321	
-battlezmapconfig	?StepRowUnits@CBattlezAiController@@QAEHXZ	84.9887	84.9887	56	c38d2724360e	0x267c0	88.2172	
+battlezmapconfig	?SpawnInitialGrunts@CBattlezAiController@@QAEHXZ	100.0000	100.0000	7	367e774d6cbf	0x25c20	100.0000	
+battlezmapconfig	?Update@CBattlezAiController@@QAEHXZ	95.3292	95.3292	30	e959264dd642	0x25d90	95.4948	
+battlezmapconfig	?TrySpawnGrunt@CBattlezAiController@@QAEHH@Z	90.2321	90.2321	33	7863cd1c1b7d	0x26470	90.2321	
+battlezmapconfig	?UpdateUnits@CBattlezAiController@@QAEHXZ	84.9887	84.9887	56	c38d2724360e	0x267c0	88.2172	
 battlezmapconfig	?TrySeedSpawnAt@CBattlezAiController@@QAEHHH@Z	100.0000	100.0000	23	d7dc0d280807	0x30990	100.0000	
 battlezmapconfig	?ValidateUnitPath@CBattlezAiController@@QAEHPAVCGrunt@@@Z	91.4421	91.4421	48	86da4d7be1ad	0x29b40	92.1414	
 battlezmapconfig	?get@_zdvec@@IAEPAXH@Z	100.0000	100.0000	1	cpp:98a8502d644f	0x312a0	100.0000	
