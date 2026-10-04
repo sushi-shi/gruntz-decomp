@@ -3470,6 +3470,28 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "rasterdata",
+      "source": "src/Image/RasterData.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "dibraster",
+      "source": "src/Image/DibRaster.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

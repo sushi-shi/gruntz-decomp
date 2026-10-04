@@ -4,5 +4,4 @@
 #include <Ints.h>
 
 extern PALETTEENTRY g_paletteRampBuf[];
-extern PALETTEENTRY g_grayRamp[];
 #endif

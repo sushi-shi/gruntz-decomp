@@ -59,7 +59,7 @@ public:
     CDib* AddDib(i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
     CDib*
     AddDib(u8* bytes, i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
-    CDib* AddDib(u8* bytes, RezDecodeKind type, u32 flags = 0);
+    CDib* AddDib(u8* bytes, u32 dataSize, RezDecodeKind type, u32 flags = 0);
     CDib* AddDib(const char* file, u32 flags = 0);
     CDib* AddDib(CDib* original, CDibPal* palette);
 

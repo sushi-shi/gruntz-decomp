@@ -20,6 +20,7 @@ struct CDDPalette;
 class CDDrawDeviceManager;
 class CFileImagePal;
 struct PcxHeader;
+namespace raster { struct Image; }
 struct BmpFileImage;
 
 GZ_ENUM_FLAGS_BEGIN(PidFlags, u32)
@@ -222,10 +223,7 @@ public:
 
     i32 Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, RasterRowOrder rowOrder);
     i32 BlitDirect(u8* src, RasterRowOrder rowOrder);
-    i32 DecodeRun8(u8* src);
-    i32 DecodeRun24(u8* src);
-    i32 DecodeByteRun1Plane(u8* dst, u8* src, i32 width, i32 height);
-    i32 DecodeByteRun3Planes(u8* dst, u8* src, i32 width, i32 height);
+    i32 UploadRaster(CDDrawDeviceManager* manager, raster::Image& image);
     void FillPalette(u32 key);
     i32 ShadeRect(i32 pct, RECT* clip);
 

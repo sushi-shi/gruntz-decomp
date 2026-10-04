@@ -337,3 +337,46 @@ invalid seeks, end of member, reset and close/reopen. Do not run it concurrently
 with the Windows game build; they share the worktree's toolchain prefix. Neither
 suite launches the game. Directory-backed emulation/path lookup still uses the
 legacy Windows implementation and is not covered by the portable codec claim.
+
+
+### Bounded PCX and PID raster data
+
+`raster::decodePcx` and `decodePid` consume a byte span and produce an owned image:
+tight top-down rows of palette indices or RGB, optional owned RGB palette entries,
+and the validated compressed-byte count. They decode wire fields explicitly and
+leave the previous result unchanged on failure. No decoder requires DirectDraw,
+a Windows bitmap, or a pointer cast onto a packed record.
+
+PCX supports 8 bits per plane, one indexed plane or three RGB planes, encoded or
+uncompressed rows, and the header's bytes-per-line padding. Indexed PCX requires
+the trailing palette marker and 256-color palette. PID tag 10 (and legacy tag 0
+written by older game exports) supports byte runs and skip/literal packets, optional palettes and transparent fill. Reads stop
+at the pixel payload boundary. Zero runs, truncated packets, invalid dimensions,
+output overruns and runs beyond the final row are rejected. The default decoded
+limit is 64 MiB, including padded PCX rows; callers may supply another limit.
+
+The DirectDraw and DIB PCX/PID paths use this decoder. Surface upload converts
+RGB to BGR only at adapters that require it. `copyRows` checks the destination
+span and pitch and leaves row padding untouched. DIB pitch is measured in bytes
+at every depth, including 16/24/32-bit images; raw pixel input has explicit row
+order. The shaded-sprite builder validates skiprun input and palette requirements
+before conversion, retaining only the validated compressed span. Its portable
+16-bit transcode checks complete rows and has a 128 MiB output limit.
+
+```sh
+nix develop .#portable --command python3 check-raster.py --target all [archive.rez ...]
+nix develop --command python3 check-raster-windows.py
+```
+
+The portable suite runs under native ASan/UBSan and actual wasm32 in Node. It
+checks truncation, palette extents, dimensions, both PID grammars, odd widths,
+padded rows, channel order, run boundaries, failed-result preservation and
+malformed-input mutations. Optional archives are read on Linux and every PCX/PID
+member is decoded. The Windows console component test creates only offscreen
+DIBs to verify the production upload, byte pitches and row order. Do not run it
+concurrently with another Wine/MSVC build. No game is launched.
+
+RID retains its legacy width-dependent row orientation pending a dedicated codec.
+BMP/RID parsing, the remaining clipped/shaded raster operations and the rendering
+host still need their own bounds/portability work. These component checks are not
+a whole-game rendering or browser-host validation.
