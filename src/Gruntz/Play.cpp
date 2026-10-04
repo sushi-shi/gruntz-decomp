@@ -4152,7 +4152,7 @@ i32 CPlay::ExecuteCommand(
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g != NULL && g->IsEntranceCommitted() != false) {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
             }
             if (!m_mgr->GetTriggerMgr()->MoveUnitTo(
                     player,
@@ -4220,14 +4220,14 @@ i32 CPlay::ExecuteCommand(
                 m_mgr->GetTriggerMgr()
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_busy == false) {
-                g->SetArrivalTarget(
+                g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
             }
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
@@ -4273,12 +4273,12 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_busy != false) {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
-            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
+            g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
@@ -4329,14 +4329,14 @@ i32 CPlay::ExecuteCommand(
                 m_mgr->GetTriggerMgr()
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_busy == false) {
-                g->SetArrivalTarget(
+                g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
             }
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, px, py);
             if (res == 0) {
@@ -4382,12 +4382,12 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_busy != false) {
-                g->m_arrivalActive = false;
+                g->m_actionTargetsGrunt = false;
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
-            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
+            g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {

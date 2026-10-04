@@ -418,7 +418,8 @@ public:
     void FaceTowardTile(i32 tileX, i32 tileY);
     void SnapToLastTile(i32 clearArrivalState);
     i32 ClaimSwitchTile();
-    i32 SetArrivalTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
+    i32
+    SetGruntActionTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     void ConsiderArrival(i32 clearArrivalState);
     void SelectMoveIcon(i32 moveIconId);
     i32 TryPowerupAtTile();
@@ -474,7 +475,7 @@ public:
     i32 m_daFlag;
     b32 m_toyBreakStarted;
     b32 m_bombRunStarting;
-    b32 m_arrivalActive;
+    b32 m_actionTargetsGrunt;
     b32 m_toobWaterMode;
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;

@@ -2215,7 +2215,7 @@ gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	100.0000	100.0000	4	0d9e2189d1f8	0x518
 gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	21	1099c1dd3664	0x53f90	100.0000	
 gruntsteps	?Serialize@ClockInterval@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	87b89ba0ba25	0x58ee0	100.0000	
 gruntsteps	?SerializeDispatch@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	11	d0ec89c374ed	0x53b80	100.0000	
-gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	5	0d8fec418978	0x52ed0	100.0000	
+gruntsteps	?SetGruntActionTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	5	0d8fec418978	0x52ed0	100.0000	
 gruntsteps	?SetCarriedToy@CGrunt@@QAEHW4PickupType@@@Z	99.2042	99.2042	14	742b7c40b71c	0x50ce0	99.2042	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	8	4b6dbbf51c58	0x517b0	100.0000	
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	62.8182	62.8182	32	84275fb09312	0x51c00	74.9682	

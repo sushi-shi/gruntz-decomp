@@ -290,7 +290,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_reserved210 = 0;
     m_attackWindupActive = false;
     m_attackQueued = false;
-    m_arrivalActive = false;
+    m_actionTargetsGrunt = false;
     m_toobWaterMode = false;
     m_wingzEnabled = false;
     m_vehicleLoopSound = NULL;
@@ -1392,7 +1392,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
     m_entrancePx = m_lastTilePx;
     if (clearArrivalState) {
         m_arrivalAction = 0;
-        m_arrivalActive = false;
+        m_actionTargetsGrunt = false;
     }
     if (recycleRoute && m_aiType != AI_BATTLEZ_PATH && !CoordsEmpty()) {
         this->RecycleCoords();

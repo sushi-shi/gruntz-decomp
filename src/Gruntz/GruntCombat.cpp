@@ -912,7 +912,7 @@ i32 CGrunt::HandleCombatContact(
 
         i32 arrivalAction = m_arrivalAction;
         if ((arrivalAction == ARRIVAL_ACTION_USE_TOY || arrivalAction == ARRIVAL_ACTION_USE_TOOL)
-            && m_arrivalActive != false) {
+            && m_actionTargetsGrunt != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
@@ -2407,7 +2407,7 @@ void CGrunt::AdvanceMotion() {
             if (m_arrivalAction != ARRIVAL_ACTION_NONE) {
                 i32 result = -1;
                 if (m_arrivalAction == ARRIVAL_ACTION_USE_TOOL) {
-                    if (m_arrivalActive != false) {
+                    if (m_actionTargetsGrunt != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
@@ -2450,7 +2450,7 @@ void CGrunt::AdvanceMotion() {
                         );
                     }
                 } else if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY) {
-                    if (m_arrivalActive != false) {
+                    if (m_actionTargetsGrunt != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;

@@ -57,7 +57,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
         (grunt)->m_aiType = AI_DEFENDER;                                                           \
         (grunt)->m_aiState = AISTATE_SEEK;                                                         \
         UNSET_COORD((grunt)->m_arrivalCell);                                                       \
-        (grunt)->m_arrivalActive = false;                                                          \
+        (grunt)->m_actionTargetsGrunt = false;                                                     \
         (grunt)->m_arrivalFlags |= 0x18040402;                                                     \
         SET_RECT_XY_EXTENTS((grunt)->m_object->m_extent, 0, 0, 0, 0);                              \
         (grunt)->SetEntrancePos(1, 1);                                                             \

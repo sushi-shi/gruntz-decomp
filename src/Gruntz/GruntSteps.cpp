@@ -710,16 +710,16 @@ i32 CGrunt::ClaimSwitchTile() {
 }
 
 RVA(0x00052ed0, 0x42)
-i32 CGrunt::SetArrivalTarget(
+i32 CGrunt::SetGruntActionTarget(
     i32 targetPlayerIndex,
     i32 targetUnitIndex,
     i32 targetPxX,
     i32 targetPxY
 ) {
-    Coord cell;
-    cell.Set(targetPlayerIndex, targetUnitIndex);
-    m_arrivalCell = cell;
-    m_arrivalActive = true;
+    Coord identity;
+    identity.Set(targetPlayerIndex, targetUnitIndex);
+    m_arrivalCell = identity;
+    m_actionTargetsGrunt = true;
     m_defenderPx.Set(
         (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX,
         (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX
@@ -1036,7 +1036,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_daFlag, sizeof(m_daFlag));
     ar->Write(&m_toyBreakStarted, sizeof(m_toyBreakStarted));
     ar->Write(&m_bombRunStarting, sizeof(m_bombRunStarting));
-    ar->Write(&m_arrivalActive, sizeof(m_arrivalActive));
+    ar->Write(&m_actionTargetsGrunt, sizeof(m_actionTargetsGrunt));
     ar->Write(&m_reachRect, sizeof(m_reachRect));
     ar->Write(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
     ar->Write(&m_toyUseRect, sizeof(m_toyUseRect));
