@@ -70,10 +70,9 @@ def _find_function(obj: Obj, name: str):
         end = next((s for s in starts if s > value), len(payload))
         rel = {off - value: tgt for off, tgt in relocs.items()
                if value <= off < end}
-        body = payload[value:end]
-        # trim alignment padding to the next symbol (int3 / nop fill) so a
-        # pad-length difference never reads as a codegen divergence
-        body = body.rstrip(b"\xcc").rstrip(b"\x90")
+        from gruntz.walls.pairscan import function_body
+        body = function_body(obj, secnum, value, end)
+        rel = {off: target for off, target in rel.items() if off < len(body)}
         return body, rel, len(body)
     return None, None, 0
 
