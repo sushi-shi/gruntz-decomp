@@ -4005,11 +4005,9 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CDDrawSurfaceMgr* w = m_world;
     i32 cx;
     i32 cy;
-    {
-        CRect dst(w->m_level->GetViewportRect());
-        cx = dst.left + dst.Width() / 2;
-        cy = dst.top + dst.Height() / 2;
-    }
+    CRect dst(w->m_level->GetViewportRect());
+    cx = dst.left + dst.Width() / 2;
+    cy = dst.top + dst.Height() / 2;
 
     if (m_quitConfirmationActive != false) {
         cx -= 0x5e;
