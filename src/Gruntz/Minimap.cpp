@@ -186,22 +186,22 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
 
     i32 centerX = left + width / 2;
     i32 centerY = top + height / 2;
-    i32 scaleX = width / static_cast<i32>(m_surface->m_apiDesc.dwWidth);
-    i32 scaleY = height / static_cast<i32>(m_surface->m_apiDesc.dwHeight);
+    i32 scaleX = width / static_cast<i32>(m_surface->GetDescription().dwWidth);
+    i32 scaleY = height / static_cast<i32>(m_surface->GetDescription().dwHeight);
 
     i32 scale = min(scaleX, scaleY);
 
     i32 cellScale = min(MINIMAP_MAX_CELL_SCALE, scale);
     m_cellScale = cellScale;
-    i32 drawLeft = centerX - static_cast<i32>(m_surface->m_apiDesc.dwWidth) * cellScale / 2;
-    i32 drawTop = centerY - static_cast<i32>(m_surface->m_apiDesc.dwHeight) * cellScale / 2;
+    i32 drawLeft = centerX - static_cast<i32>(m_surface->GetDescription().dwWidth) * cellScale / 2;
+    i32 drawTop = centerY - static_cast<i32>(m_surface->GetDescription().dwHeight) * cellScale / 2;
     RECT* dstRect = &m_drawRect;
     SET_RECT_COMPONENTS(
         *dstRect,
         drawLeft,
         drawTop,
-        m_surface->m_apiDesc.dwWidth * cellScale + drawLeft,
-        m_surface->m_apiDesc.dwHeight * cellScale + drawTop
+        m_surface->GetDescription().dwWidth * cellScale + drawLeft,
+        m_surface->GetDescription().dwHeight * cellScale + drawTop
     );
     if (target->GetSurface()->BltEx(dstRect, m_surface, NULL, DDBLT_WAIT, NULL) != 0) {
         return 0;
@@ -252,7 +252,7 @@ void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
     i32 height = rect->bottom - rect->top + 1;
     i32 leftOffset = m_surface->PixelOffset(rect->left, rect->top);
     i32 rightOffset = m_surface->PixelOffset(rect->right, rect->top);
-    i32 rowStride = m_surface->m_apiDesc.lPitch;
+    i32 rowStride = m_surface->GetDescription().lPitch;
 
     if (height > 0) {
         char* leftPixel = pixels + leftOffset;
@@ -278,24 +278,24 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     i32 width = rect->right - rect->left + 1;
 
     u16* topPixels = Pix16(
-        pixels + rect->top * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
+        pixels + rect->top * surface->GetDescription().lPitch + rect->left * surface->m_bytesPerPixel
     );
     for (i32 topX = 0; topX < width; topX++) {
         topPixels[topX] = static_cast<u16>(color);
     }
 
     u16* bottomPixels = Pix16(
-        pixels + rect->bottom * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
+        pixels + rect->bottom * surface->GetDescription().lPitch + rect->left * surface->m_bytesPerPixel
     );
     for (i32 bottomX = 0; bottomX < width; bottomX++) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
     i32 height = rect->bottom - rect->top + 1;
-    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
+    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->GetDescription().lPitch;
     i32 rightOffset =
-        rect->right * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
-    i32 rowStride = surface->m_apiDesc.lPitch;
+        rect->right * surface->m_bytesPerPixel + rect->top * surface->GetDescription().lPitch;
+    i32 rowStride = surface->GetDescription().lPitch;
     for (i32 y = 0; y < height; y++) {
         *Pix16(pixels + leftOffset) = static_cast<u16>(color);
         *Pix16(pixels + rightOffset) = static_cast<u16>(color);
