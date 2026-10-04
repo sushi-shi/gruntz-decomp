@@ -167,7 +167,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 1;
                         }
                         char sequenceName[128];
-                        wsprintfA(sequenceName, "AMBIENT%d", playState->GetAmbientId());
+                        wsprintfA(sequenceName, "AMBIENT%d", playState->GetMusicVariant());
                         m_midi->PlaySequence(sequenceName, true);
                         return 1;
                     }

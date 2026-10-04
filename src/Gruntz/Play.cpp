@@ -5426,14 +5426,14 @@ RVA(0x000d60b0, 0x2cd)
 i32 CPlay::StartLevelPlay() {
     char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-        m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
-        wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
+        m_introMusicTimer.Start(INTRO_MUSIC_DURATION_MS);
+        wsprintfA(sequenceName, "INTRO%d", GetMusicVariant());
         if (g_gameReg->m_musicEnabled != false) {
             m_mgr->m_midi->PlaySequence(sequenceName, false);
         }
-        m_ambientInitDone = false;
+        m_introMusicComplete = false;
     } else {
-        wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+        wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
         m_mgr->m_midi->SelectSequence(sequenceName);
         m_mgr->m_midi->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
@@ -5441,8 +5441,8 @@ i32 CPlay::StartLevelPlay() {
             && gameManager->GetGameMode() == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
         }
-        m_ambientTiming.Clear();
-        m_ambientInitDone = true;
+        m_introMusicTimer.Clear();
+        m_introMusicComplete = true;
     }
     if (m_mgr->GetGameMode() == GAMEMODE_QUESTZ) {
         CGruntzMgr* reg = g_gameReg;
@@ -6021,11 +6021,11 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
                 m_cursorSprite->SetAllFormats(shadeTable);
             }
             char sequenceName[0x40];
-            wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+            wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
             if (g_gameReg->m_musicEnabled) {
                 m_mgr->m_midi->PlaySequence(sequenceName, true);
             }
-            m_ambientInitDone = true;
+            m_introMusicComplete = true;
             break;
         }
     }
@@ -6927,14 +6927,14 @@ i32 CPlay::ClearPlacedObjects() {
 }
 
 RVA(0x000da200, 0x9b)
-i32 CPlay::GetAmbientId() {
+i32 CPlay::GetMusicVariant() {
     CGruntzMgr* gr = g_gameReg;
     if (gr->GetGameMode() == GAMEMODE_QUESTZ && gr->m_isCustomLevel == false) {
         return (m_levelIndex + 1) % 2;
     }
     DATA(0x0024c26c)
-    static i32 s_ambientCoin = GetRandomNumber() % 2;
-    return s_ambientCoin;
+    static i32 s_musicVariant = GetRandomNumber() % 2;
+    return s_musicVariant;
 }
 
 RVA(0x000da2d0, 0xa5)

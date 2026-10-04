@@ -63,17 +63,17 @@ inline void CPlay::FreePlacedObjectCells(i32 group) {
 }
 
 inline void CPlay::UpdateAmbientMusic() {
-    if (m_ambientInitDone == false) {
-        if (m_ambientTiming.Expired()) {
+    if (m_introMusicComplete == false) {
+        if (m_introMusicTimer.Expired()) {
             char sequenceName[0x40];
-            wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+            wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
             if (g_gameReg->m_musicEnabled != false) {
                 m_mgr->m_midi->PlaySequence(sequenceName, true);
             } else {
                 m_mgr->m_midi->SelectSequence(sequenceName);
                 m_mgr->m_midi->SetCurrentLooping(true);
             }
-            m_ambientInitDone = true;
+            m_introMusicComplete = true;
         }
     }
 }

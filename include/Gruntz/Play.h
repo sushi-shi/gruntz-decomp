@@ -187,7 +187,7 @@ public:
     i32 LoadGruntAssetNamespaces(CMulti* multiplayerSession);
 
     i32 StepViewportResize();
-    i32 GetAmbientId();
+    i32 GetMusicVariant();
     inline void UpdateAmbientMusic();
     inline void DrawVisibleWorld();
     inline void DrawWorldView();
@@ -331,8 +331,8 @@ public:
     CMinimap* m_minimap;
     ClockInterval m_carriedGruntVoiceTimer;
 
-    ClockInterval m_ambientTiming;
-    b32 m_ambientInitDone;
+    ClockInterval m_introMusicTimer;
+    b32 m_introMusicComplete;
     ClockInterval m_syncTiming;
     Coord m_tileClick;
     b32 m_gruntPlacementActive;
@@ -478,7 +478,7 @@ inline CPlay::CPlay() {
     m_minimap = NULL;
     m_cursorUsesPlayerTint = false;
     m_defeatCountdownActive = false;
-    m_ambientInitDone = true;
+    m_introMusicComplete = true;
     m_stepCountdown = 0;
     m_savedMusicSequence = NULL;
     m_selectionDragActive = false;
