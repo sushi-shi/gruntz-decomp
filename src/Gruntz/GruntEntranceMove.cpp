@@ -579,7 +579,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 }
 
 RVA(0x000692f0, 0x850)
-i32 CGrunt::StepArrivalCommit() {
+i32 CGrunt::BeginFreezeAnimation() {
     if (m_entranceCommitted == false) {
         return 0;
     }
@@ -655,7 +655,7 @@ finalize:
 }
 
 RVA(0x00069d60, 0x1e1)
-i32 CGrunt::LoadFreezeSpellAssets() {
+i32 CGrunt::UpdateFreezeAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (cur->IsComplete()) {
         if (m_freezeUnfrozen != false) {

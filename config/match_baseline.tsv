@@ -2112,14 +2112,14 @@ gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	94.6523	94.6523	31	63595062
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	9	9b7b13df0b1a	0x69fd0	100.0000	
 gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.7347	8	3cf54ec6d452	0x67b00	90.9592	
 gruntentrancemove	?LoadEntranceConfig@CGrunt@@QAEHXZ	95.7018	95.7018	23	f55727068246	0x67f80	95.7018	
-gruntentrancemove	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	97.0746	97.0746	16	b7421913550c	0x69d60	97.0746	
+gruntentrancemove	?UpdateFreezeAnimation@CGrunt@@QAEHXZ	97.0746	97.0746	16	b7421913550c	0x69d60	97.0746	
 gruntentrancemove	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	100.0000	100.0000	11	7149d5d3ffa9	0x6a060	100.0000	
 gruntentrancemove	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	94.1398	94.1398	22	c8ac666b3a68	0x68880	94.1398	
 gruntentrancemove	?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z	100.0000	100.0000	4	47adeca89d45	0x6b330	100.0000	
 gruntentrancemove	?RearmEntranceDrop@CGrunt@@QAEHXZ	100.0000	100.0000	13	2dd555eaa742	0x68370	100.0000	
 gruntentrancemove	?UpdatePickupAnimation@CGrunt@@QAEHXZ	94.8595	94.8595	14	2aaa24e92a52	0x67850	94.8595	
 gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	100.0000	100.0000	20	ef11484c29af	0x68520	100.0000	
-gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	94.2590	94.2590	27	7b38e40f7ce3	0x692f0	94.2590	
+gruntentrancemove	?BeginFreezeAnimation@CGrunt@@QAEHXZ	94.2590	94.2590	27	7b38e40f7ce3	0x692f0	94.2590	
 gruntentrancemove	?StepAttackAction@CGrunt@@QAEHXZ	100.0000	100.0000	1	84fd4a8ab460	0x6b260	100.0000	
 gruntentrancemove	?UpdateEntranceAnim@CGrunt@@QAEHXZ	100.0000	100.0000	28	fd7054f756b7	0x690a0	100.0000	
 gruntgoosuckerstep	?CellTargetable@@YAHHH@Z	89.4688	89.4688	6	48552d2e876e	0xf0db0	89.4688	

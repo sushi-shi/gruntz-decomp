@@ -350,7 +350,7 @@ public:
 
     i32 StepCompassMove();
 
-    i32 StepArrivalCommit();
+    i32 BeginFreezeAnimation();
 
     i32 RunMoveConfig(i32 tileX, i32 tileY);
 
@@ -756,7 +756,7 @@ public:
 
     i32 FinishEntranceMove();
 
-    i32 LoadFreezeSpellAssets();
+    i32 UpdateFreezeAnimation();
 
     i32 StepBomberBehavior();
 

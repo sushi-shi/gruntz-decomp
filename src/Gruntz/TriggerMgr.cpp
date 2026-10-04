@@ -1752,7 +1752,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         if (gruntX == x && gruntY == y) {
                             break;
                         }
-                        grunt->StepArrivalCommit();
+                        grunt->BeginFreezeAnimation();
                         CGameObject* object = grunt->m_object;
                         CreateLightFx(
                             g_gameReg->World()->ChildGroup(),

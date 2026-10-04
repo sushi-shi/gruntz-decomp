@@ -1533,7 +1533,7 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
     REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
     REGISTER_ACT(registry, "P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_ACT(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_ACT(registry, "Q", &CGrunt::UpdateFreezeAnimation);
     REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
     REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
 }
