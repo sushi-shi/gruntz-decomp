@@ -398,7 +398,7 @@ CGrunt* CTriggerMgr::PickGruntAtWorldPoint(
                 CGrunt* grunt = PlayerUnits(playerSelector)[unitIndex];
                 if (grunt != NULL && grunt->IsEntranceCommitted() != false) {
                     CWwdSpriteObject* object = grunt->m_object;
-                    if (object->m_frameImage != NULL) {
+                    if (object->GetFrameImage() != NULL) {
                         RECT hitBox;
                         hitBox.left = object->m_screenX - 15;
                         hitBox.top = object->m_screenY - 15;

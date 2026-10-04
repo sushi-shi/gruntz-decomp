@@ -344,6 +344,10 @@ public:
         return m_imageSet;
     }
 
+    CImage* GetFrameImage() const {
+        return m_frameImage;
+    }
+
     void SetImageFrame(i32 frame) {
         CDDrawWorker* imageSet = m_imageSet;
         if (imageSet != NULL) {

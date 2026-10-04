@@ -333,7 +333,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
-    CImage* L = r->m_frameImage;
+    CImage* L = r->GetFrameImage();
     i32 xlo = r->m_screenX - L->GetAnchorX();
     i32 ylo = r->m_screenY - L->GetAnchorY();
     i32 xhi = L->m_width + xlo;

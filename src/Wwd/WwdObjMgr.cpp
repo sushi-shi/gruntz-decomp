@@ -696,7 +696,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (obj->GetClassId() != CLASSID_SERIALREF) {
                     continue;
                 }
-                CImage* fr = obj->m_frameImage;
+                CImage* fr = obj->GetFrameImage();
                 if (fr == NULL) {
                     continue;
                 }

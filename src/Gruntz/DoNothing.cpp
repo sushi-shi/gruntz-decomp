@@ -33,5 +33,5 @@ i32 CDoNothingNormal::SerializeDispatch(
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }

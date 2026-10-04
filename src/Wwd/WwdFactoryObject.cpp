@@ -339,7 +339,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 c->m_frameIndex = c->m_frameIndex + 1;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->m_frameImage == NULL) {
+                if (c->GetFrameImage() == NULL) {
                     i32 first = c->GetImageSet()->GetMinIndex();
                     c->m_frameIndex = first;
                     c->m_frameImage = c->GetImageSet()->GetFrame(first);
@@ -403,7 +403,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 c->m_frameIndex = c->m_frameIndex + step;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->m_frameImage == NULL) {
+                if (c->GetFrameImage() == NULL) {
                     c->ClampToLastFrame();
                 }
                 break;
@@ -417,7 +417,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 c->m_frameIndex = c->m_frameIndex - step;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->m_frameImage == NULL) {
+                if (c->GetFrameImage() == NULL) {
                     c->ClampToFirstFrame();
                 }
                 break;

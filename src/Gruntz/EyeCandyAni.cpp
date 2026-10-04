@@ -38,11 +38,11 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
-    if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
-        i32 v = o->m_frameImage->GetAnchorY() + o->m_screenY + 0x186a0;
+    if (o->m_sortKey == 0 && o->GetFrameImage() != NULL) {
+        i32 v = o->GetFrameImage()->GetAnchorY() + o->m_screenY + 0x186a0;
         o->SetSortKey(v);
     }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }
 
 RVA(0x000acbb0, 0x102)

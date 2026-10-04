@@ -150,10 +150,10 @@ i32 CPathHazard::Tick() {
     CWwdSpriteObject* obj = m_object;
 
     RECT rect;
-    rect.left = obj->m_screenX - obj->m_frameImage->GetAnchorX() + 7;
-    rect.right = obj->m_frameImage->GetAnchorX() + obj->m_screenX - 7;
-    rect.top = obj->m_screenY - obj->m_frameImage->GetAnchorY() + 7;
-    rect.bottom = obj->m_frameImage->GetAnchorY() + obj->m_screenY - 7;
+    rect.left = obj->m_screenX - obj->GetFrameImage()->GetAnchorX() + 7;
+    rect.right = obj->GetFrameImage()->GetAnchorX() + obj->m_screenX - 7;
+    rect.top = obj->m_screenY - obj->GetFrameImage()->GetAnchorY() + 7;
+    rect.bottom = obj->GetFrameImage()->GetAnchorY() + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->GetEasyMode() == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
@@ -268,10 +268,10 @@ i32 CPathHazard::SiblingTick() {
 
     CWwdSpriteObject* obj = m_object;
     RECT rect;
-    rect.left = obj->m_screenX - obj->m_frameImage->GetAnchorX() + 7;
-    rect.right = obj->m_frameImage->GetAnchorX() + obj->m_screenX - 7;
-    rect.top = obj->m_screenY - obj->m_frameImage->GetAnchorY() + 7;
-    rect.bottom = obj->m_frameImage->GetAnchorY() + obj->m_screenY - 7;
+    rect.left = obj->m_screenX - obj->GetFrameImage()->GetAnchorX() + 7;
+    rect.right = obj->GetFrameImage()->GetAnchorX() + obj->m_screenX - 7;
+    rect.top = obj->m_screenY - obj->GetFrameImage()->GetAnchorY() + 7;
+    rect.bottom = obj->GetFrameImage()->GetAnchorY() + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->GetEasyMode() != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {

@@ -164,10 +164,10 @@ i32 CObjectDropper::Update() {
             RECT box;
             SET_RECT_XY_EXTENTS(
                 box,
-                o->m_screenX - o->m_frameImage->GetAnchorX() + 7,
-                o->m_screenX + o->m_frameImage->GetAnchorX() - 7,
-                o->m_screenY - o->m_frameImage->GetAnchorY() + 7,
-                o->m_screenY + o->m_frameImage->GetAnchorY() - 7
+                o->m_screenX - o->GetFrameImage()->GetAnchorX() + 7,
+                o->m_screenX + o->GetFrameImage()->GetAnchorX() - 7,
+                o->m_screenY - o->GetFrameImage()->GetAnchorY() + 7,
+                o->m_screenY + o->GetFrameImage()->GetAnchorY() - 7
             );
             i32 playerIndex;
             i32 unitIndex;

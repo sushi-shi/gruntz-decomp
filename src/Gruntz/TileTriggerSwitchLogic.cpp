@@ -980,7 +980,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         }
         spr->GetLogicRecord()->Dispatch(spr);
         spr->SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
-        if (spr->m_frameImage == NULL) {
+        if (spr->GetFrameImage() == NULL) {
             return 0;
         }
     }
@@ -1297,7 +1297,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                     break;
                 default:
                     spr->SetImageSetByName("GAME_BRICKBREAK");
-                    if (spr->m_frameImage == NULL) {
+                    if (spr->GetFrameImage() == NULL) {
                         spr->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     }
                     break;
