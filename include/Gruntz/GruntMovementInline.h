@@ -25,7 +25,7 @@ inline void ClearMoveTileFx(CGrunt* grunt) {
 }
 
 inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
-    if (grunt->m_cellRemovalNotified == false) {
+    if (grunt->IsUnregisteredFromBoard() == false) {
         grunt->m_triggerMgr
             ->UnregisterUnit(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), exitedLevel);
     }

@@ -995,7 +995,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     if (cell == NULL) {
         return;
     }
-    if (cell->m_cellRemovalNotified != false) {
+    if (cell->IsUnregisteredFromBoard() != false) {
         return;
     }
     if (cell->m_arrivalPending == false) {
@@ -1026,7 +1026,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
         }
         m_gruntzLostByPlayer[playerIndex] += 1;
     }
-    cell->m_cellRemovalNotified = true;
+    cell->MarkUnregisteredFromBoard();
 }
 
 RVA(0x0007a180, 0x86)

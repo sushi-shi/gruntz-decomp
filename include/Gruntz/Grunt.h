@@ -200,6 +200,12 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
+    b32 IsUnregisteredFromBoard() const {
+        return m_cellRemovalNotified;
+    }
+    void MarkUnregisteredFromBoard() {
+        m_cellRemovalNotified = true;
+    }
     b32 IsSelected() const {
         return m_selected;
     }
