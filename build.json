@@ -3492,6 +3492,17 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "shutdownrequest",
+      "source": "src/Runtime/ShutdownRequest.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

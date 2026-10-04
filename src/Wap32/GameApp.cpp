@@ -20,6 +20,7 @@ CGameApp::CGameApp() {
     m_hAccel = NULL;
     m_hInstance = NULL;
     m_appActive = false;
+    m_running = false;
     m_errorReported = false;
     m_errorCode = 0;
     m_errorDetail = 0;
@@ -43,6 +44,7 @@ i32 CGameApp::InitInstance(
         goto Fail;
     }
 
+    m_shutdown = ShutdownRequest();
     m_running = true;
     m_errorReported = false;
     m_errorCode = 0;
@@ -173,6 +175,10 @@ i32 CGameApp::RunMessageLoop() {
             DispatchMessageA(&msg);
         }
         const u32 delay = Step(timeGetTime());
+        if (TakeCloseRequest()) {
+            if (!PostMessageA(hwnd, WM_CLOSE, 0, 0)) return 0;
+            continue;
+        }
         // A capped batch may leave previously observed input in the queue.
         // Drain it on the next iteration instead of waiting for new input.
         if (delay && dispatched < 64) {
@@ -277,6 +283,12 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
 }
 
 u32 CGameApp::Step(u32 nowMs) {
+    if (m_shutdown.pending()) {
+        if (m_gameMgr) m_gameMgr->SuspendFrames();
+        const u32 delay = m_shutdown.poll(nowMs);
+        if (m_shutdown.ready()) m_running = false;
+        return delay;
+    }
     if (m_appActive && m_running && m_gameMgr) {
         return m_gameMgr->AdvanceFrame(nowMs);
     }
@@ -357,26 +369,10 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
     return 1;
 }
 
-void WaitKeyEdge(int vk, int timeoutMs) {
-    if (timeoutMs == 0) {
-        SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;
-        while (!(static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN))
-            ;
-        while (static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN)
-            ;
-    } else {
-        DWORD(WINAPI * tgt)(void) = timeGetTime;
-        u32 deadline = tgt() + timeoutMs;
-        SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;
-        while (!(static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN)) {
-            if (tgt() > deadline) {
-                return;
-            }
-        }
-        while (static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN) {
-            if (tgt() > deadline) {
-                return;
-            }
-        }
-    }
+i32 CGameMgr::IsActive() {
+    return m_gameWnd != NULL;
+}
+
+i32 CGameMgr::HandleCommand(i32, GruntzCommandId, i32) {
+    return 0;
 }

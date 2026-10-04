@@ -225,7 +225,6 @@ CGruntzMgr::CGruntzMgr() {
     m_lightFxMgr = NULL;
     m_lobbyResult = 0;
     m_lobbyProbed = false;
-    m_delayedQuitPending = false;
     m_reserveda8 = 0;
     m_modalBusy = false;
     m_renderGate = false;
@@ -736,13 +735,6 @@ std::string CGruntzMgr::GetRezPath() {
     return m_strRezPath;
 }
 
-i32 CGameMgr::IsActive() {
-    return m_gameWnd != NULL;
-}
-
-i32 CGameMgr::HandleCommand(i32, GruntzCommandId, i32) {
-    return 0;
-}
 
 void CGruntzMgr::Close() {
     if (m_world) {
@@ -908,6 +900,7 @@ i32 PumpIdleFrame() {
 }
 
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused) {
+    if (IsQuitPending()) return 0;
     static_cast<void>(unused);
     TRACE("TransitionState %d\n", stateId);
     GameStateId previousState = GAMESTATE_NONE;
@@ -929,12 +922,6 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
         }
     } else if (keepCurrent == false) {
         ClearStateStack();
-    }
-
-    if (m_delayedQuitPending != false) {
-
-        m_curState = new CState;
-        return 1;
     }
 
     TRACE("creating state %d\n", stateId);
@@ -1110,70 +1097,70 @@ i32 CGruntzMgr::GoToPrevLevel() {
 }
 
 i32 CGruntzMgr::ForwardCharToState(i32 charCode, i32 keyData) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnChar(charCode, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardKeyDownToState(i32 virtualKey, i32 keyData) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnKeyDown(virtualKey, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardKeyUpToState(i32 virtualKey, i32 keyData) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnKeyUp(virtualKey, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnLButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnLButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnLButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnRButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnRButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnRButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState) {
+    if (m_curState && !IsQuitPending()) {
         return m_curState->OnMouseMove(keyFlags, x, y);
     }
     return 0;
@@ -1844,29 +1831,20 @@ void CGruntzMgr::ResetClockGlobals() {
     g_debugDisplayFlags = DEBUG_DISPLAY_NONE;
 }
 
+bool CGruntzMgr::IsQuitPending() const {
+    return m_owner && m_owner->IsQuitPending();
+}
+
 void CGruntzMgr::DelayedQuit() {
-    if (m_delayedQuitPending != false) {
-        return;
+    if (!m_owner || IsQuitPending()) return;
+    u32 delayMs = 0;
+    SoundCue* cue = World() && World()->SoundRegistry()
+        ? World()->SoundRegistry()->FindCue("MENU_ACTIVATE") : NULL;
+    if (cue && cue->m_sound) {
+        const u32 duration = cue->m_sound->m_durationMs;
+        delayMs = duration > 0x7fffffffU - 500 ? 0x7fffffffU : duration + 500;
     }
-    m_delayedQuitPending = true;
-    SoundCue* out = World()->SoundRegistry()->FindCue("MENU_ACTIVATE");
-    i32 base;
-    if (out != NULL) {
-        out = World()->SoundRegistry()->FindCue("MENU_ACTIVATE");
-        base = out->m_sound->m_durationMs + 0x1f4;
-    } else {
-        base = 0;
-    }
-    base += timeGetTime();
-    u32 deadline = base;
-    while (timeGetTime() < deadline) {
-    }
-    if (m_owner) {
-        m_owner->m_running = false;
-    }
-    if (m_gameWnd) {
-        PostMessageA(m_gameWnd->GetHwnd(), WM_CLOSE, 0, 0);
-    }
+    m_owner->RequestQuit(delayMs);
 }
 
 void CGruntzMgr::RefreshGameClock() {

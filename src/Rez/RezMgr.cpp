@@ -34,7 +34,7 @@ i32 g_period500CountdownMs = 0;
 i32 g_period100CountdownMs = 0;
 
 i32 CGruntzMgr::UpdateFrame() {
-    if (m_curState == NULL) {
+    if (m_curState == NULL || IsQuitPending()) {
         return 0;
     }
 

@@ -1,5 +1,6 @@
 #include <Runtime/FrameTiming.h>
 #include <Runtime/FrameScheduler.h>
+#include <Runtime/ShutdownRequest.h>
 #include <cassert>
 #include <cstdio>
 #include <climits>
@@ -234,11 +235,63 @@ static void returningScheduler() {
     assert(updates == 102 && frames.timing().fps() == 51);
 }
 
+static void returningShutdown() {
+    ShutdownRequest idle;
+    assert(!idle.pending() && !idle.ready());
+    assert(idle.poll(100) == 0xffffffffU && !idle.takeCloseRequest());
+    idle.request(20);
+    assert(idle.pending() && !idle.ready() && !idle.takeCloseRequest());
+    assert(idle.poll(1000) == 20);
+    idle.request(999);
+    assert(idle.poll(1007) == 13);
+    assert(idle.poll(1007) == 13 && !idle.takeCloseRequest());
+    assert(idle.poll(1019) == 1);
+    assert(idle.poll(1020) == 0 && idle.ready());
+    assert(idle.takeCloseRequest() && !idle.takeCloseRequest());
+    assert(idle.poll(1030) == 0xffffffffU);
+    idle.request(1);
+    assert(idle.pending() && idle.ready() && !idle.takeCloseRequest());
+
+    ShutdownRequest immediate;
+    immediate.request(0);
+    assert(immediate.poll(0x80000000U) == 0 && immediate.takeCloseRequest());
+    ShutdownRequest wrapping;
+    wrapping.request(32);
+    assert(wrapping.poll(0xfffffff0U) == 32);
+    assert(wrapping.poll(0) == 16);
+    assert(wrapping.poll(16) == 0 && wrapping.takeCloseRequest());
+    ShutdownRequest signedBoundary;
+    signedBoundary.request(32);
+    assert(signedBoundary.poll(0x7ffffff0U) == 32);
+    assert(signedBoundary.poll(0x80000010U) == 0 && signedBoundary.takeCloseRequest());
+    ShutdownRequest large;
+    large.request(0xffffffffU);
+    assert(large.poll(0) == 0x7fffffffU);
+    assert(large.poll(0x80000000U) == 0 && large.takeCloseRequest());
+
+    // Shutdown remains driven by the host while gameplay frame scheduling is suspended.
+    FrameScheduler frames;
+    frames.reset(123);
+    frames.timing().setFrameRate(1);
+    assert(frames.poll(123));
+    assert(!frames.poll(124));
+    ShutdownRequest suspended;
+    suspended.request(500);
+    frames.suspend();
+    assert(suspended.poll(200) == 500);
+    frames.suspend();
+    assert(suspended.poll(450) == 250);
+    frames.suspend();
+    assert(suspended.poll(5000) == 0 && suspended.takeCloseRequest());
+    assert(!suspended.takeCloseRequest());
+}
+
 int main() {
     static_assert(sizeof(u32) == 4, "Timing uses 32-bit milliseconds");
 #ifdef __EMSCRIPTEN__
     static_assert(sizeof(void*) == 4, "This suite must exercise wasm32");
 #endif
+    returningShutdown();
     returningScheduler();
     countdowns();
     pacing();
