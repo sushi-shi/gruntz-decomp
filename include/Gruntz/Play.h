@@ -51,7 +51,7 @@ class GruntzPlayer;
 
 class CPlay : public CState {
 public:
-    inline void SetSavedClock(u32 clock);
+    inline void SetSavedGameTimeMs(u32 timeMs);
     inline void ClearSaveSlot();
     inline void SetCompletedFinalLevel(b32 completed);
     inline void SetReturningToMenu(b32 returning);
@@ -304,7 +304,7 @@ public:
     b32 m_initialFramePending;
     // @identity-TODO: initialized to zero with the play state; no semantic read.
     i32 m_reserved1c8;
-    i32 m_savedClock;
+    i32 m_savedGameTimeMs;
 
     SaveSlot m_saveSlot;
     i32 m_packetsRcvd;

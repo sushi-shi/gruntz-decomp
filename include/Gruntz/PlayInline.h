@@ -110,8 +110,8 @@ inline void CPlay::ClearSaveSlot() {
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
 }
 
-inline void CPlay::SetSavedClock(u32 clock) {
-    m_savedClock = clock;
+inline void CPlay::SetSavedGameTimeMs(u32 timeMs) {
+    m_savedGameTimeMs = timeMs;
 }
 
 #endif // GRUNTZ_GRUNTZ_PLAYINLINE_H

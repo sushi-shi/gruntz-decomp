@@ -274,7 +274,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         SetCompletedFinalLevel(false);
         ClearSaveSlot();
         mgr->ResetClockGlobals();
-        SetSavedClock(0);
+        SetSavedGameTimeMs(0);
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
         if (m_mgr->IsLoadingSaveGame() == false) {
@@ -357,7 +357,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
         } while (ShowCursor(false) >= 0);
     }
     if (previousState == GAMESTATE_HELP) {
-        g_frameTime = m_savedClock;
+        g_frameTime = m_savedGameTimeMs;
         if (!EnterMode(GAMESTATE_HELP)) {
             return 0;
         }
@@ -390,7 +390,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::LeaveState(GameStateId nextState) {
     m_mgr->VoiceMgr()->PauseAllVoices();
-    m_savedClock = static_cast<i32>(g_frameTime);
+    m_savedGameTimeMs = static_cast<i32>(g_frameTime);
     if (m_returningToMenu) {
         PrepareReturnToMenu();
     }
@@ -2995,14 +2995,14 @@ i32 CPlay::PauseGame() {
     }
     m_selectionDragActive = false;
     m_statusBarDragActive = false;
-    m_savedClock = g_frameTime;
+    m_savedGameTimeMs = g_frameTime;
     return 1;
 }
 
 RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
     m_statusBar->BuildGameTabPauseButton();
-    g_frameTime = m_savedClock;
+    g_frameTime = m_savedGameTimeMs;
     m_helpMessageActive = false;
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
@@ -5528,7 +5528,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     g->TryActivate();
     g->m_hlBusy = true;
     g->Deactivate();
-    m_savedClock = g_frameTime;
+    m_savedGameTimeMs = g_frameTime;
     return 1;
 }
 
@@ -5539,7 +5539,7 @@ i32 CPlay::CloseLevelOverlay(i32) {
         m_levelOverlayOpen = false;
         worker->ExitMode();
         if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
-            g_frameTime = m_savedClock;
+            g_frameTime = m_savedGameTimeMs;
         }
     }
     return 1;
@@ -5897,7 +5897,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
         m_mgr->m_worldSounds->Resume();
     }
     if (mode == GAMESTATE_HELP) {
-        g_frameTime = m_savedClock;
+        g_frameTime = m_savedGameTimeMs;
     }
     m_statusBar->Deactivate();
     DiscardQueuedInput();
@@ -6064,7 +6064,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 
     s->Write(&m_returnToMenuOnComplete, sizeof(m_returnToMenuOnComplete));
     s->Write(&m_completedFinalLevel, sizeof(m_completedFinalLevel));
-    s->Write(&m_savedClock, sizeof(m_savedClock));
+    s->Write(&m_savedGameTimeMs, sizeof(m_savedGameTimeMs));
     s->Write(&m_rngSeed, sizeof(m_rngSeed));
     s->Write(&m_dragInProgress, sizeof(m_dragInProgress));
     s->Write(&m_reserved2f0, sizeof(m_reserved2f0));
@@ -6195,7 +6195,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
     ar->Read(&m_returnToMenuOnComplete, sizeof(m_returnToMenuOnComplete));
     ar->Read(&m_completedFinalLevel, sizeof(m_completedFinalLevel));
-    ar->Read(&m_savedClock, sizeof(m_savedClock));
+    ar->Read(&m_savedGameTimeMs, sizeof(m_savedGameTimeMs));
     ar->Read(&m_rngSeed, sizeof(m_rngSeed));
     ar->Read(&m_dragInProgress, sizeof(m_dragInProgress));
     ar->Read(&m_reserved2f0, sizeof(m_reserved2f0));
