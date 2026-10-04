@@ -69,7 +69,7 @@ const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
 const double g_movingLogicMax = 2147483646.0;
 DATA(0x001f04e8)
-const u32 g_defaultZ = 24;
+const u32 g_defaultMaxStep = 24;
 
 RVA_DYNINIT(0x000df900, 0xa, CActRegPool<CProjectile>::s_table)
 RVA_DYNINIT(0x000df920, 0x15, CActRegPool<CProjectile>::s_table)

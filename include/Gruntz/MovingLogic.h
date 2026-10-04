@@ -14,7 +14,7 @@
 
 #include <stddef.h>
 
-extern const u32 g_defaultZ;
+extern const u32 g_defaultMaxStep;
 
 class CMovingLogic : public CUserLogic {
 public:
@@ -74,10 +74,10 @@ inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     InitOwner(0.001);
     CMotionState* m = Motion();
-    double z = static_cast<double>(g_defaultZ);
-    m->m_maxStep.m_x = z;
-    m->m_maxStep.m_y = z;
-    m->m_maxStep.m_z = z;
+    double maxStep = static_cast<double>(g_defaultMaxStep);
+    m->m_maxStep.m_x = maxStep;
+    m->m_maxStep.m_y = maxStep;
+    m->m_maxStep.m_z = maxStep;
     BeginMotion();
 }
 
@@ -121,7 +121,7 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
         static_cast<double>(g_frameTime) * 0.001,
         0.0
     );
-    m_motion.SetZ(static_cast<double>(g_defaultZ));
+    m_motion.SetMaxStep(static_cast<double>(g_defaultMaxStep));
     BeginMotion();
 }
 

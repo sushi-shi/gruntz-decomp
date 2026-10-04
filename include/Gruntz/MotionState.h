@@ -35,7 +35,7 @@ public:
         double dt
     );
 
-    void SetZ(double z);
+    void SetMaxStep(double maxStep);
     void Step(double dt);
     double ArrivalVelX(double target);
     double ArrivalVelY(double target);

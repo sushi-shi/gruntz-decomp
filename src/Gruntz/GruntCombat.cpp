@@ -854,8 +854,8 @@ i32 CMotionState::SetParams(
 }
 
 RVA(0x00058ca0, 0x19)
-void CMotionState::SetZ(double z) {
-    m_maxStep.Init(z, z, z);
+void CMotionState::SetMaxStep(double maxStep) {
+    m_maxStep.Init(maxStep, maxStep, maxStep);
 }
 
 RVA(0x00058cd0, 0x195)
