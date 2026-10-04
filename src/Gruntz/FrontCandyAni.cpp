@@ -59,6 +59,6 @@ void CFrontCandyAni::RegisterActs() {
 
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     return 0;
 }

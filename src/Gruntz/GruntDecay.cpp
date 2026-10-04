@@ -16,7 +16,7 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (m_deathType == DEATH_DROP) {
         return 0;
     }
-    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
+    if (m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta) == 1) {
         if (m_activePickupType == PICKUP_BOMB && m_deathType != DEATH_MELT) {
             m_triggerMgr
                 ->ApplyExplosion(m_object->m_screenX, m_object->m_screenY, 1, m_playerIndex);
@@ -31,7 +31,7 @@ i32 CGrunt::UpdateDeathAnimation() {
             );
         }
     }
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    CAniAdvanceCursor* sub = &m_wwdObject->GetAnimationCursor();
     if (!sub->IsComplete()) {
         return 0;
     }

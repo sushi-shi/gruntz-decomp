@@ -120,7 +120,7 @@ void CKitchenSlime::RegisterType() {
 // @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->GetAnimationCursor().Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->GetEasyMode() == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {

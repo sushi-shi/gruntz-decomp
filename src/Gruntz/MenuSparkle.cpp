@@ -92,10 +92,10 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_logicRecord->m_sparkleDelay -= delta;
     }
     if (m_logicRecord->m_sparkleDelay == 0) {
-        m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+        m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     }
-    if (m_wwdObject->m_animationCursor.IsComplete()) {
-        CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
+    if (m_wwdObject->GetAnimationCursor().IsComplete()) {
+        CAniAdvanceCursor* anim = &m_wwdObject->GetAnimationCursor();
         if (anim != NULL) {
             anim->RestartAnimation(1);
         }

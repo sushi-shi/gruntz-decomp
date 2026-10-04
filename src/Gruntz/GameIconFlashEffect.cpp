@@ -16,7 +16,7 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     GameIconFlashState state = static_cast<GameIconFlashState>(record->EventCode());
     if (state != GAME_ICON_FLASH_IDLE) {
         if (state == GAME_ICON_FLASH_ACTIVE) {
-            CAniAdvanceCursor* a = &static_cast<CWwdSpriteObject*>(obj)->m_animationCursor;
+            CAniAdvanceCursor* a = &static_cast<CWwdSpriteObject*>(obj)->GetAnimationCursor();
             a->Advance(g_engineFrameDelta);
             if (a->IsComplete()) {
                 obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

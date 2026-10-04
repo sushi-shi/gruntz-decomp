@@ -60,6 +60,6 @@ void CStatusBarSprite::RegisterActs() {
 
 RVA(0x0010c810, 0x17)
 i32 CStatusBarSprite::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     return 0;
 }

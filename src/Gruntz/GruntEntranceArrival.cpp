@@ -105,7 +105,7 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
         return 0;
     }
 
-    m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    m_wwdObject->GetAnimationCursor().Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_stamina >= STAMINA_FULL) {
         if (m_attackQueued != false) {
@@ -207,7 +207,7 @@ i32 CGrunt::StartRangedAttackAnimation() {
 
 RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
-    i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    i32 advanced = m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     i32 flag = 0;
     if (advanced == ANIM_EVENT_EFFECT_FRAME) {
 
@@ -328,7 +328,7 @@ i32 CGrunt::StepAttackFire() {
         m_attackWindupActive = false;
     }
 
-    CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
+    CAniAdvanceCursor* cur = &m_wwdObject->GetAnimationCursor();
     if (!cur->IsComplete() && flag == 0) {
         return 0;
     }
@@ -473,7 +473,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     }
 
     CAnimationSequence* want = m_poseToy[sel];
-    if (m_wwdObject->m_animationCursor.GetAnimation() != want) {
+    if (m_wwdObject->GetAnimationCursor().GetAnimation() != want) {
         SwitchAnimation(want);
         DECLARE_FIRST_ANIMATION_FRAME(frame, desc, el)
         char* buf = (&m_frameSetName)->GetBuffer(0);
@@ -499,8 +499,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
 RVA(0x00062840, 0x25d)
 i32 CGrunt::UpdateToyUseAnimation() {
-    b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    b32 ready = m_wwdObject->GetAnimationCursor().Advance(static_cast<u32>(g_engineFrameDelta));
+    CAniAdvanceCursor* sub = &m_wwdObject->GetAnimationCursor();
     if (sub->IsComplete()) {
         if (m_selected != false) {
             CreateHealthSprite();
@@ -648,7 +648,7 @@ void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 pla
             applied = 1;
         } else {
 
-            if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
+            if (m_wwdObject->GetAnimationCursor().GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
                 SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
                 {
                     i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
@@ -669,7 +669,7 @@ void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 pla
     }
 
     GruntDirectionCell cell = m_facing;
-    if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
+    if (m_wwdObject->GetAnimationCursor().GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
         switch (m_facing.m_direction) {
             case DIR_NORTHEAST:
                 cell = g_gruntDirEast;
@@ -709,7 +709,7 @@ i32 CGrunt::UpdateIdleAnimation() {
         }
     }
 
-    b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    b32 ready = m_wwdObject->GetAnimationCursor().Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_idleWindowTiming.Expired()) {
         CGruntzMgr* g = g_gameReg;
@@ -733,9 +733,9 @@ i32 CGrunt::UpdateIdleAnimation() {
     }
 
 tail:
-    if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
+    if (m_wwdObject->GetAnimationCursor().GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
 
-        if (m_wwdObject->m_animationCursor.IsComplete()) {
+        if (m_wwdObject->GetAnimationCursor().IsComplete()) {
             ResetIdleAnimation(0, 0, 0);
         }
         return 0;
@@ -798,7 +798,7 @@ i32 CGrunt::StartWalkAnimation() {
 // @early-stop
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::UpdateWalkAnimation() {
-    m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    m_wwdObject->GetAnimationCursor().Advance(static_cast<u32>(g_engineFrameDelta));
     u32 elapsed = m_walkVoiceTiming.Elapsed();
     if (elapsed <= 0x2710) {
         return 0;
@@ -948,9 +948,10 @@ i32 CGrunt::StartExitAnimation() {
     }
 
     CWapX::ApplyAnimation(found, 0);
-    i32 frame =
-        static_cast<CAniFrameRecord*>(m_wwdObject->m_animationCursor.GetAnimation()->AtChecked(0))
-            ->GetFrameParameter();
+    i32 frame = static_cast<CAniFrameRecord*>(
+                    m_wwdObject->GetAnimationCursor().GetAnimation()->AtChecked(0)
+    )
+                    ->GetFrameParameter();
     SetImageFrameByName("GRUNTZ_EXITZ", frame);
     return 0;
 }
@@ -1089,7 +1090,7 @@ tail:
     SwitchAnimation(pose);
     i32 frame;
     {
-        CAnimationSequence* desc = m_wwdObject->m_animationCursor.GetAnimation();
+        CAnimationSequence* desc = m_wwdObject->GetAnimationCursor().GetAnimation();
         CAniFrameRecord* elem = desc->RecordAt(0);
         frame = elem->m_frameParameter;
     }
@@ -1236,7 +1237,7 @@ i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
 
 RVA(0x00065a60, 0x159)
 i32 CGrunt::UpdateToolUseAnimation() {
-    i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    i32 advanced = m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     if (advanced > 0) {
         AnimationEventCode cue = static_cast<AnimationEventCode>(advanced);
         if (cue == ANIM_EVENT_TOOL_APPLIES) {
@@ -1270,7 +1271,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
             cue
         );
     }
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    CAniAdvanceCursor* sub = &m_wwdObject->GetAnimationCursor();
     if (sub->IsComplete()) {
         m_busy = false;
         ResetIdleAnimation(1, 0, 0);
@@ -1280,7 +1281,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
 
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::FinishToobMoveAnimation() {
-    i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    i32 advanced = m_wwdObject->GetAnimationCursor().Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
         AnimationEventCode cue = static_cast<AnimationEventCode>(advanced);
         m_triggerMgr->HandleToolAnimationCue(
@@ -1292,7 +1293,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
             cue
         );
     }
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    CAniAdvanceCursor* sub = &m_wwdObject->GetAnimationCursor();
     if (!sub->IsComplete()) {
         return 0;
     }

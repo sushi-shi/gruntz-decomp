@@ -115,10 +115,10 @@ void CRollingBall::RegisterActs() {
 
 RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* anim = m_wwdObject;
-    if (anim->m_animationCursor.IsComplete()) {
+    if (anim->GetAnimationCursor().IsComplete()) {
         anim->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }

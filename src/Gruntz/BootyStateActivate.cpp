@@ -895,7 +895,7 @@ i32 CBootyState::UpdateStatRevealAnimation() {
 
             for (i32 i = 0; i < 8; i++) {
                 CWwdSpriteObject* e = m_explosionSprites[i];
-                if (e->m_animationCursor.IsComplete()) {
+                if (e->GetAnimationCursor().IsComplete()) {
                     e->Hide();
                 }
             }
@@ -922,7 +922,7 @@ i32 CBootyState::UpdateStatRevealAnimation() {
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_statRowIndex
                 && (i != m_statRowIndex
-                    || m_explosionSprites[i]->m_animationCursor.GetAnimation() == NULL)) {
+                    || m_explosionSprites[i]->GetAnimationCursor().GetAnimation() == NULL)) {
                 m_explosionSprites[i]->Show();
                 m_explosionSprites[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
                 m_explosionSprites[i]->m_screenX =
@@ -974,7 +974,7 @@ i32 CBootyState::UpdateStatRevealAnimation() {
 
     for (i32 j = 0; j < m_statRowIndex; j++) {
         CWwdSpriteObject* e = m_explosionSprites[j];
-        if (e->m_animationCursor.IsComplete()) {
+        if (e->GetAnimationCursor().IsComplete()) {
             e->Hide();
         }
     }
@@ -1264,7 +1264,7 @@ i32 CBootyState::UpdateWarpLetterRevealAnimation() {
         }
     } else if (m_letterRevealStarted != false) {
 
-        CAniAdvanceCursor* cursor = &m_letterRevealSprites[m_warpLetterIndex]->m_animationCursor;
+        CAniAdvanceCursor* cursor = &m_letterRevealSprites[m_warpLetterIndex]->GetAnimationCursor();
         if (cursor->IsComplete()) {
             m_warpLetterIndex++;
             if (m_warpLetterIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {

@@ -325,46 +325,46 @@ void CProjectile::AdvanceMotion() {
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[0]) {
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[0]) {
                     SwitchAnimation(m_frames[0]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animationCursor.SetAnimation(m_frames[0]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[0]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[1]) {
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[1]) {
                     SwitchAnimation(m_frames[1]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animationCursor.SetAnimation(m_frames[1]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[1]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[2]) {
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[2]) {
                     SwitchAnimation(m_frames[2]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animationCursor.SetAnimation(m_frames[2]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[2]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[3]) {
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[3]) {
                     SwitchAnimation(m_frames[3]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animationCursor.SetAnimation(m_frames[3]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[3]);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[4]) {
+                if (m_wwdObject->GetAnimationCursor().GetAnimation() != m_frames[4]) {
                     SwitchAnimation(m_frames[4]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animationCursor.SetAnimation(m_frames[4]);
+                        m_shadow->GetAnimationCursor().SetAnimation(m_frames[4]);
                     }
                 }
             }
@@ -459,9 +459,9 @@ RVA(0x000e05e0, 0x4e)
 i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
     m_wwdObject->Show();
 
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     CWwdSpriteObject* sprite = m_wwdObject;
-    if (sprite->m_animationCursor.IsComplete()) {
+    if (sprite->GetAnimationCursor().IsComplete()) {
         sprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
@@ -841,7 +841,7 @@ i32 CTimeBomb::UpdateCountdown() {
         TBombGridClear(m_object);
         return 0;
     }
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
 
     if (m_timing.Expired()) {
         if (m_fastPhase == false) {

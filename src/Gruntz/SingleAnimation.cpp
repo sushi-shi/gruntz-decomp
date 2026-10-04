@@ -56,7 +56,7 @@ void CSingleAnimation::RegisterActs() {
 
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->GetAnimationCursor().IsComplete())
     return 0;
 }

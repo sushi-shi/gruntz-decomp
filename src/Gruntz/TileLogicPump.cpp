@@ -450,7 +450,7 @@ i32 CCheckpointTrigger::TryActivateCheckpoint() {
 
 RVA(0x0010f970, 0x17)
 i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -515,7 +515,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->GetAnimationCursor().IsComplete())
     return 0;
 }

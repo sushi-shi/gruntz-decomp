@@ -367,6 +367,10 @@ public:
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
 
+    CAniAdvanceCursor& GetAnimationCursor() {
+        return m_animationCursor;
+    }
+
     CImageSet* GetImageSet() const {
         return m_imageSet;
     }

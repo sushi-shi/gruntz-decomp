@@ -148,7 +148,7 @@ void RegisterPathHazardActions() {
 
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::UpdateMovement() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* obj = m_object;
 
@@ -267,7 +267,7 @@ i32 CPathHazard::UpdateWaypointPause() {
         o->SetDrawFill(SHADE_DST_BY_SRC_16, frame);
     }
 
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* obj = m_object;
     RECT rect;
