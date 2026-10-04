@@ -103,12 +103,12 @@ DATA(0x0020dbf8)
 static char s_toyTiles[] = "ToyTiles";
 
 RVA(0x00050ca0, 0x2b)
-i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
+i32 CGrunt::ApplyPickupAndClearPending(PickupType pickupType) {
 
-    i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
+    i32 applied = ApplyPickup(pickupType, 0, 0, 0);
     m_pendingPickupType = PICKUP_INVALID;
     m_helpCueId = 0;
-    return r;
+    return applied;
 }
 
 // @early-stop
@@ -1091,9 +1091,9 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
     ar->Write(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
     ar->Write(&m_routePassableMask, sizeof(m_routePassableMask));
-    ar->Write(&m_moveVariantOverride, sizeof(m_moveVariantOverride));
-    ar->Write(&m_moveKind, sizeof(m_moveKind));
-    ar->Write(&m_moveVariant, sizeof(m_moveVariant));
+    ar->Write(&m_wandSpellOverride, sizeof(m_wandSpellOverride));
+    ar->Write(&m_scrollSpell, sizeof(m_scrollSpell));
+    ar->Write(&m_activeSpell, sizeof(m_activeSpell));
     ar->Write(&m_coordRetryCount, sizeof(m_coordRetryCount));
     ar->Write(&m_toyTileIndex, sizeof(m_toyTileIndex));
     ar->Write(&m_blockedVoicePending, sizeof(m_blockedVoicePending));

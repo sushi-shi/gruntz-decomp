@@ -68,7 +68,7 @@ Two conditions must BOTH hold, and they are separate questions:
 This is **not** limited to serialization. Serialization is merely the easiest case,
 because its state is a byte buffer. The qualifying set also holds crypto
 (`Blowfish_decipher`, 1 field), area queries (`CAreaMgr::SameGroup`, 1), list surgery
-(`CMapMgr::Unlink`, 2), table lookups (`CTriggerMgr::ByteTableHas`, 2), geometry
+(`CMapMgr::Unlink`, 2), table lookups (`CTriggerMgr::HasWarpStoneFragment`, 2), geometry
 (`RectSegProbe`, `PolyIsConvexCW`, 3) and colour matching (`FindNearestColor`, 3).
 
 `python -m gruntz.audit.iat_tiers` remains as a static census of the binary — transitive

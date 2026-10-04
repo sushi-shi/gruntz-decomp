@@ -23,7 +23,7 @@ public:
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    WarpStoneFragment m_arrivalMode;
+    WarpStoneFragment m_fragment;
     i32 m_targetX;
     i32 m_targetY;
     double m_currentX;

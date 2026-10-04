@@ -1324,7 +1324,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             CTriggerMgr* bm = g_gameReg->GetTriggerMgr();
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
-            bm->m_byteArr.Add(static_cast<u8>(v));
+            bm->m_collectedWarpStoneFragments.Add(static_cast<u8>(v));
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
@@ -1505,8 +1505,8 @@ void CPlay::FreeListTeardown() {
     m_mgr->GetTriggerMgr()->CloseActionOptionsMenu();
     CTriggerMgr* triggerManager = m_mgr->GetTriggerMgr();
 
-    triggerManager->m_byteArr.RemoveAll();
-    triggerManager->m_groupInitialized = false;
+    triggerManager->m_collectedWarpStoneFragments.RemoveAll();
+    triggerManager->m_levelWarpStoneCollected = false;
     m_mgr->GetTriggerMgr()->m_baseList.RemoveAll();
     m_mgr->GetTriggerMgr()->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();

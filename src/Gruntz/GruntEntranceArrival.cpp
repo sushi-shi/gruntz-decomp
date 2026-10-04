@@ -329,7 +329,7 @@ i32 CGrunt::StepAttackFire() {
         return 0;
     }
     if (m_activePickupType == GRUNT_BOOMERANG) {
-        LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+        ApplyPickup(PICKUP_NONE, 1, 0, 0);
     }
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
@@ -384,9 +384,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             SetImageFrameByName(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
-            i32 moveVariant = m_moveVariant;
-            if (moveVariant != 0) {
-                i32 tier = cueTier + moveVariant - 1;
+            i32 activeSpell = m_activeSpell;
+            if (activeSpell != 0) {
+                i32 tier = cueTier + activeSpell - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds =
                     g->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
@@ -395,14 +395,14 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                     g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             } else {
-                if (m_moveKind == 0) {
+                if (m_scrollSpell == 0) {
                     i32 md = 3;
                     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                         md = 6;
                     }
-                    m_moveKind = GetRandom(1, md);
+                    m_scrollSpell = GetRandom(1, md);
                 }
-                i32 tier = cueTier + m_moveKind - 1;
+                i32 tier = cueTier + m_scrollSpell - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds =
                     g->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
@@ -504,7 +504,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
             CreateToySprite();
         }
         SET_ANIMATION_ACT("A");
-        LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
+        ApplyPickup(m_savedToolType, 1, 0, 0);
         m_entranceActive = false;
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
@@ -835,7 +835,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
             CreateToySprite();
         }
         SET_ANIMATION_ACT("A");
-        LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
+        ApplyPickup(m_savedToolType, 1, 0, 0);
         m_entranceActive = false;
 
         CMapMgr* grid = g_gameReg->GetTileGrid();
@@ -980,7 +980,7 @@ i32 CGrunt::StepCombatReaction(
     i32 srcPxX,
     i32 srcPxY,
     i32 fromProjectile,
-    PickupType attackerGruntKind
+    PickupType attackerPowerupType
 ) {
     if (m_entranceCommitted == false || m_spawnProtectionActive != false) {
         return 0;
@@ -1029,7 +1029,7 @@ tail:
     if (GRUNT_NOT_AT_SAVED_SCREEN_POS(this)) {
         ConsiderArrival(1);
     }
-    if (LoadGruntCombatAnimations(
+    if (ApplyCombatHitEffects(
             attackKind,
             struckPose,
             srcPlayerIndex,
@@ -1037,7 +1037,7 @@ tail:
             srcPxX,
             srcPxY,
             fromProjectile,
-            attackerGruntKind
+            attackerPowerupType
         )
         == 0) {
         return 0;
@@ -1188,26 +1188,26 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         SET_ANIMATION_ACT("N");
         m_coordToggle = (m_coordToggle == false);
     } else if (m_activePickupType == PICKUP_WAND) {
-        i32 base;
+        i32 voiceBase;
         if (rand() % 100 < 80) {
             pose = GRUNT_ITEM2;
-            base = 0x41a;
+            voiceBase = 0x41a;
         } else {
             pose = GRUNT_ITEM1;
-            base = 0x424;
+            voiceBase = 0x424;
         }
 
-        i32 variant = m_moveVariantOverride;
-        m_moveVariant = variant;
-        if (variant == 0) {
-            i32 n = 3;
+        i32 spellOverride = m_wandSpellOverride;
+        m_activeSpell = spellOverride;
+        if (spellOverride == 0) {
+            i32 spellCount = 3;
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-                n = 6;
+                spellCount = 6;
             }
-            m_moveVariant = GetRandom(1, n);
+            m_activeSpell = GetRandom(1, spellCount);
         }
 
-        i32 cueId = base + m_moveVariant - 1;
+        i32 cueId = voiceBase + m_activeSpell - 1;
         PLAY_VOICE_IN_VIEW(cueId);
 
         SET_ANIMATION_ACT("I");
@@ -1244,7 +1244,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
                 CreateStaminaSprite();
             }
             if (m_activePickupType == PICKUP_WAND) {
-                CastSpell(m_moveVariant);
+                CastSpell(m_activeSpell);
                 i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = Max(0, hp);
                 if (m_health <= 0) {

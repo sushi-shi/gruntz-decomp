@@ -574,7 +574,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         } else if (matchActive) {
             ok = cell->BeginPickupAnimation(toyboxPickup, flag, 0, sub, 0);
         } else {
-            ok = cell->LoadGruntTypeTable(toyboxPickup, flag, sub, 0);
+            ok = cell->ApplyPickup(toyboxPickup, flag, sub, 0);
         }
         reg = g_gameReg;
         if (ok == false) {

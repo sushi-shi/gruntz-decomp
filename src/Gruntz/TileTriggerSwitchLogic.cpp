@@ -1224,7 +1224,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     BrickTileId brickEffect = static_cast<BrickTileId>(effect);
     if (effect != 0 && grunt != NULL) {
         if (brickEffect == BRICKTILE_RED_1) {
-            grunt->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+            grunt->ApplyPickup(PICKUP_NONE, 1, 0, 0);
             grunt->m_entranceActive = false;
         } else if (brickEffect == BRICKTILE_BLUE_1) {
             g_gameReg->GetTriggerMgr()->ApplyGruntAreaEffect(

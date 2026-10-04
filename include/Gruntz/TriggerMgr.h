@@ -53,7 +53,7 @@ public:
 
     i32 RenderActionOptionsMenu();
 
-    i32 ByteTableHas(WarpStoneFragment fragment);
+    i32 HasWarpStoneFragment(WarpStoneFragment fragment);
 
     void ClearSelection();
 
@@ -186,17 +186,17 @@ public:
 
     i32 OpenActionOptionsMenu(i32 selectedWorldX, i32 selectedWorldY, i32 pointerX, i32 pointerY);
 
-    void ReinitGroup(i32 col, i32 row);
+    void CollectLevelWarpStone(i32 worldX, i32 worldY);
 
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId unusedTypeId, i32 unusedPayload);
 
-    i32 ScanGroup(CFileMemBase* ar);
+    i32 Save(CFileMemBase* ar);
 
     i32 HandleActionOptionsPointer(i32 x, i32 y);
 
     i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
 
-    void ResetSpawnState();
+    void LoseLevelWarpStone();
 
     i32 CycleMoveIcons(i32 skipPlayerIndex, b32 enable);
 
@@ -312,11 +312,11 @@ public:
         return UnitAt(identity.m_x, identity.m_y);
     }
     CActionOptionsMenuBar* m_overlay;
-    CByteArray m_byteArr;
-    // @identity-TODO: ScanGroup and Load transfer this complete span; no trigger
+    CByteArray m_collectedWarpStoneFragments;
+    // @identity-TODO: Save and Load transfer this complete span; no trigger
     // operation accesses its components to prove a scalar array or aggregate type.
     char m_reserved274[0x10];
-    b32 m_groupInitialized;
+    b32 m_levelWarpStoneCollected;
 
     FinishLevelState m_phase;
 

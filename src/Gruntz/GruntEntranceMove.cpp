@@ -155,7 +155,7 @@ i32 CGrunt::UpdatePickupAnimation() {
         return 0;
     }
     if (mode >= PICKUP_POWERUPZ_FIRST) {
-        return LoadTypeTableClearMove(mode);
+        return ApplyPickupAndClearPending(mode);
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
@@ -166,7 +166,7 @@ i32 CGrunt::UpdatePickupAnimation() {
         if (mode >= PICKUP_TOYZ_FIRST) {
             return SetCarriedToy(mode);
         }
-        return LoadTypeTableClearMove(mode);
+        return ApplyPickupAndClearPending(mode);
     }
     return 0;
 }
@@ -404,7 +404,7 @@ i32 CGrunt::StartBombGruntRun() {
     BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
-    if (LoadGruntTypeTable(PICKUP_BOMB, 1, 0, 1) == 0) {
+    if (ApplyPickup(PICKUP_BOMB, 1, 0, 1) == 0) {
         CWwdSpriteObject* h = m_object;
         m_triggerMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
@@ -542,11 +542,11 @@ i32 CGrunt::UpdateScrollUseAnimation() {
         SetImageFrameByName(buf, frame);
 
         m_toyBreakStarted = true;
-        i32 v = m_moveVariant;
-        if (v != 0) {
-            CastSpell(v);
+        i32 activeSpell = m_activeSpell;
+        if (activeSpell != 0) {
+            CastSpell(activeSpell);
         } else {
-            CastSpell(m_moveKind);
+            CastSpell(m_scrollSpell);
         }
         return 0;
     }
@@ -558,7 +558,7 @@ i32 CGrunt::UpdateScrollUseAnimation() {
     }
 
     SET_ANIMATION_ACT("A");
-    LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
+    ApplyPickup(m_savedToolType, 1, 0, 0);
     m_entranceActive = false;
 
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -686,7 +686,7 @@ i32 CGrunt::UpdateFreezeAnimation() {
 }
 
 RVA(0x00069fd0, 0x69)
-i32 CGrunt::FinishEntranceMove() {
+i32 CGrunt::UpdateMovingDeathAnimation() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (!cur->IsComplete()) {
@@ -698,7 +698,7 @@ i32 CGrunt::FinishEntranceMove() {
 }
 
 RVA(0x0006a060, 0x520)
-i32 CGrunt::LoadGruntMovingDeathConfig() {
+i32 CGrunt::StartDeathMovement() {
     m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_movingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;

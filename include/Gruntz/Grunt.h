@@ -357,7 +357,7 @@ public:
     i32 CreateSelectedSprite();
 
     void ReadConfigFromButeMgr();
-    i32 LoadGruntMovingDeathConfig();
+    i32 StartDeathMovement();
     void LoadAnimNameTable(i32 kind, i32 toyOnly);
 
     i32 RectContains(i32 x, i32 y);
@@ -405,9 +405,9 @@ public:
 
     i32 BuildGruntLoseItemAnimation();
 
-    i32 LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer);
+    i32 ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 defer);
 
-    i32 LoadTypeTableClearMove(PickupType typeId);
+    i32 ApplyPickupAndClearPending(PickupType pickupType);
 
     void FaceTowardTile(i32 tileX, i32 tileY);
     void SnapToLastTile(i32 clearArrivalState);
@@ -586,10 +586,10 @@ public:
     b32 m_deathAnimStarted;
     b32 m_cellRemovalNotified;
     i32 m_killerPlayerIndex;
-    i32 m_moveVariantOverride;
+    i32 m_wandSpellOverride;
     i32 m_powerupDuration;
-    i32 m_moveKind;
-    i32 m_moveVariant;
+    i32 m_scrollSpell;
+    i32 m_activeSpell;
     i32 m_coordRetryCount;
     u32 m_toyTileIndex;
     i32 m_warpstoneAnchorIndex;
@@ -723,10 +723,10 @@ public:
         SoundCue*& cue,
         PickupType attackKind,
         i32 struckPose,
-        PickupType attackerGruntKind
+        PickupType attackerPowerupType
     );
 
-    i32 LoadGruntCombatAnimations(
+    i32 ApplyCombatHitEffects(
         PickupType attackKind,
         i32 struckPose,
         i32 srcPlayerIndex,
@@ -734,7 +734,7 @@ public:
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
-        PickupType attackerGruntKind
+        PickupType attackerPowerupType
     );
 
     i32 UpdateArrival(i32 walking, i32 commit);
@@ -779,7 +779,7 @@ public:
 
     i32 StepToyerBehavior();
 
-    i32 FinishEntranceMove();
+    i32 UpdateMovingDeathAnimation();
 
     i32 UpdateFreezeAnimation();
 
@@ -818,7 +818,7 @@ public:
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
-        PickupType attackerGruntKind
+        PickupType attackerPowerupType
     );
 
     i32 TileSwitch(

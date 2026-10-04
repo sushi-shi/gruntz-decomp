@@ -4,7 +4,7 @@
 #include <Gruntz/GruntCoordInline.h>
 
 // These macros preserve nested call boundaries in StepBoard, StepRowUnits
-// and LoadGruntTypeTable.
+// and ApplyPickup.
 #define RECYCLE_GRUNT_COORDS(grunt)                                                                \
     {                                                                                              \
         POSITION node = (grunt)->CoordHead();                                                      \

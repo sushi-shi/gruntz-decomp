@@ -78,8 +78,8 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (abs(dx) <= 1 && abs(dy) <= 1) {
             PickupType r2 = slot->GetEquippedToolType();
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
-                this->LoadGruntTypeTable(r2, 1, 0, 0);
-                slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+                this->ApplyPickup(r2, 1, 0, 0);
+                slot->ApplyPickup(PICKUP_NONE, 1, 0, 0);
                 this->m_aiState = AISTATE_COOLDOWN;
                 if (this->CoordsEmpty()) {
                     return 1;

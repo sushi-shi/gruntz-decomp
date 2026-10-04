@@ -161,7 +161,7 @@ i32 CGrunt::BeginPickupAnimation(
             break;
         case PICKUP_WAND:
             PICKUP("GRUNTZ_PICKUPS_WAND", 0x3db);
-            m_moveVariantOverride = pickupParam;
+            m_wandSpellOverride = pickupParam;
             break;
         case PICKUP_WARPSTONE:
             PICKUP("GRUNTZ_PICKUPS_WARPSTONE", 0x3dc);
@@ -195,7 +195,7 @@ i32 CGrunt::BeginPickupAnimation(
             break;
         case PICKUP_SCROLL:
             PICKUP("GRUNTZ_PICKUPS_SCROLL", 0x3d2);
-            m_moveKind = pickupParam;
+            m_scrollSpell = pickupParam;
             break;
         case PICKUP_SQUEAKTOY:
             PICKUP("GRUNTZ_PICKUPS_SQUEAKTOY", 0x3d7);

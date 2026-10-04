@@ -2173,7 +2173,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             );
             AddTabItem(5, it);
             if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
-                    ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
+                    ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_FIRST)) {
                 NEW_STATUS_BAR_ITEM(
                     it,
                     CSBI_ImageSet,
@@ -2187,7 +2187,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 );
                 AddTabItem(5, it);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
-                        ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
+                        ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_SECOND)) {
                     NEW_STATUS_BAR_ITEM(
                         it,
                         CSBI_ImageSet,
@@ -2201,7 +2201,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     );
                     AddTabItem(5, it);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
-                            ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
+                            ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_THIRD)) {
                         NEW_STATUS_BAR_ITEM(
                             it,
                             CSBI_ImageSet,
@@ -2215,7 +2215,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         );
                         AddTabItem(5, it);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
-                                ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
+                                ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_FOURTH)) {
                             NEW_STATUS_BAR_ITEM(
                                 it,
                                 CSBI_ImageSet,
@@ -3839,7 +3839,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
         return 0;
     }
 
-    m_arrivalMode = fragment;
+    m_fragment = fragment;
     Coord targetOffset;
     switch (fragment) {
         case WARPSTONE_FRAGMENT_SECOND:
@@ -3897,7 +3897,7 @@ i32 CWarpStoneFly::SerializeDispatch(
     switch (mode) {
         case SERIAL_LOAD: {
 
-            arc->Read(&m_arrivalMode, sizeof(m_arrivalMode));
+            arc->Read(&m_fragment, sizeof(m_fragment));
             arc->Read(&m_targetX, sizeof(m_targetX));
             arc->Read(&m_targetY, sizeof(m_targetY));
             arc->Read(&m_currentX, sizeof(m_currentX));
@@ -3912,7 +3912,7 @@ i32 CWarpStoneFly::SerializeDispatch(
         }
         case SERIAL_SAVE: {
 
-            arc->Write(&m_arrivalMode, sizeof(m_arrivalMode));
+            arc->Write(&m_fragment, sizeof(m_fragment));
             arc->Write(&m_targetX, sizeof(m_targetX));
             arc->Write(&m_targetY, sizeof(m_targetY));
             arc->Write(&m_currentX, sizeof(m_currentX));
@@ -3940,12 +3940,12 @@ i32 CWarpStoneFly::SerializeDispatch(
 // @early-stop
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(u32 dt) {
-    i32 cellY = static_cast<i32>(m_currentY);
-    i32 cellX = static_cast<i32>(m_currentX);
-    if (cellX == m_targetX && cellY == m_targetY) {
-        i32 mode = m_arrivalMode;
-        CByteArray* arr = &g_gameReg->GetTriggerMgr()->m_byteArr;
-        arr->Add(static_cast<BYTE>(mode));
+    i32 currentY = static_cast<i32>(m_currentY);
+    i32 currentX = static_cast<i32>(m_currentX);
+    if (currentX == m_targetX && currentY == m_targetY) {
+        i32 fragment = m_fragment;
+        CByteArray* collectedFragments = &g_gameReg->GetTriggerMgr()->m_collectedWarpStoneFragments;
+        collectedFragments->Add(static_cast<BYTE>(fragment));
         m_owner->m_hlBusy = false;
         if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);

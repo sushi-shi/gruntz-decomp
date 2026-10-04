@@ -44,7 +44,7 @@ inline void CGrunt::RestorePreviousAppearance() {
 inline void CGrunt::ApplyPendingPickup() {
     PickupType mode = m_pendingPickupType;
     if (mode >= PICKUP_POWERUPZ_FIRST) {
-        LoadGruntTypeTable(mode, 1, 0, 1);
+        ApplyPickup(mode, 1, 0, 1);
         m_pendingPickupType = PICKUP_INVALID;
         m_helpCueId = 0;
         return;
@@ -58,7 +58,7 @@ inline void CGrunt::ApplyPendingPickup() {
         SetCarriedToy(mode);
         return;
     }
-    LoadGruntTypeTable(mode, 1, 0, 1);
+    ApplyPickup(mode, 1, 0, 1);
     m_pendingPickupType = PICKUP_INVALID;
 }
 
@@ -97,7 +97,7 @@ inline void CGrunt::RestoreToolAfterToyUse(i32 defer) {
     if (m_activePickupType == PICKUP_SCROLL) {
         g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
     }
-    LoadGruntTypeTable(m_savedToolType, 1, 0, defer);
+    ApplyPickup(m_savedToolType, 1, 0, defer);
     {
         i32 sortKey = m_object->m_screenY + 0x186a0;
         CWwdSpriteObject* object = m_object;
