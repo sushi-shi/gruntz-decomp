@@ -41,7 +41,7 @@ DATA(0x0024e360)
 b32 g_skipNextScreenEffect = false;
 
 DATA(0x0024e35c)
-b32 g_playActive;
+b32 g_skipNextRestoreMessage;
 
 // @early-stop
 RVA(0x000fa1f0, 0xc6)
@@ -424,7 +424,7 @@ i32 CState::RestoreGraphics() {
     if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }
-    if (g_playActive == false) {
+    if (g_skipNextRestoreMessage == false) {
         CString text;
         RECT rect;
         text.LoadString(0x81a9);
@@ -437,7 +437,7 @@ i32 CState::RestoreGraphics() {
     }
     while (ShowCursor(false) >= 0)
         ;
-    g_playActive = false;
+    g_skipNextRestoreMessage = false;
     CRezDir* path = m_resourceArchive->GetDirFromPath("GAME_IMAGEZ");
     if (path == NULL) {
         return 0;

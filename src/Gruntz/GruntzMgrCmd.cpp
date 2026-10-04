@@ -787,7 +787,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 if (ps->m_waitingForStart) {
                     return 1;
                 }
-                if (ps->m_renderDisabled) {
+                if (ps->m_loadingScreenVisible) {
                     return 1;
                 }
                 if (ps->m_statusBar) {

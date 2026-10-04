@@ -388,7 +388,7 @@ public:
 
     CWwdSpriteObject* m_cursorSnapSprite;
     b32 m_cursorAnimationActive;
-    b32 m_renderDisabled;
+    b32 m_loadingScreenVisible;
     b32 m_playerCommandPending;
     b32 m_levelTimeExpired;
     b32 m_waitingForStart;
@@ -422,7 +422,7 @@ void ResetPlayerColorAvailability();
 
 extern GruntDeathType g_areaPitDeath;
 
-extern b32 g_playActive;
+extern b32 g_skipNextRestoreMessage;
 extern i32 g_deactivateProfileMs;
 extern i32 g_flipProfileMs;
 extern b32 g_playerColorAvailable[TINT_COUNT];
