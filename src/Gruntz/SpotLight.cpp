@@ -133,7 +133,11 @@ i32 CSpotLight::Tick() {
         if (tgt != NULL && tgt->GetPowerupType() != GRUNT_INVULNERABLE
             && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
             SET_ANIMATION_ACT("B");
-            SET_SCREEN_POS(m_object, tgt->m_object->m_screenX, tgt->m_object->m_screenY);
+            SET_SCREEN_POS(
+                m_object,
+                tgt->GetSpriteObject()->m_screenX,
+                tgt->GetSpriteObject()->m_screenY
+            );
             if (m_object->GetScore() == 1) {
                 g_gameReg->GetTriggerMgr()
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);

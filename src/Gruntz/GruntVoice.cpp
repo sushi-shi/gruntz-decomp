@@ -170,7 +170,7 @@ i32 CVoiceTrigger::Tick() {
         &m_object->m_area
     );
     if (hit && playerIndex == g_curPlayer) {
-        CGameObject* hs = hit->m_object;
+        CGameObject* hs = hit->GetSpriteObject();
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
         if (::PtInRect(&g_gameReg->m_viewBounds, hx, hy)) {

@@ -112,12 +112,15 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
             m_attackQueued = false;
             CGrunt* n = m_triggerMgr->UnitAt(m_attackTargetPlayerIndex, m_attackTargetUnitIndex);
             if (n != NULL && n->IsEntranceCommitted() != false) {
-                if (IsWithinReach(n->m_object->m_screenX, n->m_object->m_screenY)) {
+                if (IsWithinReach(
+                        n->GetSpriteObject()->m_screenX,
+                        n->GetSpriteObject()->m_screenY
+                    )) {
                     AttackGrunt(
                         m_attackTargetPlayerIndex,
                         m_attackTargetUnitIndex,
-                        n->m_object->m_screenX,
-                        n->m_object->m_screenY
+                        n->GetSpriteObject()->m_screenX,
+                        n->GetSpriteObject()->m_screenY
                     );
                 }
             }
@@ -352,7 +355,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY && m_actionTargetsGrunt != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
-                CGameObject* inner = occ->m_object;
+                CGameObject* inner = occ->GetSpriteObject();
                 i32 innerY = inner->m_screenY;
                 i32 innerX = inner->m_screenX;
                 i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1064,7 +1067,7 @@ tail:
             SET_ANIMATION_ACT("H");
             CGrunt* cellObj = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (cellObj != NULL) {
-                CGameObject* oh = cellObj->m_object;
+                CGameObject* oh = cellObj->GetSpriteObject();
                 i32 cx = oh->m_screenX;
                 i32 cy = oh->m_screenY;
                 if (m_neighborScanEnabled != false && m_entranceCommitted != false

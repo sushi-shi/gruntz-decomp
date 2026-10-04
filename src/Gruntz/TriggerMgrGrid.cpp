@@ -399,7 +399,7 @@ CGrunt* CTriggerMgr::PickGruntAtWorldPoint(
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
                 CGrunt* grunt = PlayerUnits(playerSelector)[unitIndex];
                 if (grunt != NULL && grunt->IsEntranceCommitted() != false) {
-                    CWwdSpriteObject* object = grunt->m_object;
+                    CWwdSpriteObject* object = grunt->GetSpriteObject();
                     if (object->GetFrameImage() != NULL) {
                         RECT hitBox;
                         hitBox.left = object->m_screenX - 15;
@@ -563,8 +563,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     set->PlayCue("GAME_SECRETSWITCH");
                 }
                 if (g != NULL) {
-                    i32 cueX = g->m_object->m_screenX;
-                    i32 cueY = g->m_object->m_screenY;
+                    i32 cueX = g->GetSpriteObject()->m_screenX;
+                    i32 cueY = g->GetSpriteObject()->m_screenY;
                     if (::PtInRect(&g_gameReg->m_viewBounds, cueX, cueY)) {
                         g_gameReg->VoiceMgr()->PlayVoice(g, 0x3f2, -1, 0, -1, -1);
                     }
@@ -828,8 +828,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     sw->SwitchDown();
                 } else {
                     RECT* view = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
-                    i32 gx = g->m_object->m_screenX;
-                    i32 gy = g->m_object->m_screenY;
+                    i32 gx = g->GetSpriteObject()->m_screenX;
+                    i32 gy = g->GetSpriteObject()->m_screenY;
                     if (::PtInRect(view, gx, gy)) {
                         g_gameReg->VoiceMgr()->PlayVoice(g, 0x335, -1, 0, -1, -1);
                     }

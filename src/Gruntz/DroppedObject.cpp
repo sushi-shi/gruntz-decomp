@@ -182,7 +182,7 @@ i32 CObjectDropper::Update() {
             if (found != NULL) {
                 if (m_lastDropPlayerIndex != playerIndex || m_lastDropUnitIndex != unitIndex) {
                     if (m_scrollMode == OBJECT_DROP_ALL_PLAYERS || playerIndex == 0) {
-                        CGameObject* fo = found->m_object;
+                        CGameObject* fo = found->GetSpriteObject();
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
                         CMapMgr* plane = g_gameReg->GetTileGrid();

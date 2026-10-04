@@ -77,7 +77,7 @@ i32 CGruntPowerupSprite::Update() {
         m_gruntIdentity.m_unitIndex
     );
     if (e != NULL) {
-        SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY);
+        SET_SCREEN_POS(m_object, e->GetSpriteObject()->m_screenX, e->GetSpriteObject()->m_screenY);
     }
     return 0;
 }

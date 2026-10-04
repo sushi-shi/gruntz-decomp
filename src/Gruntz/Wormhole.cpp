@@ -487,7 +487,7 @@ i32 CTeleporter::Update() {
     m_tickHandled = true;
     mgr = g_gameReg;
     if (found == mgr->GetTriggerMgr()->SoleSelectedGrunt() && playerIndex == g_curPlayer) {
-        CGameObject* g = found->m_object;
+        CGameObject* g = found->GetSpriteObject();
         (static_cast<CPlay*>(mgr->m_curState))->SetCameraPosition(g->m_screenX, g->m_screenY);
     }
     return 0;

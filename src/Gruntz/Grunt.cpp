@@ -584,7 +584,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
     }
     RECT r;
     CopyRect(&r, &tgt->m_wwdObject->m_area);
-    CGameObject* th = tgt->m_object;
+    CGameObject* th = tgt->GetSpriteObject();
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
     POINT a, b;

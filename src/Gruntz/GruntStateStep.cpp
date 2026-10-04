@@ -92,7 +92,7 @@ i32 CBattlezAiController::StepDefenderUnit(CGrunt* defender) {
         CGrunt* target =
             m_triggerMgr->UnitAt(defender->ArrivalCell().m_x, defender->ArrivalCell().m_y);
         if (target != NULL) {
-            CGameObject* targetSprite = target->m_object;
+            CGameObject* targetSprite = target->GetSpriteObject();
             if (defender->IsWithinReach(targetSprite->m_screenX, targetSprite->m_screenY) != 0) {
 
                 defender->RecycleCoords();

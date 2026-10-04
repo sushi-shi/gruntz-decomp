@@ -72,8 +72,8 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
                 CGrunt* cell = *colPtr;
                 if (cell && cell->IsEntranceCommitted() != false
                     && cell->GetPowerupType() != GRUNT_GHOST) {
-                    i32 dx = (cell->m_object->m_screenX >> TILE_SHIFT_PX) - tileX;
-                    i32 dy = (cell->m_object->m_screenY >> TILE_SHIFT_PX) - tileY;
+                    i32 dx = (cell->GetSpriteObject()->m_screenX >> TILE_SHIFT_PX) - tileX;
+                    i32 dy = (cell->GetSpriteObject()->m_screenY >> TILE_SHIFT_PX) - tileY;
                     i32 dist = SquaredDistance(dx, dy);
                     if (dist < bestDist) {
                         best = cell;
@@ -86,7 +86,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     }
     RECT rc = AttackTileNeighborhood(w);
     if (best) {
-        Coord bestPos = ScreenPosition(best->m_object);
+        Coord bestPos = ScreenPosition(best->GetSpriteObject());
         POINT pt;
         pt.x = bestPos.m_x >> TILE_SHIFT_PX;
         pt.y = bestPos.m_y >> TILE_SHIFT_PX;

@@ -46,7 +46,7 @@ i32 CGrunt::StepBomberBehavior() {
         if (static_cast<u32>(m_dwell) > 0xfa) {
             Coord targetTile = ScreenTile(occ);
             if (MoveToTile(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
-                CGameObject* oh2 = occ->m_object;
+                CGameObject* oh2 = occ->GetSpriteObject();
                 if (m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,

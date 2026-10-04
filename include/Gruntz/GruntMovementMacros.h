@@ -6,8 +6,8 @@
         && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y
 
 #define GRUNT_NOT_AT_SAVED_SCREEN_POS(grunt)                                                       \
-    grunt->m_object->m_screenX != grunt->m_lastTilePx.m_x                                          \
-        || grunt->m_object->m_screenY != grunt->m_lastTilePx.m_y
+    grunt->GetSpriteObject()->m_screenX != grunt->m_lastTilePx.m_x                                 \
+        || grunt->GetSpriteObject()->m_screenY != grunt->m_lastTilePx.m_y
 
 #define GRUNT_OBJECT_AT_SAVED_SCREEN_POS(object, grunt)                                            \
     object->m_screenX == grunt->m_lastTilePx.m_x && object->m_screenY == grunt->m_lastTilePx.m_y
@@ -64,7 +64,10 @@
 #define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)                                              \
     if (grunt != NULL) {                                                                           \
         if (IsGruntAtSavedScreenPos(grunt)                                                         \
-            && IsWithinReach(grunt->m_object->m_screenX, grunt->m_object->m_screenY) != 0) {       \
+            && IsWithinReach(                                                                      \
+                   grunt->GetSpriteObject()->m_screenX,                                            \
+                   grunt->GetSpriteObject()->m_screenY                                             \
+               ) != 0) {                                                                           \
             atTarget = 1;                                                                          \
         }                                                                                          \
     }

@@ -2570,7 +2570,10 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
         CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
-                ->SetCameraPosition(entry->m_object->m_screenX, entry->m_object->m_screenY);
+                ->SetCameraPosition(
+                    entry->GetSpriteObject()->m_screenX,
+                    entry->GetSpriteObject()->m_screenY
+                );
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
                 if (obj->IsUnitSelected(playerIndex, unitIndex)) {

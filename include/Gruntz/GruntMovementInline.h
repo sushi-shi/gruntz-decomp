@@ -9,8 +9,8 @@
 #include <Wwd/WwdAniDrawValue.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
-    return grunt->m_object->m_screenX == grunt->m_lastTilePx.m_x
-           && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y;
+    return grunt->GetSpriteObject()->m_screenX == grunt->m_lastTilePx.m_x
+           && grunt->GetSpriteObject()->m_screenY == grunt->m_lastTilePx.m_y;
 }
 
 inline void CGrunt::CancelToolAnimationEffects() {
@@ -81,7 +81,7 @@ inline Coord ScreenTile(Coord pos) {
 
 inline Coord ScreenTile(CGrunt* unit) {
     Coord out;
-    CGameObject* object = unit->m_object;
+    CGameObject* object = unit->GetSpriteObject();
     out.Set(object->m_screenX, object->m_screenY);
     ScreenTile(&out);
     return out;

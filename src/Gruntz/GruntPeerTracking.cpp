@@ -54,9 +54,9 @@ i32 CGrunt::StepToyerBehavior() {
     if (p->IsEntranceCommitted() == false) {
         return 1;
     }
-    CGameObject* a = p->m_object;
+    CGameObject* a = p->GetSpriteObject();
     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p) && IsInToyUseRange(a->m_screenX, a->m_screenY)) {
-        CGameObject* b = p->m_object;
+        CGameObject* b = p->GetSpriteObject();
         g_gameReg->GetTriggerMgr()
             ->UseToyAt(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
         return 1;

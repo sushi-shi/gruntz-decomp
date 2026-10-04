@@ -46,7 +46,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
     CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
     b32 hitGate = false;
     if (g != NULL) {
-        CGameObject* gp = g->m_object;
+        CGameObject* gp = g->GetSpriteObject();
         if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
             && IsWithinReach(gp->m_screenX, gp->m_screenY)) {
             hitGate = true;
@@ -97,7 +97,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
             if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && IsWithinReach(g->GetSpriteObject()->m_screenX, g->GetSpriteObject()->m_screenY)
+                       != 0) {
                 ATTACK_GRUNT(g);
                 return 1;
             }
@@ -106,8 +107,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     return 1;
                 }
                 if (MoveToTile(
-                        g->m_object->m_screenX >> TILE_SHIFT_PX,
-                        g->m_object->m_screenY >> TILE_SHIFT_PX,
+                        g->GetSpriteObject()->m_screenX >> TILE_SHIFT_PX,
+                        g->GetSpriteObject()->m_screenY >> TILE_SHIFT_PX,
                         0,
                         m_arrivalFlags,
                         1,
@@ -155,7 +156,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
             }
             RepathToward(t);
             if (m_inCombat == false && m_stamina >= STAMINA_FULL
-                && IsWithinReach(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && IsWithinReach(t->GetSpriteObject()->m_screenX, t->GetSpriteObject()->m_screenY)
+                       != 0
                 && IsGruntAtSavedScreenPos(t)) {
                 ATTACK_GRUNT(t);
                 m_aiState = AISTATE_ATTACK;
@@ -177,7 +179,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (IsWithinReach(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                if (IsWithinReach(t->GetSpriteObject()->m_screenX, t->GetSpriteObject()->m_screenY)
+                        == 0
                     || !IsGruntAtSavedScreenPos(t)) {
                     m_aiState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;

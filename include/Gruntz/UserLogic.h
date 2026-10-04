@@ -95,6 +95,10 @@ public:
     RVA(0x000089f0, 0x1)
     virtual void AfterLoadReferences() {}
 
+    CWwdSpriteObject* const& GetSpriteObject() const {
+        return m_object;
+    }
+
     void GetScreenPos(Coord* out);
 
     void GetScreenTile(Coord* out);

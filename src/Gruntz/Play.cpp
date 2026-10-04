@@ -4210,8 +4210,8 @@ i32 CPlay::ExecuteCommand(
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->GetSpriteObject()->m_screenX,
+                    node->GetSpriteObject()->m_screenY
                 );
             } else {
                 g->ClearGruntActionTarget();
@@ -4263,8 +4263,8 @@ i32 CPlay::ExecuteCommand(
                 g->ClearGruntActionTarget();
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
+            i32 sx = g2->GetSpriteObject()->m_screenX;
+            i32 sy = g2->GetSpriteObject()->m_screenY;
             g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
@@ -4323,8 +4323,8 @@ i32 CPlay::ExecuteCommand(
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->GetSpriteObject()->m_screenX,
+                    node->GetSpriteObject()->m_screenY
                 );
             } else {
                 g->ClearGruntActionTarget();
@@ -4376,8 +4376,8 @@ i32 CPlay::ExecuteCommand(
                 g->ClearGruntActionTarget();
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
+            i32 sx = g2->GetSpriteObject()->m_screenX;
+            i32 sy = g2->GetSpriteObject()->m_screenY;
             g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {

@@ -26,7 +26,11 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
         return false;
     }
     m_object->Show();
-    SET_SCREEN_POS(m_object, logic->m_object->m_screenX, logic->m_object->m_screenY - 0x32);
+    SET_SCREEN_POS(
+        m_object,
+        logic->GetSpriteObject()->m_screenX,
+        logic->GetSpriteObject()->m_screenY - 0x32
+    );
     return true;
 }
 

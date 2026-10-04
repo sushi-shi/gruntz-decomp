@@ -1044,7 +1044,7 @@ CGrunt* CTriggerMgr::FindGruntAtPoint(
     }
 
     if (requireExactPosition == 0) {
-        CGameObject* object = grunt->m_object;
+        CGameObject* object = grunt->GetSpriteObject();
         RECT queryBounds;
         queryBounds.top = worldY - 7;
         queryBounds.bottom = worldY + 7;
@@ -1060,7 +1060,7 @@ CGrunt* CTriggerMgr::FindGruntAtPoint(
         *outUnitIndex = unitIndex;
         return grunt;
     }
-    CGameObject* object = grunt->m_object;
+    CGameObject* object = grunt->GetSpriteObject();
     if (object->m_screenX != worldX || object->m_screenY != worldY) {
         return NULL;
     }
@@ -1120,8 +1120,8 @@ CGrunt* CTriggerMgr::FindGruntInArea(
                 if (!g->IsEntranceCommitted()) {
                     continue;
                 }
-                i32 sx = g->m_object->m_screenX - 7;
-                i32 sy = g->m_object->m_screenY - 7;
+                i32 sx = g->GetSpriteObject()->m_screenX - 7;
+                i32 sy = g->GetSpriteObject()->m_screenY - 7;
                 i32 sx2 = sx + 0xe;
                 i32 sy2 = sy + 0xe;
                 if (rc.left <= sx2 && rc.right >= sx && rc.top <= sy2 && rc.bottom >= sy) {

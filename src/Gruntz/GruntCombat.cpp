@@ -917,7 +917,7 @@ i32 CGrunt::HandleCombatContact(
             && m_actionTargetsGrunt != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
-                CGameObject* inner = occ->m_object;
+                CGameObject* inner = occ->GetSpriteObject();
                 i32 sx = inner->m_screenX;
                 i32 sy = inner->m_screenY;
                 i32 xMasked = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1492,12 +1492,15 @@ CGrunt* CGrunt::TryAttackRememberedTarget(i32 requireTargetAtTile) {
                 return NULL;
             }
         }
-        if (IsWithinReach(target->m_object->m_screenX, target->m_object->m_screenY)) {
+        if (IsWithinReach(
+                target->GetSpriteObject()->m_screenX,
+                target->GetSpriteObject()->m_screenY
+            )) {
             AttackGrunt(
                 m_attackTargetPlayerIndex,
                 m_attackTargetUnitIndex,
-                target->m_object->m_screenX,
-                target->m_object->m_screenY
+                target->GetSpriteObject()->m_screenX,
+                target->GetSpriteObject()->m_screenY
             );
             return target;
         }
