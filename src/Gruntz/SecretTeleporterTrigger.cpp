@@ -193,7 +193,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
         if (spr) {
-            spr->m_smarts = 2;
+            spr->SetSmarts(2);
             spr->GetLogicRecord()->SetSpeed(m_object->GetLogicRecord()->GetSpeed());
             spr->SetSpeedX(m_object->m_speedX);
             spr->SetSpeedY(m_object->m_speedY);

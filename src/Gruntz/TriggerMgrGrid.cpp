@@ -255,7 +255,7 @@ i32 CTriggerMgr::SpawnGrunt(
                     logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     return -1;
                 }
-                hole->m_smarts = g_buteMgr.GetInt("Wormhole", "EntranceColor", 0xe);
+                hole->SetSmarts(g_buteMgr.GetInt("Wormhole", "EntranceColor", 0xe));
             } else if (mode == GRUNT_ENTRANCE_RESURRECT || mode == GRUNT_ENTRANCE_DROP) {
 
                 if (mode == GRUNT_ENTRANCE_RESURRECT) {

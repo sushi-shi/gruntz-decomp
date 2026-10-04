@@ -46,22 +46,22 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
     if (f == NULL) {
         return 0;
     }
-    if (f->m_owned) {
-        f->m_owned->Select(show, NULL);
+    if (f->GetShadeBlitter()) {
+        f->GetShadeBlitter()->Select(show, NULL);
     }
-    if (palDescr && f->m_owned) {
-        f->m_owned->m_palDescr = palDescr;
+    if (palDescr && f->GetShadeBlitter()) {
+        f->GetShadeBlitter()->m_palDescr = palDescr;
     }
 
     f = m_frameSet->GetAt(2);
     if (f == NULL) {
         return 0;
     }
-    if (f->m_owned) {
-        f->m_owned->Select(show, NULL);
+    if (f->GetShadeBlitter()) {
+        f->GetShadeBlitter()->Select(show, NULL);
     }
-    if (palDescr && f->m_owned) {
-        f->m_owned->m_palDescr = palDescr;
+    if (palDescr && f->GetShadeBlitter()) {
+        f->GetShadeBlitter()->m_palDescr = palDescr;
     }
     return 1;
 }

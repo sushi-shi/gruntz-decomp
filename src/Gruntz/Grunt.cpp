@@ -809,7 +809,7 @@ i32 CGrunt::MoveTo(
         )
         != 0) {
         if (!CoordsEmpty()) {
-            g_coordPool.Push(RemoveHeadCoord());
+            RecycleHeadCoord();
         }
     pathGate:
         reinit = 1;
@@ -951,7 +951,7 @@ i32 CGrunt::MoveTo(
             passableMask
         ) != 0
         && !CoordsEmpty()) {
-        g_coordPool.Push(RemoveHeadCoord());
+        RecycleHeadCoord();
         if (!CoordsEmpty()) {
             g_coordPool.Push(RemoveTailCoord());
             if (!CoordsEmpty()) {
@@ -1084,7 +1084,7 @@ reProbe:
         )
         != 0) {
         if (!CoordsEmpty()) {
-            g_coordPool.Push(RemoveHeadCoord());
+            RecycleHeadCoord();
         }
         goto pathGate;
     }

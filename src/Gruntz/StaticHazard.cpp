@@ -92,7 +92,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     m_object->m_animationCursor.SetConsumeDraw(false);
-    m_object->m_smarts = IDX(g_areaHazardDeath);
+    m_object->SetSmarts(IDX(g_areaHazardDeath));
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;

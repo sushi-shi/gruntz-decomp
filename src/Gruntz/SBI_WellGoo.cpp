@@ -74,14 +74,14 @@ i32 CSBI_WellGoo::Setup(
     if (m_frame == NULL) {
         goto fail;
     }
-    if (m_frame->m_owned != NULL) {
-        m_frame->m_owned->Select(SHADE_PAL_16, NULL);
+    if (m_frame->GetShadeBlitter() != NULL) {
+        m_frame->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
     }
     f = m_frame;
-    if (node != NULL && f->m_owned != NULL) {
-        f->m_owned->m_palDescr = node;
+    if (node != NULL && f->GetShadeBlitter() != NULL) {
+        f->GetShadeBlitter()->m_palDescr = node;
     }
-    m_blitter = m_frame->m_owned;
+    m_blitter = m_frame->GetShadeBlitter();
     if (m_blitter == NULL) {
         goto fail;
     }
@@ -91,23 +91,23 @@ i32 CSBI_WellGoo::Setup(
     if (m_baseFrame == NULL) {
         goto fail;
     }
-    if (m_baseFrame->m_owned != NULL) {
-        m_baseFrame->m_owned->Select(SHADE_PAL_16, NULL);
+    if (m_baseFrame->GetShadeBlitter() != NULL) {
+        m_baseFrame->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
     }
     f = m_baseFrame;
-    if (node != NULL && f->m_owned != NULL) {
-        f->m_owned->m_palDescr = node;
+    if (node != NULL && f->GetShadeBlitter() != NULL) {
+        f->GetShadeBlitter()->m_palDescr = node;
     }
 
     set = m_host->FindWorker(key);
     m_fgFrame = (set != NULL) ? set->GetAt(3) : NULL;
     if (m_fgFrame != NULL) {
-        if (m_fgFrame->m_owned != NULL) {
-            m_fgFrame->m_owned->Select(SHADE_PAL_16, NULL);
+        if (m_fgFrame->GetShadeBlitter() != NULL) {
+            m_fgFrame->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
         }
         f = m_fgFrame;
-        if (node != NULL && f->m_owned != NULL) {
-            f->m_owned->m_palDescr = node;
+        if (node != NULL && f->GetShadeBlitter() != NULL) {
+            f->GetShadeBlitter()->m_palDescr = node;
         }
 
         SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
@@ -214,25 +214,28 @@ i32 CSBI_WellGoo::SerializeFields(
                 node = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
             }
             CImage* fr = m_frame;
-            if (fr->m_owned != NULL) {
-                fr->m_owned->Select(SHADE_PAL_16, NULL);
+            if (fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            if (node != NULL && m_frame->m_owned != NULL) {
-                m_frame->m_owned->m_palDescr = node;
+            fr = m_frame;
+            if (node != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = node;
             }
             fr = m_baseFrame;
-            if (fr->m_owned != NULL) {
-                fr->m_owned->Select(SHADE_PAL_16, NULL);
+            if (fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            if (node != NULL && m_baseFrame->m_owned != NULL) {
-                m_baseFrame->m_owned->m_palDescr = node;
+            fr = m_baseFrame;
+            if (node != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = node;
             }
             fr = m_fgFrame;
-            if (fr->m_owned != NULL) {
-                fr->m_owned->Select(SHADE_PAL_16, NULL);
+            if (fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            if (node != NULL && m_fgFrame->m_owned != NULL) {
-                m_fgFrame->m_owned->m_palDescr = node;
+            fr = m_fgFrame;
+            if (node != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = node;
             }
             break;
         }

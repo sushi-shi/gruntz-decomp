@@ -121,7 +121,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchGruntCreationPointLogic
                     && cur->GetSmarts() == owningPlayer) {
-                    cur->m_smarts = hitPlayerIndex;
+                    cur->SetSmarts(hitPlayerIndex);
                     CShadeTable* tbl = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->GetPlayer(hitPlayerIndex).GetColor()),
                         0
@@ -138,7 +138,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchFortressFlagLogic
                     && cur->GetSmarts() == owningPlayer) {
-                    cur->m_smarts = hitPlayerIndex;
+                    cur->SetSmarts(hitPlayerIndex);
                     CShadeTable* tbl = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->GetPlayer(hitPlayerIndex).GetColor()),
                         0
@@ -197,7 +197,7 @@ i32 CExitTrigger::AdvanceAnim() {
                             );
                             if (fx != NULL) {
                                 fx->SetAnimationByName("GAME_EXPLOSION3", 0);
-                                fx->m_smarts = 0;
+                                fx->SetSmarts(0);
                                 fx->SetScore(0);
                             }
                         }

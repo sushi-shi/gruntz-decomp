@@ -6626,7 +6626,7 @@ i32 CPlay::RandomizePlayerAssignments() {
         if (dispatch == DispatchGruntCreationPointLogic || dispatch == DispatchExitTriggerLogic
             || dispatch == DispatchFortressFlagLogic || dispatch == DispatchWayPointLogic
             || dispatch == DispatchGuardPointLogic) {
-            object->m_smarts = playerPermutation[object->m_smarts];
+            object->SetSmarts(playerPermutation[object->m_smarts]);
         } else if (dispatch == DispatchBrickzLogic) {
             if (object->m_extent.left == COORD_UNSET) {
                 object->m_extent.left = 0;

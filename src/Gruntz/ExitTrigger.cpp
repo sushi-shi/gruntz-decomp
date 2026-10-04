@@ -58,7 +58,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
     if (e != NULL) {
-        e->m_smarts = m_object->GetSmarts();
+        e->SetSmarts(m_object->GetSmarts());
         e->GetLogicRecord()->Dispatch(e);
 
         m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->UserLogic());

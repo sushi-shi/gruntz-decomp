@@ -276,7 +276,7 @@ i32 CGrunt::StepAttackFire() {
                 );
                 spr->m_damage = 0;
                 spr->GetLogicRecord()->Dispatch(spr);
-                spr->m_smarts = m_playerIndex;
+                spr->SetSmarts(m_playerIndex);
                 break;
             }
             default: {
