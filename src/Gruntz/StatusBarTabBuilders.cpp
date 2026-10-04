@@ -46,7 +46,6 @@ i32 CSBI_GruntMachine::Initialize(
 ) {
 
     CDDrawSurfaceMgr* world;
-    CDDrawWorker* rec;
     CImage* backgroundImage;
     CDDrawWorker* machineFrames;
     CImage* leftImage;
