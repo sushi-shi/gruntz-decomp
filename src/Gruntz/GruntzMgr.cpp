@@ -314,7 +314,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     srand((timeGetTime() + GetTickCount()) >> 1);
-    m_timing.setTimerPeriod(GRUNTZ_PERIODIC_TIMER_MS);
+    m_frames.timing().setTimerPeriod(GRUNTZ_PERIODIC_TIMER_MS);
     while (ShowCursor(false) >= 0) {
     }
 

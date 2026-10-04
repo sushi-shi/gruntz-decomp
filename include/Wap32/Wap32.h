@@ -8,7 +8,7 @@
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/GameApp.h>
-#include <Runtime/FrameTiming.h>
+#include <Runtime/FrameScheduler.h>
 
 GZ_ENUM_FORWARD(GruntzCommandId);
 
@@ -107,18 +107,20 @@ public:
     virtual void Close();
     virtual i32 IsActive();
 
-    virtual i32 PerFrameTick();
+    virtual i32 UpdateFrame();
+    u32 AdvanceFrame(u32 nowMs);
+    void SuspendFrames() { m_frames.suspend(); }
     virtual i32 HandleCommand(i32, GruntzCommandId, i32);
 
     void ResetFrameTiming();
-    const FrameTiming& Timing() const { return m_timing; }
+    void ResetFrameTiming(u32 nowMs);
+    const FrameTiming& Timing() const { return m_frames.timing(); }
 
     b32 ToggleFrameGate() {
         m_frameGate ^= 1;
         return m_frameGate;
     }
 
-    void SpinWaitForMs(i32 ms);
     void SetFrameRate(i32 fps);
     i32 TrySetFrameRate(i32 fps);
 
@@ -128,7 +130,7 @@ public:
     b32 m_soundEnabled;
     b32 m_musicEnabled;
 protected:
-    FrameTiming m_timing;
+    FrameScheduler m_frames;
 };
 
 GZ_ENUM_FLAGS_BEGIN(GameWindowFlags, i32)
@@ -193,7 +195,9 @@ public:
     }
     virtual i32 RunMessageLoop();
     virtual void ReportError(WPARAM wParam, LPARAM lParam);
-    virtual void OnIdle();
+    // Returns milliseconds until another callback is useful, or all bits set
+    // when suspended until an event. Event pumping and waiting belong to the host.
+    u32 Step(u32 nowMs);
     virtual void FreeGameManager();
 
     virtual i32 HandleCommand(i32, GruntzCommandId, i32) {
