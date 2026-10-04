@@ -177,7 +177,7 @@ gruntwingztimesprite	5	5
 gruntzapp	16	16
 gruntzcmdmgr	44	44
 gruntzmapmgr	5	5
-gruntzmgr	174	166
+gruntzmgr	174	167
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	36
@@ -2452,7 +2452,7 @@ gruntzmgr	?RecomputeViewScale@CGruntzMgr@@QAEXXZ	100.0000	100.0000	12	f4900bcd6f
 gruntzmgr	?RefreshGameClock@CGruntzMgr@@QAEXXZ	100.0000	100.0000	4	3062c2275a73	0x8f620	100.0000	
 gruntzmgr	?RegisterLevelAssetKeys@CGruntzMgr@@QAEXXZ	100.0000	100.0000	8	bea8eb86401e	0x8dc90	100.0000	
 gruntzmgr	?RegisterSetSkillDebugCmd@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	4b2f13b6aad7	0x8e880	100.0000	
-gruntzmgr	?ReinitializeWorldForColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	98.3246	98.3246	15	79ccefd46b95	0x91a40	98.3246	
+gruntzmgr	?ReinitializeWorldForColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	16	aead5607736e	0x91a40	100.0000	
 gruntzmgr	?RejectWorldFileCommand@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	351210fa8816	0x8f320	100.0000	
 gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	1	8fbc3c2c767d	0x8dc60	100.0000	
 gruntzmgr	?ReportWorldStatus@CGruntzMgr@@QAEXW4WorldInitReportTag@@@Z	100.0000	100.0000	2	85d6809f7e98	0x90ac0	100.0000	
