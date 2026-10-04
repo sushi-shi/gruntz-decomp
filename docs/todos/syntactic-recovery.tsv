@@ -71,9 +71,10 @@ rva	unit	function	lost_max	cur
 0x183b60	menupage	?Draw@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9806
 0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4662	96.3919
 0x0d0db0	play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	93.5785
-0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.2827
+0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.5834
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.0368
+0x0d9290	play	?RandomizePlayerAssignments@CPlay@@QAEHXZ	100.0000	99.8477
 0x0d0b30	play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755
 0x0d1ac0	play	?StepScroll@CPlay@@QAEXXZ	100.0000	78.2069
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
