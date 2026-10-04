@@ -1105,7 +1105,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
 }
 
 RVA(0x0007a3f0, 0xd7)
-i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind) {
+i32 CTriggerMgr::SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, i32 scrollSpell) {
     CDDrawChildGroup* fac = m_world->ChildGroup();
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
@@ -1130,9 +1130,9 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
         return 0;
     }
     spr->SetImageSetByName("GAME_TOYBOX");
-    spr->m_points = IDX(kind);
-    spr->m_score = col;
-    spr->m_faceDirection = moveKind;
+    spr->m_points = IDX(toyType);
+    spr->m_score = playerIndex;
+    spr->m_faceDirection = scrollSpell;
     spr->Hide();
     return 1;
 }

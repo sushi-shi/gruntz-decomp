@@ -1249,7 +1249,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         if (kind == PICKUP_SCROLL) {
             scrollSpell = cell->m_scrollSpell;
         }
-        if (LoadToyBoxIcon(destination.m_x, destination.m_y, playerIndex, kind, scrollSpell) == 0) {
+        if (SpawnToyBox(destination.m_x, destination.m_y, playerIndex, kind, scrollSpell) == 0) {
             return 0;
         }
 

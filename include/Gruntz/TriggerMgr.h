@@ -277,7 +277,7 @@ public:
 
     i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
 
-    i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
+    i32 SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, i32 scrollSpell);
 
     CPtrList m_baseList;
     CGrunt* m_units[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
