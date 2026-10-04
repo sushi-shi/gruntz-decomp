@@ -432,7 +432,7 @@ i32 CPlay::Render() {
         g_soundCueTimeMs = g_lastNow;
         g_engineFrameDelta = g_frameDelta;
 
-        m_world->ChildGroup()->TickKillCues(0);
+        m_world->ChildGroup()->UpdateObjects(0);
         DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->GetScrollPixelX(),
@@ -700,7 +700,7 @@ void CPlay::UpdateWorldFrame() {
     }
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
-    m_world->ChildGroup()->TickKillCues(0);
+    m_world->ChildGroup()->UpdateObjects(0);
     m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
     if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
 
@@ -751,7 +751,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
                     lvl->m_mainPlane->ActivateVisibleObjects();
                 }
             }
-            m_world->ChildGroup()->TickKillCues(0);
+            m_world->ChildGroup()->UpdateObjects(0);
             m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
             if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
                 (g_gameReg)->AdvanceComputerPlayerTurns();
@@ -789,7 +789,7 @@ i32 CPlay::ProfileInputFrame() {
     deactMs = static_cast<i32>(tg() - static_cast<u32>(deactMs));
 
     i32 updateMs = static_cast<i32>(tg());
-    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->UpdateObjects(1);
     m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
     updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
@@ -1333,7 +1333,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         );
         self->m_cursorSnapSprite = scrollSink;
         if (scrollSink != NULL) {
-            self->m_world->ChildGroup()->TickKillCues(0);
+            self->m_world->ChildGroup()->UpdateObjects(0);
             if (savedThis == NULL) {
 
                 CStatusBarMgr* statusBar = self->m_statusBar;
@@ -1349,7 +1349,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
                 if (LoadRequiredCharacterAssets(savedThis, initScratch)
                     && BuildRockAndCoveredPowerupLogics() && ValidateLevelTiles()
                     && AddLevelGruntz()) {
-                    self->m_world->ChildGroup()->TickKillCues(0);
+                    self->m_world->ChildGroup()->UpdateObjects(0);
                     self->m_statusBar->PrepareNextResource();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                     while (ShowCursor(false) >= 0)
@@ -3015,7 +3015,7 @@ i32 CPlay::DrawWorldPresent() {
             lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
-    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->UpdateObjects(1);
     {
         CGameLevel* lvl = m_world->GetLevel();
         if (lvl->m_mainPlane != NULL) {
@@ -3028,7 +3028,7 @@ i32 CPlay::DrawWorldPresent() {
             lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
-    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->UpdateObjects(1);
     DrawVisibleWorld();
     m_mgr->RefreshGameClock();
     return 1;

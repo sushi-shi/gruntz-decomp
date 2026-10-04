@@ -38,7 +38,7 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual void TickKillCues(i32 advance);
+    virtual void UpdateObjects(i32 advanceClock);
     virtual void RenderChildren(class CRenderBuffer* target);
 
     virtual void BltDirtyChildren(CRenderBuffer* dst, CRenderBuffer* src);

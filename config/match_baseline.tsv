@@ -4688,8 +4688,8 @@ wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	2bfab4d73e6a	
 wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	6	e8f52e0dbae5	0x191770	100.0000	
 wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	99.9658	99.9658	6	e8f52e0dbae5	0x1915c0	99.9658	
 wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@H@Z	100.0000	100.0000	3	ac8c5c9f0e52	0x191ad0	100.0000	
-wwdobjmgr	$anon_data_4b4a651f341dbc9d701700528760e8e5f8b7305b5c177d4ce5bc8392045cfa56_0	100.0000	100.0000	1	cpp:11acfc2de0ce		100.0000	
-wwdobjmgr	$anon_data_96bc6c3c8574c1d4b73930a013fa03b8393128e29124882adc7502395c0efd26_0	100.0000	100.0000	1	cpp:11acfc2de0ce		100.0000	
+wwdobjmgr	$anon_data_556ccf39603b21d64214335c4a37ca2df15022449f7ef989654dd0d1f4129d24_0	100.0000	100.0000	1	cpp:11acfc2de0ce		100.0000	
+wwdobjmgr	$anon_data_6ea349d7ea4527fd3730c6c656efce6c099d6b7845c975d7d2ebb2b6896becc5_0	100.0000	100.0000	1	cpp:11acfc2de0ce		100.0000	
 wwdobjmgr	??0CLogicRecord@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	dd30650e02f1	0x15b300	100.0000	
 wwdobjmgr	??0CRenderState@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	a7f68725619e	0x15b2c0	100.0000	
 wwdobjmgr	??0WwdDirtyRect@@QAE@XZ	100.0000	100.0000	1	f41ada049733	0x15b270	100.0000	
@@ -4741,7 +4741,7 @@ wwdobjmgr	?RemoveByPosition@CDDrawChildGroup@@QAEXPAU__POSITION@@PAUCGameObject@
 wwdobjmgr	?RenderChildren@CDDrawChildGroup@@UAEXPAVCRenderBuffer@@@Z	100.0000	100.0000	2	209f0dc5a46f	0x159c90	100.0000	
 wwdobjmgr	?SerializeObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId@@@Z	100.0000	100.0000	7	22c008368b87	0x15b020	100.0000	
 wwdobjmgr	?SumWeighted@CDDrawChildGroup@@QAEHXZ	100.0000	99.9259	2	5e46a499da26	0x15aaf0	100.0000	
-wwdobjmgr	?TickKillCues@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	15	ba02e4c888d7	0x159a70	100.0000	
+wwdobjmgr	?UpdateObjects@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	15	ba02e4c888d7	0x159a70	100.0000	
 wwdobjmgr	?Unload@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	2a1963225501	0x1591e0	100.0000	
 wwdobjmgr	?WriteObjectSnapshots@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId@@@Z	100.0000	100.0000	6	dd2f7a7e1a0e	0x15acb0	100.0000	
 wwdspatialmgr	??_GCWwdGridIter@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fce7074e101f	0x163a20	100.0000	

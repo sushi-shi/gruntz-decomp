@@ -291,7 +291,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 }
 
 RVA(0x00159a70, 0x200)
-void CDDrawChildGroup::TickKillCues(i32 advance) {
+void CDDrawChildGroup::UpdateObjects(i32 advanceClock) {
     RVA_DYNINIT(0x00159c80, 0xa, s_killQueue)
     DATA(0x002bf3a8)
     static CObArray s_killQueue;
@@ -301,7 +301,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     s_killQueue.RemoveAll();
     s_sortQueue.RemoveAll();
 
-    if (advance != 0) {
+    if (advanceClock != 0) {
         u32 now = timeGetTime();
         u32 delta = now - g_soundCueTimeMs;
         g_engineFrameDelta = delta;

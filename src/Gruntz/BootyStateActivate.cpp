@@ -1449,7 +1449,7 @@ i32 CBootyState::Render() {
             return 1;
     }
 
-    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->UpdateObjects(1);
     m_world->ChildGroup()->RenderChildren(m_world->GetDisplayBuffers()->GetBackBuffer());
     CDisplayBuffers* dt = m_world->GetDisplayBuffers();
     FlipFrontAndRestoreOverlay(dt);
@@ -2456,7 +2456,7 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats();
         m_sequenceState = BOOTYSEQ_PERFECT_BONUS;
     }
-    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->UpdateObjects(1);
     m_world->ChildGroup()->RenderChildren(m_world->GetDisplayBuffers()->GetBackBuffer());
 
     u32 secs = g_gameReg->GetGameStats()->m_elapsedTimeMs / MILLIS_PER_SECOND;
