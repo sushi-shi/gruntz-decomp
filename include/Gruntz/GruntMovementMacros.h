@@ -35,6 +35,14 @@
         target->LastTilePx().m_y                                                                   \
     )
 
+#define COMMIT_HIT_AND_RUN_ATTACK(target)                                                          \
+    do {                                                                                           \
+        COMMIT_GRUNT_NEIGHBOR(target);                                                             \
+        m_neighborScanEnabled = false;                                                             \
+        RecycleCoords();                                                                           \
+        m_defenderState = AISTATE_RETREAT;                                                         \
+    } while (0)
+
 #define COPY_LAST_TILE_TO_DEFENDER                                                                 \
     m_defenderPx.m_x = m_lastTilePx.m_x;                                                           \
     m_defenderPx.m_y = m_lastTilePx.m_y;

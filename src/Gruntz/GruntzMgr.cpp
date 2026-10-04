@@ -3461,7 +3461,7 @@ BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
 RVA(0x00092d50, 0x3c)
 i32 CGruntzMgr::SetInactivePlayerName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
     if (CheckPlayState()) {
-        if (m_players[slot].m_active == false) {
+        if (m_players[slot].IsActive() == false) {
             m_players[slot].m_name = val;
         }
     }
@@ -3479,7 +3479,7 @@ i32 CGruntzMgr::ResetPlayerSlot(i32 slot) {
     if (player == NULL) {
         return 0;
     }
-    if (player->m_active == false) {
+    if (player->IsActive() == false) {
         return 0;
     }
 
@@ -3504,7 +3504,7 @@ i32 CGruntzMgr::CountActivePlayers(b32 includeComputerPlayers) {
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* slot = &m_players[i];
-        if (slot && slot->m_active != false
+        if (slot && slot->IsActive() != false
             && (includeComputerPlayers != false || slot->m_humanControlled != false)) {
             count++;
         }
@@ -3622,7 +3622,7 @@ i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
     g_battlezTurnPlayerIndex = cursor;
     for (i32 i = 0; i < m_computerPlayerCount + 1; i++) {
         GruntzPlayer* slot = &m_players[i];
-        if (cursor == i && slot->m_humanControlled == false && slot->m_active != false) {
+        if (cursor == i && slot->m_humanControlled == false && slot->IsActive() != false) {
             slot->GetBattlezConfig()->StepBoard();
             cursor = g_battlezTurnPlayerIndex;
         }

@@ -610,6 +610,10 @@ public:
         return !m_arrivalRerollTiming.Expired();
     }
 
+    b32 IsCombatTimeoutExpired() const {
+        return m_combatTiming.Expired();
+    }
+
     i32 IsHoldPending() {
         return !m_holdTiming.Expired();
     }

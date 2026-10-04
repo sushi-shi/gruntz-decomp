@@ -24,7 +24,7 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
         GruntzPlayer* targetPlayer = &m_ctx->m_players[targetTeamIndex];
         if (targetPlayer->IsEliminated() != false) {
             targetUnavailable = 1;
-        } else if (targetPlayer->m_active == false) {
+        } else if (targetPlayer->IsActive() == false) {
             targetUnavailable = 1;
         }
     }

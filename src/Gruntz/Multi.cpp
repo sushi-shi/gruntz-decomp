@@ -476,7 +476,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
         if (e->GetBattlezConfig()->LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
             return 0;
         }
-        if (e->m_humanControlled && e->m_active) {
+        if (e->m_humanControlled && e->IsActive()) {
             e->GetBattlezConfig()->Clear();
         }
     }
@@ -1936,7 +1936,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     if (slot == NULL) {
         return 0;
     }
-    if (slot->m_active == false) {
+    if (slot->IsActive() == false) {
         return 0;
     }
     if (slot->m_humanControlled == false) {
@@ -2039,7 +2039,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* player = &NetGameMgr()->m_players[i];
         if (player != NULL) {
-            i32 v = player->m_active;
+            i32 v = player->IsActive();
             packet.m_rows[i].m_active = static_cast<u8>(v);
             v = player->GetColor();
             packet.m_rows[i].m_color = static_cast<u8>(v);
@@ -2092,7 +2092,7 @@ i32 CMulti::ApplyPlayerTable(CNetPlayerTablePacket* packet) {
             player->m_maxGruntz = packet->m_rows[i].m_maxGruntz;
             player->m_name = packet->m_rows[i].m_name;
             player->m_networkPlayerId = packet->m_rows[i].m_networkPlayerId;
-            if (m_isHost == false && player->m_active != false) {
+            if (m_isHost == false && player->IsActive() != false) {
                 SetPlayerColorAvailable(player->GetColor(), false);
             }
         }
@@ -2126,7 +2126,7 @@ i32 CMulti::RegisterPlayer(
     GruntzPlayer* slot = NULL;
     if (preferredPlayerIndex >= 0 && preferredPlayerIndex <= 4) {
         slot = &NetGameMgr()->m_players[preferredPlayerIndex];
-        if (slot != NULL && slot->m_active != false) {
+        if (slot != NULL && slot->IsActive() != false) {
             slot = NULL;
         }
     }
@@ -2136,7 +2136,7 @@ i32 CMulti::RegisterPlayer(
         GruntzPlayer* candidate;
         for (i = 0, candidate = NetGameMgr()->m_players; i < 4; i++, candidate++) {
             slot = candidate;
-            if (candidate != NULL && candidate->m_active == false) {
+            if (candidate != NULL && candidate->IsActive() == false) {
                 break;
             }
             slot = NULL;
@@ -2180,7 +2180,7 @@ i32 CMulti::DeactivatePlayer(i32 slotIndex) {
     if (player == NULL) {
         return 0;
     }
-    if (player->m_active == false) {
+    if (player->IsActive() == false) {
         return 0;
     }
     player->m_active = false;
@@ -2660,7 +2660,7 @@ i32 CMulti::Poll(i32 token) {
 
         for (i32 i = 0; i < 4; i++) {
             GruntzPlayer* player = &g_gameReg->m_players[i];
-            if (player->m_networkPlayerId != m_localPlayerId && player->m_active != false
+            if (player->m_networkPlayerId != m_localPlayerId && player->IsActive() != false
                 && player->m_humanControlled != false) {
                 if (m_levelChecksumReceived[i] == 0) {
                     allAcked = 0;
@@ -2718,7 +2718,7 @@ i32 CMulti::CreateSession() {
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* player = &NetGameMgr()->m_players[i];
         NetSlotState state = NETSLOT_INACTIVE;
-        if (player->m_active != false && player->m_humanControlled != false) {
+        if (player->IsActive() != false && player->m_humanControlled != false) {
 
             state = NETSLOT_LOCAL;
             if (player->m_networkPlayerId != m_localPlayerId) {
@@ -3166,7 +3166,7 @@ u32 CMulti::GetMaxAckLatency() {
 
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
-            if (mgr->m_players[i].m_humanControlled && mgr->m_players[i].m_active) {
+            if (mgr->m_players[i].m_humanControlled && mgr->m_players[i].IsActive()) {
                 max = max(mgr->m_players[i].m_latency.m_avg, max);
             }
         }

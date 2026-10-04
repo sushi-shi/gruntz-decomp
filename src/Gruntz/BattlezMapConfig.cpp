@@ -296,7 +296,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
     if (g_gameReg->m_players[m_playerIndex].m_humanControlled == false
-        && g_gameReg->m_players[m_playerIndex].m_active != false) {
+        && g_gameReg->m_players[m_playerIndex].IsActive() != false) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             this->StepRowSpawn(false);
         }

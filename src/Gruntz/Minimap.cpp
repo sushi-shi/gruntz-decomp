@@ -148,7 +148,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
-                if (grunt->m_combatTiming.Expired() || grunt->GetPlayerIndex() != g_curPlayer) {
+                if (grunt->IsCombatTimeoutExpired() || grunt->GetPlayerIndex() != g_curPlayer) {
                     m_gameMgr->m_spriteFactory
                         ->GetToolColor(IDX(grunt->GetMoveIcon()), teamColor, *pixel);
                 } else if (static_cast<u32>(g_period100CountdownMs)

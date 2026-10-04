@@ -56,6 +56,10 @@ public:
         return m_color;
     }
 
+    b32 IsActive() const {
+        return m_active;
+    }
+
     b32 IsEliminated() const {
         return m_clearedRound;
     }

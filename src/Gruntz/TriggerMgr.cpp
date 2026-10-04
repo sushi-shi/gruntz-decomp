@@ -1833,7 +1833,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 != -1) {
                 ok = true;
             }
-        } else if (player->m_active != false && player->m_doneFlag == false
+        } else if (player->IsActive() != false && player->m_doneFlag == false
                    && player->IsEliminated() == false) {
             if (player->m_humanControlled != false) {
                 if (PlaceObject(
