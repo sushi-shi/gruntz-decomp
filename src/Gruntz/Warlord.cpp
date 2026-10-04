@@ -234,7 +234,7 @@ i32 CWarlord::SerializeDispatch(
 
     switch (mode) {
         case SERIAL_SAVE: {
-            CDDrawSurfaceMgr* world = m_ownerLogicRecord->OwnerMgr();
+            CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
             if (world == NULL) {
                 goto fail;
             }
@@ -258,7 +258,7 @@ i32 CWarlord::SerializeDispatch(
             break;
         }
         case SERIAL_LOAD: {
-            CDDrawSurfaceMgr* world = m_ownerLogicRecord->OwnerMgr();
+            CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
             if (world == NULL) {
                 return 0;
             }

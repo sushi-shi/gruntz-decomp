@@ -16,12 +16,12 @@ class CImage;
 
 class CRezDir;
 struct CRezItm;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CImageSet : public CWapObj {
 public:
-    CImageSet(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
+    CImageSet(CGameWorld* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         m_minIndex = 99999;
         m_maxIndex = 0;
     }
@@ -75,7 +75,7 @@ public:
 
     CImage* GetFrame(i32 n);
 
-    CDDrawSurfaceMgr* Owner() const {
+    CGameWorld* Owner() const {
         return OwnerMgr();
     }
 

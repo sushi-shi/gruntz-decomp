@@ -338,7 +338,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
-    CDDrawSurfaceMgr* world = reg->World();
+    CGameWorld* world = reg->World();
     i32 token = reg->GetSoundVolume();
     SoundCueRegistry* set = world->SoundRegistry();
     if (set->IsSilent() == false) {
@@ -1317,7 +1317,7 @@ i32 CBootyState::CheckPerfectBonus() {
     CWwdSpriteObject* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenX;
     if (phase == static_cast<i32>(0xffffff7e)) {
-        CDDrawSurfaceMgr* host = g_gameReg->World();
+        CGameWorld* host = g_gameReg->World();
         i32 item = g_gameReg->GetSoundVolume();
         SoundCueRegistry* cueRegistry = host->SoundRegistry();
         if (cueRegistry->IsSilent() == false) {
@@ -1995,7 +1995,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     m_world->GetDisplayBuffers()->CopyOverlayToBack();
     FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
-    CDDrawSurfaceMgr* host = g_gameReg->World();
+    CGameWorld* host = g_gameReg->World();
     i32 item = g_gameReg->GetSoundVolume();
     SoundCueRegistry* cueRegistry = host->SoundRegistry();
     if (cueRegistry->IsSilent() == false) {

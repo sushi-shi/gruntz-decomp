@@ -3,10 +3,10 @@
 
 #include <Ints.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 struct CGameObject;
 
-void RegisterGameObjectLogicTypes(CDDrawSurfaceMgr* ctx);
+void RegisterGameObjectLogicTypes(CGameWorld* ctx);
 
 i32 DispatchAniCycleLogic(CGameObject* obj);
 i32 DispatchDoNothingNormalLogic(CGameObject* obj);

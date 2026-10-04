@@ -47,7 +47,7 @@ RVA_DYNINIT(0x0003acf0, 0xa, g_selectedCustomWorldName)
 DATA(0x0022c264)
 CString g_selectedCustomWorldName;
 DATA(0x0022c268)
-CDDrawSurfaceMgr* g_customWorldSurfaceMgr = NULL;
+CGameWorld* g_customWorldSurfaceMgr = NULL;
 DATA(0x0022c26c)
 HWND g_customWorldParent = NULL;
 DATA(0x0022c270)
@@ -68,7 +68,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     if (parent == NULL) {
         v = g_gameReg->GetGameWindow()->GetHwnd();
     }
-    CDDrawSurfaceMgr* world = g_gameReg->World();
+    CGameWorld* world = g_gameReg->World();
     g_customWorldParent = v;
     g_customWorldSurfaceMgr = world;
 

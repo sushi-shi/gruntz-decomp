@@ -15,7 +15,7 @@
 #include <stddef.h>
 
 class CStatusBarMgr;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CStatusBarItem {
 public:
@@ -26,7 +26,7 @@ public:
 
     virtual i32 Setup(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
@@ -67,8 +67,7 @@ public:
         m_enabled = on;
     }
 
-    void
-    Initialize(CStatusBarMgr* owner, StatusBarTab tab, CDDrawSurfaceMgr* host, b32 enabled = true) {
+    void Initialize(CStatusBarMgr* owner, StatusBarTab tab, CGameWorld* host, b32 enabled = true) {
         m_owner = owner;
         m_tab = tab;
         m_host = host;
@@ -82,7 +81,7 @@ public:
     StatusBarTab m_tab;
 
     RECT m_rect;
-    class CDDrawSurfaceMgr* m_host;
+    class CGameWorld* m_host;
     i32 m_redrawFrames;
     class CStatusBarMgr* m_owner;
 };

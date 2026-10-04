@@ -261,7 +261,7 @@ RVA_COMPGEN(0x0009a4a0, 0x5, ??1CResourceNameEntry@@QAE@XZ)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a4c0, 0x3e)
-i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
+i32 CAreaMgr::LoadObjectResources(CGameWorld* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -272,7 +272,7 @@ i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
 }
 
 RVA(0x0009a510, 0x275)
-i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
+i32 CAreaMgr::LoadObjectImageResources(CGameWorld* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -350,7 +350,7 @@ CString CResourceNameEntry::GetObjectResourceSuffix() {
 }
 
 RVA(0x0009a910, 0x261)
-i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
+i32 CAreaMgr::LoadObjectSoundResources(CGameWorld* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -412,7 +412,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
 }
 
 RVA(0x0009ac20, 0x261)
-i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
+i32 CAreaMgr::LoadObjectAnimResources(CGameWorld* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }

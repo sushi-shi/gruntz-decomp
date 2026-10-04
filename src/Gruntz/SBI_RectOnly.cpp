@@ -95,7 +95,7 @@ i32 g_curPlayer = 0;
 
 // @early-stop
 RVA(0x000fdc00, 0x5c2)
-i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
+i32 CStatusBarMgr::Initialize(CGameWorld* world) {
     m_world = world;
     m_restorePosition = STATUSBAR_DOCK_RIGHT;
     m_position = STATUSBAR_DOCK_RIGHT;
@@ -843,7 +843,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     i32 bx = m_barRect.left;
     i32 by = m_barRect.top;
-    CDDrawSurfaceMgr* code = m_world;
+    CGameWorld* code = m_world;
 
     CSBI_RectOnly* dockLeft = new CSBI_RectOnly;
     if (!dockLeft->Setup(
@@ -1024,7 +1024,7 @@ RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 RVA(0x00100660, 0x50)
 i32 CStatusBarItem::Setup(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
@@ -1388,7 +1388,7 @@ i32 CStatusBarMgr::ClearButtonHighlights(StatusBarTab idx) {
 
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameTabContent() {
-    CDDrawSurfaceMgr* code = m_world;
+    CGameWorld* code = m_world;
     i32 bx = m_barRect.left;
     i32 by = m_barRect.top;
 
@@ -1621,7 +1621,7 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::BuildActiveTabContent() {
-    CDDrawSurfaceMgr* code = m_world;
+    CGameWorld* code = m_world;
     i32 bx = m_barRect.left;
     i32 by = m_barRect.top;
 
@@ -3752,7 +3752,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* dir = g_gameReg->World();
+    CGameWorld* dir = g_gameReg->World();
     if (dir == NULL) {
         return 0;
     }
@@ -3929,7 +3929,7 @@ i32 CWarpStoneFly::SerializeDispatch(
     if (arc == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* lvl = g_gameReg->World();
+    CGameWorld* lvl = g_gameReg->World();
     if (lvl == NULL) {
         return 0;
     }
@@ -4039,7 +4039,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
         return 1;
     }
 
-    CDDrawSurfaceMgr* w = m_world;
+    CGameWorld* w = m_world;
     i32 cx;
     i32 cy;
     CRect dst(w->GetLevel()->GetViewportRect());

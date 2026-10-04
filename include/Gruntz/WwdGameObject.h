@@ -11,7 +11,7 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 struct WwdSnapshot {
     i32 m_id;

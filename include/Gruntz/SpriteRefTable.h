@@ -46,7 +46,7 @@ inline CGruntPalette::CGruntPalette() {
 
 class CShadeTableCache;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CRezMgr;
 class CGruntPaletteTable {
@@ -54,7 +54,7 @@ public:
     CGruntPaletteTable();
     ~CGruntPaletteTable();
 
-    i32 Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder);
+    i32 Init(CShadeTableCache* cache, CGameWorld* holder);
 
     void Reset();
 
@@ -84,7 +84,7 @@ public:
     i32 BuildToolToyColorTable(CRezMgr* src);
 
     CShadeTableCache* m_shadeCache;
-    CDDrawSurfaceMgr* m_spriteMgrHolder;
+    CGameWorld* m_spriteMgrHolder;
     CGruntPalette* m_toolPalettes[TINT_COUNT];
     CGruntPalette* m_toyPalettes[TINT_COUNT];
     b32 m_built;

@@ -8,7 +8,7 @@
 RVA(0x000e86e0, 0x53)
 i32 CSBI_RectOnly::Setup(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,

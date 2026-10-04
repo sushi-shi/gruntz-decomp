@@ -21,7 +21,7 @@
 RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,

@@ -12,7 +12,7 @@ GZ_ENUM_BEGIN(ChatBoxLayout)
     CHATBOX_WITH_HIDDEN_STATUSBAR = 3
 GZ_ENUM_END(ChatBoxLayout)
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CRenderBuffer;
 
 class CGameText;
@@ -29,7 +29,7 @@ public:
         m_layout = CHATBOX_WITH_RIGHT_STATUSBAR;
     }
 
-    i32 Attach(CDDrawSurfaceMgr* world, CGameText* gameText);
+    i32 Attach(CGameWorld* world, CGameText* gameText);
 
     b32 IsInputActive() const {
         return m_inputActive;
@@ -55,7 +55,7 @@ public:
     b32 m_inputActive;
     CGameText* m_gameText;
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 };
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

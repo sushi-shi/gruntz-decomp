@@ -308,7 +308,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
     }
 
     SoundCueRegistry* sounds =
-        (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
+        (static_cast<CGameWorld*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
     sounds->PlayCue(s_gameAttack);
 
     switch (spell) {
@@ -568,7 +568,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (g_gameReg->IsSoundEnabled() == false) {
         return;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->World();
+    CGameWorld* world = g_gameReg->World();
     SoundCue* cue = world->SoundRegistry()->FindCue(key);
     if (cue == NULL) {
         return;
@@ -1141,7 +1141,7 @@ i32 CGrunt::ApplyCombatHitEffects(
             enemy->SetHealth(min(h, HEALTH_FULL));
 
             SoundCueRegistry* registry =
-                (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
+                (static_cast<CGameWorld*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
             if (registry->IsSilent() == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {

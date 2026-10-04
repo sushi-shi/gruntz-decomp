@@ -32,7 +32,7 @@
 #include <string.h>
 
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CGameLevel::CGameLevel(CGameWorld* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
     m_maxStepX = 0x40;

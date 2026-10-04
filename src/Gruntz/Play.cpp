@@ -5346,7 +5346,7 @@ i32 CState::DrawScreenTextImage(const char* name) {
     if (src == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     CRenderBuffer* page = world->GetDisplayBuffers()->GetBackBuffer();
     if (page == NULL) {
         return 0;
@@ -6037,7 +6037,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mc = m_world;
+    CGameWorld* mc = m_world;
     if (mc == NULL) {
         return 0;
     }
@@ -6170,7 +6170,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* res = g_gameReg->World();
+    CGameWorld* res = g_gameReg->World();
     if (res == NULL) {
         return 0;
     }
@@ -6439,7 +6439,7 @@ i32 CPlay::StepViewportResize() {
 
 RVA(0x000d8dc0, 0xce)
 i32 CPlay::ShrinkViewport(i32 step) {
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     b32 changed = false;
     RECT resized = world->GetLevel()->GetViewportRect();
 
@@ -6469,7 +6469,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ExpandViewport(i32 step) {
     b32 changed = false;
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     CGruntzMgr* manager = m_mgr;
     CStatusBarMgr* statusBar = m_statusBar;
 
@@ -6518,7 +6518,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 
 RVA(0x000d9050, 0xc7)
 i32 CPlay::DrawDarknessView() {
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     CRenderBuffer* backSurface = world->GetDisplayBuffers()->GetBackBuffer();
     CObList& objects = *world->ChildGroup()->GetList();
 
@@ -6573,7 +6573,7 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
 
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::RandomizePlayerAssignments() {
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
 
     CObList* objects = world->ChildGroup()->GetList();
     if (objects == NULL) {

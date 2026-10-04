@@ -27,7 +27,7 @@ class CDDrawChildGroup : public CWapObj {
 public:
     inline CGameObject* NextChild();
     inline CGameObject* FirstChild();
-    CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
+    CDDrawChildGroup(CGameWorld* owner) : CWapObj(owner, 0, 0) {
         m_walkCursor = NULL;
         m_spriteScanCursor = NULL;
     }

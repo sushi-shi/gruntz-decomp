@@ -57,7 +57,7 @@ DATA(0x001eff2c)
 const float g_volumePercentUnitScale = 0.009999999776482582f;
 
 RVA(0x00156cb0, 0x20)
-CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
+CWapObj::CWapObj(CGameWorld* owner, i32 id, i32 flags) {
     m_id = id;
     m_flags = flags;
     m_ownerCtx = owner;
@@ -420,7 +420,7 @@ void CFileMemBase::Reset() {
 
 RVA(0x00157a80, 0x51)
 i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
-    CDDrawSurfaceMgr* mgr = OwnerMgr();
+    CGameWorld* mgr = OwnerMgr();
     if (mgr == NULL) {
         return 0;
     }

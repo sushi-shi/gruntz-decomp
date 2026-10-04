@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
 
@@ -17,7 +17,7 @@ struct CDDrawPaletteResource : public CWapObj {
 
     CDDrawPaletteResource() {}
 
-    CDDrawPaletteResource(i32 id, class CDDrawSurfaceMgr* owner)
+    CDDrawPaletteResource(i32 id, class CGameWorld* owner)
         : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         m_palette = NULL;
     }

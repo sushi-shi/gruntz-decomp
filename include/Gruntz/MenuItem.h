@@ -23,7 +23,7 @@ class CMenuTree;
 class CRenderBuffer;
 class CImageSet;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CMenuItem {
 public:
@@ -91,7 +91,7 @@ public:
         m_secondaryCommandId = secondaryCommandId;
     }
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 
     CMenuTree* m_menuTree;
     CMenuPage* m_page;

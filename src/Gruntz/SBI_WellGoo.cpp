@@ -29,7 +29,7 @@
 RVA(0x000e6020, 0x288)
 i32 CSBI_WellGoo::Setup(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
@@ -169,7 +169,7 @@ i32 CSBI_WellGoo::SerializeFields(
     if (arc == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->World();
+    CGameWorld* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }

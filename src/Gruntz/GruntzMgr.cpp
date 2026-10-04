@@ -469,7 +469,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, SW_SHOWNORMAL);
     m_strWorldFile.Empty();
 
-    m_world = new CDDrawSurfaceMgr;
+    m_world = new CGameWorld;
     i32 flags = 0xe1;
     if (g_disableAudio || g_disableSound) {
         flags = 0xe5;
@@ -922,7 +922,7 @@ i32 RestoreGameGraphics() {
     if (g_gameReg == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->World();
+    CGameWorld* world = g_gameReg->World();
     if (world == NULL) {
         return 0;
     }
@@ -1287,7 +1287,7 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc90, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
-    CDDrawSurfaceMgr* w = m_world;
+    CGameWorld* w = m_world;
     if (w == NULL) {
         return;
     }

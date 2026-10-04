@@ -13,7 +13,7 @@ class CGruntVoice;
 struct StreamVoice;
 
 class CGruntzMgr;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 enum {
     VOICE_CUES_PER_BAND = 20
@@ -72,7 +72,7 @@ public:
 
     CGruntzMgr* m_game;
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
     CGruntVoice* m_indicators[2];
 
     StreamVoice* m_streamVoices[2];

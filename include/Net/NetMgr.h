@@ -34,7 +34,7 @@ class CGruntzCmdMgr;
 class CNetMgr;
 class CMulti;
 struct GruntRec;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 extern i32 g_dropPlayerId;
 

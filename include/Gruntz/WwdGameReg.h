@@ -6,7 +6,7 @@
 #include <Ints.h>
 
 class CState;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CVoiceManager;
 
 class CGruntzMapMgr;

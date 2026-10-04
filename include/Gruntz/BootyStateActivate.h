@@ -12,7 +12,7 @@
 #include <Ints.h>
 #include <Wwd/WwdGameObjectFlags.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 GZ_ENUM_BEGIN(SecretBonusTier)
     SECRET_BONUS_TIER_ONE = 1,

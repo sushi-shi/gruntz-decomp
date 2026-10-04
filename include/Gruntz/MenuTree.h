@@ -8,7 +8,7 @@
 class CMenuPage;
 class CMenuItem;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CRenderBuffer;
 
 class CImageSet;
@@ -20,7 +20,7 @@ public:
     void InitializeMembers();
 
     i32 Configure(
-        CDDrawSurfaceMgr* world,
+        CGameWorld* world,
         HWND windowHandle,
         RECT* bounds,
         i32 headerGap,
@@ -66,7 +66,7 @@ public:
     i32 MoveFocusLeft();
     i32 MoveFocusRight();
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 
     HWND m_windowHandle;
 

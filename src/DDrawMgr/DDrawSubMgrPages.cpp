@@ -130,7 +130,7 @@ void CDisplayBuffers::BltDirtyChildrenEx() {
 RVA(0x00158b90, 0x28)
 void CDisplayBuffers::FlipAndNotify() {
     m_frontSurface->GetSurface()->Flip(NULL);
-    CDDrawSurfaceMgr* n = OwnerMgr();
+    CGameWorld* n = OwnerMgr();
     CDDrawChildGroup* c = n->ChildGroup();
     CDisplayBuffers* s = n->GetDisplayBuffers();
     c->BltDirtyChildren(s->GetBackBuffer(), s->GetOverlayBuffer());
@@ -344,7 +344,7 @@ i32 CDisplayBuffers::CopyOverlayToBack() {
 }
 
 RVA(0x00158f30, 0x27)
-CRenderSurface::CRenderSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CRenderSurface::CRenderSurface(CGameWorld* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
     m_width = 0;
 }

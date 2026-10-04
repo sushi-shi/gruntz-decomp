@@ -42,7 +42,7 @@ GZ_ENUM_CONST_BEGIN(WapObjId)
     WAPOBJ_ID_NONE = -1
 GZ_ENUM_CONST_END(WapObjId)
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CWapObj : public CObject {
 public:
@@ -53,7 +53,7 @@ public:
 
     i32 m_id;
     i32 m_flags;
-    CDDrawSurfaceMgr* m_ownerCtx;
+    CGameWorld* m_ownerCtx;
 
     virtual ~CWapObj() OVERRIDE {
         m_id = WAPOBJ_ID_NONE;
@@ -65,18 +65,18 @@ public:
         m_ownerCtx = NULL;
     }
 
-    CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CWapObj(CGameWorld* owner, i32 id, i32 flags);
 
     enum ENoSeed {
         NO_SEED
     };
-    CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags, ENoSeed) {
+    CWapObj(CGameWorld* owner, i32 id, i32 flags, ENoSeed) {
         m_id = id;
         m_flags = flags;
         m_ownerCtx = owner;
     }
 
-    CWapObj(i32 id, CDDrawSurfaceMgr* owner) {
+    CWapObj(i32 id, CGameWorld* owner) {
         m_id = id;
         m_flags = 0;
         m_ownerCtx = owner;
@@ -90,7 +90,7 @@ public:
         m_flags &= ~flags;
     }
 
-    CDDrawSurfaceMgr* OwnerMgr() const {
+    CGameWorld* OwnerMgr() const {
         return m_ownerCtx;
     }
 };

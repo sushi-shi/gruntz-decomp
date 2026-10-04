@@ -10,8 +10,8 @@ GZ_ENUM_CONST_BEGIN(CustomWorldCtrlId)
     CTRL_CUSTOM_WORLD_INFO = 0x42a
 GZ_ENUM_CONST_END(CustomWorldCtrlId)
 
-class CDDrawSurfaceMgr;
-extern class CDDrawSurfaceMgr* g_customWorldSurfaceMgr;
+class CGameWorld;
+extern class CGameWorld* g_customWorldSurfaceMgr;
 extern char g_mapNameBuf[0x200];
 
 i32 LoadCustomWorldInfo(HWND hDlg);

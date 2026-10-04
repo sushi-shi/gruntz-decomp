@@ -9,7 +9,7 @@
 #include <Gruntz/MenuItemState.h>
 #include <Ints.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CRenderBuffer;
 class CImageSet;
 class CMenuTree;
@@ -111,7 +111,7 @@ public:
     i32 MoveFocusLeft();
     i32 MoveFocusRight();
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
     CMenuTree* m_menuTree;
     CString m_parentPageKey;
     CString m_pageKey;

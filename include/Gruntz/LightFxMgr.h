@@ -16,7 +16,7 @@ struct CShadeTable;
 class CShadeTableCache;
 struct CShadeTable;
 struct CGameRegistry;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CImageSet;
 
 class CLightFxMgr {
@@ -36,7 +36,7 @@ public:
 
     class CGruntzMgr* m_owner;
     class CGruntzMgr* m_gameMgr;
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 
     CShadeTableCache* m_cache;
     CShadeTable* m_greyTable;

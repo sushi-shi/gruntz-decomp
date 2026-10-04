@@ -11,7 +11,7 @@
 
 #include <stddef.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CStatusBarMgr;
 class CImage;
 
@@ -22,7 +22,7 @@ public:
 
     virtual i32 Setup(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
@@ -50,7 +50,7 @@ public:
 
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,

@@ -12,7 +12,7 @@
 struct BrickzCell;
 struct BrickzCellNode;
 struct BrickzNode;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 struct tagRECT;
 
 class CFileMemBase;
@@ -155,7 +155,7 @@ public:
     RECT m_bounds;
     i32 m_gridW;
     i32 m_gridH;
-    CDDrawSurfaceMgr* m_attrMgr;
+    CGameWorld* m_attrMgr;
 };
 
 #define RESET_MAP_ARRAY_STORAGE                                                                    \

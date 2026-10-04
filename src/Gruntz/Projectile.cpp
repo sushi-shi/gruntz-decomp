@@ -645,7 +645,7 @@ i32 CProjectile::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    CDDrawSurfaceMgr* reg = g_gameReg->World();
+    CGameWorld* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }
@@ -889,7 +889,7 @@ i32 CTimeBomb::SerializeDispatch(
 RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
     CGruntzMgr* gameMgr;
-    CDDrawSurfaceMgr* world;
+    CGameWorld* world;
     SoundCue* cue;
     if (m_sound != NULL) {
         goto fail;

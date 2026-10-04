@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 RVA(0x000e2250, 0x26)
-i32 CGruntPaletteTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
+i32 CGruntPaletteTable::Init(CShadeTableCache* cache, CGameWorld* holder) {
     if (!cache) {
         return 0;
     }

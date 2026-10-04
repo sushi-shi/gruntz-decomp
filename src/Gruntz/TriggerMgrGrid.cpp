@@ -57,7 +57,7 @@
 #include <stddef.h>
 
 RVA(0x0006b640, 0x2f)
-i32 CTriggerMgr::SetWorld(CDDrawSurfaceMgr* world) {
+i32 CTriggerMgr::SetWorld(CGameWorld* world) {
     if (world == NULL) {
         return 0;
     }

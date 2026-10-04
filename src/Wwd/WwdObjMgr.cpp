@@ -1311,7 +1311,7 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
 }
 
 RVA(0x0015b2c0, 0x3d)
-CRenderState::CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CRenderState::CRenderState(CGameWorld* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
@@ -1320,7 +1320,7 @@ CRenderState::CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 RVA(0x0015b300, 0x40)
-CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags)
+CLogicRecord::CLogicRecord(CGameWorld* owner, i32 id, i32 logicFlags)
     : CWapObj(owner, id, logicFlags, CWapObj::NO_SEED) {
     ResetLogicFields();
 }

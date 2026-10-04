@@ -17,7 +17,7 @@ class CString;
 class CRenderState;
 class CRenderBuffer;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CDDSurface;
 
@@ -34,7 +34,7 @@ class CRenderState;
 
 class CImage : public CWapObj {
 public:
-    CImage(i32 index, CDDrawSurfaceMgr* parent) : CWapObj(index, parent) {
+    CImage(i32 index, CGameWorld* parent) : CWapObj(index, parent) {
         m_width = 0;
         m_height = 0;
         m_surface = NULL;

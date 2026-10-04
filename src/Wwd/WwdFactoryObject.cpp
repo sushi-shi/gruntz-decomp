@@ -68,7 +68,7 @@ i32 CGameObject::IsLoaded() {
 }
 
 RVA(0x0015b390, 0x128)
-CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+CGameObject::CGameObject(CGameWorld* owner, i32 id, i32 objectFlags)
     : CRenderState(owner, id, objectFlags, CRenderState::INLINE_SEED),
       m_region(WwdRegion::INLINE_SEED),
       m_shadow(WwdDirtyRect::INLINE_SEED) {
@@ -105,7 +105,7 @@ RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
 
 RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CAniAdvanceCursor::CAniAdvanceCursor(CGameWorld* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
     m_boundObject = NULL;
     m_animation = NULL;

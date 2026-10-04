@@ -24,7 +24,7 @@ struct SoundCue : public CWapObj {
 
     virtual ~SoundCue() OVERRIDE;
 
-    SoundCue(i32 cueId, class CDDrawSurfaceMgr* owner);
+    SoundCue(i32 cueId, class CGameWorld* owner);
 
     i32 LoadFromWave(RiffWaveHeader* riff);
     i32 LoadFromFile(char* path);
@@ -44,7 +44,7 @@ struct SoundCue : public CWapObj {
     i32 m_lastPlayTimeMs;
     i32 m_replayDelayMs;
 };
-inline SoundCue::SoundCue(i32 cueId, CDDrawSurfaceMgr* owner)
+inline SoundCue::SoundCue(i32 cueId, CGameWorld* owner)
     : CWapObj(owner, cueId, 0, CWapObj::NO_SEED) {
     m_sound = NULL;
     m_replayDelayMs = 0;

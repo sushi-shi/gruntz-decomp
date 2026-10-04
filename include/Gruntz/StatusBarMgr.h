@@ -137,7 +137,7 @@ public:
 
     i32 BuildLevelOverlay();
     i32 PrepareNextResource();
-    i32 Initialize(CDDrawSurfaceMgr* world);
+    i32 Initialize(CGameWorld* world);
     i32 Render();
     i32 HandleClick(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
@@ -181,7 +181,7 @@ public:
 
     i32 ConfigureRect(
         i32 sub,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         i32 cmd,
         i32 obj,
         i32 r0,
@@ -241,7 +241,7 @@ public:
 
     class CWwdSpriteObject* m_collapsedSprite;
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 
     RECT m_barRect;
     i32 m_redrawFrames;

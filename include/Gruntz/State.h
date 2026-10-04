@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <RectMacros.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CRezMgr;
 class CDDSurface;
 class CRezDir;
@@ -160,7 +160,7 @@ public:
 
     void ShadeAndPresentScreen(i32 brightnessPercent);
 
-    CDDrawSurfaceMgr* World() {
+    CGameWorld* World() {
         return m_world;
     }
     CRezMgr* ResourceArchive() {
@@ -183,7 +183,7 @@ public:
 
     CRezMgr* m_resourceArchive;
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
     CFaderMgr* m_faderMgr;
 
     CDDSurface* m_ownedSurface0;
