@@ -96,7 +96,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_colorIndex, sizeof(m_colorIndex));
     ar->Read(&m_savedColorIndex, sizeof(m_savedColorIndex));
     ar->Read(&m_entranceCommitted, sizeof(m_entranceCommitted));
-    ar->Read(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
+    ar->Read(
+        &m_attackTargetPlayerIndex,
+        sizeof(m_attackTargetPlayerIndex) + sizeof(m_attackTargetUnitIndex)
+    );
     ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Read(&m_reserved210, sizeof(m_reserved210));
     ar->Read(&m_struckPose, sizeof(m_struckPose));
@@ -123,7 +126,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
     ar->Read(&m_aiType, sizeof(m_aiType));
     ar->Read(&m_aiState, sizeof(m_aiState));
-    ar->Read(&m_battleState, sizeof(m_battleState));
+    ar->Read(&m_battlezTask, sizeof(m_battlezTask));
     ar->Read(&m_defenderRadius, sizeof(m_defenderRadius));
     ar->Read(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
     ar->Read(&m_defenderPickupType, sizeof(m_defenderPickupType));
@@ -170,7 +173,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_powerupDuration, sizeof(m_powerupDuration));
     ar->Read(&m_warpstoneAnchorIndex, sizeof(m_warpstoneAnchorIndex));
     ar->Read(&m_lowStaminaCued, sizeof(m_lowStaminaCued));
-    ar->Read(&m_targetTeam, sizeof(m_targetTeam));
+    ar->Read(&m_battlezTargetPlayerIndex, sizeof(m_battlezTargetPlayerIndex));
     ar->Read(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
     CGruntDirectionData* row = m_directionData;

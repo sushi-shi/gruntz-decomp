@@ -1096,7 +1096,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         }
         i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        if (cell->RectContains(bx, by) == 0) {
+        if (cell->IsWithinReach(bx, by) == 0) {
             goto outOfRange;
         }
         cell->m_arrivalAction = 0;
@@ -1106,7 +1106,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             if (hit->GetPlayerIndex() == cell->GetPlayerIndex() && g_traitorMode == false) {
                 return 0;
             }
-            return cell->CommitNeighbor(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
+            return cell->AttackGrunt(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
         }
         if (cell->CanShowStamina() == 0) {
             return 0;
@@ -1173,7 +1173,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 if ((flags & 0x40939) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
                     return 0;
                 }
-                SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
+                SpawnPickup(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
                 cell->FaceTowardPixel(bx, by);
                 if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
                     RESET_GRUNT_COMBAT_STATE(cell)

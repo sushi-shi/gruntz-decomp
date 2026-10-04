@@ -307,23 +307,23 @@ void CGrunt::SnapToLastTile(i32 clearArrivalState) {
 }
 
 RVA(0x00051850, 0x165)
-i32 CGrunt::RectContains(i32 x, i32 y) {
-    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
-    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
+i32 CGrunt::IsWithinReach(i32 x, i32 y) {
+    i32 originTileX = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 originTileY = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
 
-    RECT r1 = m_reachRect;
-    RECT r2 = m_reachExclusionRect;
-    OFFSET_RECT_COMPONENTS(r1, dx, dy);
-    r1.right++;
-    r1.bottom++;
-    OFFSET_RECT_COMPONENTS(r2, dx, dy);
+    RECT reachBounds = m_reachRect;
+    RECT exclusionBounds = m_reachExclusionRect;
+    OFFSET_RECT_COMPONENTS(reachBounds, originTileX, originTileY);
+    reachBounds.right++;
+    reachBounds.bottom++;
+    OFFSET_RECT_COMPONENTS(exclusionBounds, originTileX, originTileY);
 
-    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
-        if (IsRectEmpty(&r2)) {
+    if (IsRectEmpty(&reachBounds) || IsRectEmpty(&exclusionBounds)) {
+        if (IsRectEmpty(&exclusionBounds)) {
 
-            if (::PtInRect(&r1, x, y)) {
+            if (::PtInRect(&reachBounds, x, y)) {
                 return 1;
             }
             return 0;
@@ -331,9 +331,9 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (::PtInRect(&r1, x, y)) {
+    if (::PtInRect(&reachBounds, x, y)) {
 
-        if (!::PtInRect(&r2, x, y)) {
+        if (!::PtInRect(&exclusionBounds, x, y)) {
             return 1;
         }
     }
@@ -1026,7 +1026,10 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_colorIndex, sizeof(m_colorIndex));
     ar->Write(&m_savedColorIndex, sizeof(m_savedColorIndex));
     ar->Write(&m_entranceCommitted, sizeof(m_entranceCommitted));
-    ar->Write(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
+    ar->Write(
+        &m_attackTargetPlayerIndex,
+        sizeof(m_attackTargetPlayerIndex) + sizeof(m_attackTargetUnitIndex)
+    );
     ar->Write(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Write(&m_reserved210, sizeof(m_reserved210));
     ar->Write(&m_struckPose, sizeof(m_struckPose));
@@ -1053,7 +1056,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
     ar->Write(&m_aiType, sizeof(m_aiType));
     ar->Write(&m_aiState, sizeof(m_aiState));
-    ar->Write(&m_battleState, sizeof(m_battleState));
+    ar->Write(&m_battlezTask, sizeof(m_battlezTask));
     ar->Write(&m_defenderRadius, sizeof(m_defenderRadius));
     ar->Write(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
     ar->Write(&m_defenderPickupType, sizeof(m_defenderPickupType));
@@ -1100,7 +1103,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_powerupDuration, sizeof(m_powerupDuration));
     ar->Write(&m_warpstoneAnchorIndex, sizeof(m_warpstoneAnchorIndex));
     ar->Write(&m_lowStaminaCued, sizeof(m_lowStaminaCued));
-    ar->Write(&m_targetTeam, sizeof(m_targetTeam));
+    ar->Write(&m_battlezTargetPlayerIndex, sizeof(m_battlezTargetPlayerIndex));
     ar->Write(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
     {

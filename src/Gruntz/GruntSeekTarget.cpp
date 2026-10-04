@@ -101,7 +101,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                     return 1;
                 }
                 if (this->m_stamina >= STAMINA_FULL) {
-                    if (FindGridNeighbor(1) != NULL) {
+                    if (TryAttackRememberedTarget(1) != NULL) {
                         return 1;
                     }
                     if (atTarget && g == NULL) {
@@ -142,8 +142,8 @@ i32 CGrunt::StepToolThiefBehavior() {
             i32 x = g->m_object->m_screenX;
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
-                && RectContains(x, g->m_object->m_screenY) != 0) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                && IsWithinReach(x, g->m_object->m_screenY) != 0) {
+                ATTACK_GRUNT(g);
             }
         }
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {

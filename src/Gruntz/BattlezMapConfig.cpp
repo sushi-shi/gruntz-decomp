@@ -591,7 +591,7 @@ candidateFound:
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_unusedBattleCell);
     UNSET_COORD(unit->m_defenderPx);
-    unit->SetTargetTeam(-1);
+    unit->SetBattlezTargetPlayerIndex(-1);
     unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
@@ -645,8 +645,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             PickupType st = unit->GetEquippedToolType();
-                            if (st == PICKUP_BRICK && unit->m_battleState == BZTASK_UNASSIGNED) {
-                                unit->m_battleState = BZTASK_CARRY_BRICK;
+                            if (st == PICKUP_BRICK && unit->m_battlezTask == BZTASK_UNASSIGNED) {
+                                unit->m_battlezTask = BZTASK_CARRY_BRICK;
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
@@ -663,7 +663,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->m_battleState == BZTASK_SEEK_SWITCH) {
+                        if (unit->m_battlezTask == BZTASK_SEEK_SWITCH) {
                             Coord s1;
                             (static_cast<CUserLogic*>(unit))->GetScreenPos((&s1));
                             s1.m_x >>= 5;
@@ -677,7 +677,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             i32 tile = m_board->CellFlagsAt(s2.m_x, qy);
                             if (!(tile & 4)) {
                                 UNSET_COORD(unit->m_arrivalCell);
-                                unit->m_battleState = BZTASK_ADVANCE;
+                                unit->m_battlezTask = BZTASK_ADVANCE;
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
@@ -687,9 +687,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             PickupType st = unit->GetEquippedToolType();
-                            if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
+                            if (st != PICKUP_SPY && unit->m_battlezTask == BZTASK_CARRY_SPY) {
                                 UNSET_COORD(unit->m_arrivalCell);
-                                unit->m_battleState = BZTASK_ADVANCE;
+                                unit->m_battlezTask = BZTASK_ADVANCE;
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
@@ -700,22 +700,22 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             PickupType st = unit->GetEquippedToolType();
                             if (st == PICKUP_GOOBER) {
-                                BattlezTask battleTask = unit->m_battleState;
+                                BattlezTask battleTask = unit->m_battlezTask;
                                 if (battleTask != BZTASK_CARRY_GOOBER
                                     && battleTask != BZTASK_ASSIGNED_TARGET) {
                                     if (!unit->CoordsEmpty()) {
                                         RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                     }
                                     UNSET_COORD(unit->m_arrivalCell);
-                                    unit->m_battleState = BZTASK_CARRY_GOOBER;
+                                    unit->m_battlezTask = BZTASK_CARRY_GOOBER;
                                 }
                             }
                         }
                         {
                             PickupType st = unit->GetEquippedToolType();
-                            if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
+                            if (st != PICKUP_GOOBER && unit->m_battlezTask == BZTASK_CARRY_GOOBER) {
                                 UNSET_COORD(unit->m_arrivalCell);
-                                unit->m_battleState = BZTASK_ADVANCE;
+                                unit->m_battlezTask = BZTASK_ADVANCE;
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
@@ -801,7 +801,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->IsInCombat() != false && unit->m_attackQueued == false
                                     && unit->m_attackWindupActive == false
                                     && unit->m_stamina >= STAMINA_FULL) {
-                                    if (unit->FindGridNeighbor(0) != NULL) {
+                                    if (unit->TryAttackRememberedTarget(0) != NULL) {
                                         return 1;
                                     }
                                 }
@@ -816,7 +816,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
                                             CGrunt* other = m_triggerMgr->UnitAt(j, k);
                                             if (other != NULL) {
-                                                if (unit->RectContains(
+                                                if (unit->IsWithinReach(
                                                         other->m_object->m_screenX,
                                                         other->m_object->m_screenY
                                                     )
@@ -844,13 +844,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
         hit = 0;
         if (unit != NULL) {
             if (!unit->IsArrivalRerollPending()) {
-                BattlezTask battleTask = unit->m_battleState;
+                BattlezTask battleTask = unit->m_battlezTask;
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->IsEntranceCommitted() != false
                         && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
                         && unit->IsInCombat() == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
-                            if (unit->m_battleState != BZTASK_UNASSIGNED) {
+                            if (unit->m_battlezTask != BZTASK_UNASSIGNED) {
                                 if (RouteToNearbyEnemy(unit) != 0) {
                                     hit = 1;
                                 }
@@ -936,7 +936,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         bd2->Clip(NULL);
         PickupType stX = unit->m_activePickupType;
         if (hit == 0) {
-            switch (unit->m_battleState) {
+            switch (unit->m_battlezTask) {
                 case BZTASK_UNASSIGNED: {
                     StepDefenderUnit(unit);
                     break;
@@ -1458,7 +1458,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     i32 ox = cand->GetTileX();
                     i32 oy = cand->GetTileY();
                     if ((static_cast<CGrunt*>(unit))
-                            ->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
+                            ->IsWithinReach(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                         != 0) {
                         m_triggerMgr->UseEquippedToolAt(
                             unit->GetPlayerIndex(),
@@ -1695,7 +1695,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     }
     CGameObject* ul3 = other->m_object;
     (static_cast<CGrunt*>(actor))
-        ->CommitNeighbor(
+        ->AttackGrunt(
             other->GetPlayerIndex(),
             other->GetUnitIndex(),
             ul3->m_screenX,
@@ -2256,7 +2256,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                 return 1;
                             }
                             DECLARE_TILE_CENTER_PIXEL_PAIR(hitX, hitY, col, row)
-                            if (g->RectContains(hitX, hitY) != 0) {
+                            if (g->IsWithinReach(hitX, hitY) != 0) {
                                 m_triggerMgr->UseEquippedToolAt(
                                     g->GetPlayerIndex(),
                                     g->GetUnitIndex(),
@@ -3315,8 +3315,10 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
             continue;
         }
         Coord current = ScreenTile(u);
-        if (u->GetBattlezTask() == BZTASK_ADVANCE && u->GetTargetTeam() != -1) {
-            Coord marker = m_ctx->GetPlayer(u->GetTargetTeam()).GetBattlezConfig()->GetBaseTile();
+        if (u->GetBattlezTask() == BZTASK_ADVANCE && u->GetBattlezTargetPlayerIndex() != -1) {
+            Coord marker = m_ctx->GetPlayer(u->GetBattlezTargetPlayerIndex())
+                               .GetBattlezConfig()
+                               ->GetBaseTile();
             i32 dx = marker.m_x - current.m_x;
             i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
@@ -3376,7 +3378,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     }
     unit->m_aiType = AI_BATTLEZ_PATH;
     UNSET_COORD(unit->m_arrivalCell);
-    unit->SetTargetTeam(-1);
+    unit->SetBattlezTargetPlayerIndex(-1);
     UNSET_COORD(unit->m_unusedBattleCell);
     unit->SetAiState(AISTATE_SEEK);
     UNSET_COORD(unit->m_defenderPx);

@@ -110,7 +110,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
     if (best != NULL) {
         i32 x = best->m_object->m_screenX;
         if (GRUNT_X_AT_SAVED_POS(x, best) && best->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, best)
-            && this->RectContains(x, best->m_object->m_screenY) != 0) {
+            && this->IsWithinReach(x, best->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -123,7 +123,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     return 1;
                 }
                 if (atTarget && best == NULL) {
@@ -165,9 +165,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pb;
                     PRIO(pb, best->GetActivePickupType());
                     if (pa <= pb
-                        && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
+                        && this->IsWithinReach(best->m_object->m_screenX, best->m_object->m_screenY)
                                != 0) {
-                        COMMIT_GRUNT_NEIGHBOR(best);
+                        ATTACK_GRUNT(best);
                         return 1;
                     }
                 }
@@ -253,13 +253,14 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (m_inCombat != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
-                    if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
+                    if (this->IsWithinReach(sg->m_object->m_screenX, sg->m_object->m_screenY)
+                        == 0) {
                         return 1;
                     }
                     if (!IsGruntAtSavedScreenPos(sg)) {
                         return 1;
                     }
-                    COMMIT_GRUNT_NEIGHBOR(sg);
+                    ATTACK_GRUNT(sg);
                     m_aiState = AISTATE_ATTACK;
                     return 1;
                 }
@@ -286,10 +287,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                             || m_stamina < STAMINA_FULL) {
                             return 1;
                         }
-                        if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
+                        if (this->IsWithinReach(sg->m_object->m_screenX, sg->m_object->m_screenY)
                                 != 0
                             && IsGruntAtSavedScreenPos(sg)) {
-                            COMMIT_GRUNT_NEIGHBOR(sg);
+                            ATTACK_GRUNT(sg);
                             return 1;
                         }
                     }

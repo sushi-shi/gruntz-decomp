@@ -270,8 +270,8 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_wwdObject->m_attackTypeMask = 1;
     m_playerIndex = -1;
     m_unitIndex = -1;
-    m_neighborPlayerIndex = -1;
-    m_neighborUnitIndex = -1;
+    m_attackTargetPlayerIndex = -1;
+    m_attackTargetUnitIndex = -1;
     m_warpstoneAnchorIndex = 0;
     m_activePickupType = PICKUP_NONE;
     m_carriedToyType = PICKUP_NONE;
@@ -320,7 +320,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_unusedBattleCell.Set(-1, -1);
     m_guardCommandPending = false;
     m_aiState = AISTATE_SEEK;
-    m_battleState = BZTASK_UNASSIGNED;
+    m_battlezTask = BZTASK_UNASSIGNED;
     {
         CWwdSpriteObject* h = m_object;
         i32 lim = h->m_screenY + 0x186a0;
@@ -1659,7 +1659,7 @@ i32 CGrunt::Place(
     m_passableMask = 0;
     m_savedColorIndex = -1;
     m_lowStaminaCued = false;
-    m_targetTeam = -1;
+    m_battlezTargetPlayerIndex = -1;
     SetCarriedToy(static_cast<PickupType>(carriedToyType));
     ApplyPickup(typeKind, 1, 0, 0);
     if (span != NULL) {
@@ -1871,7 +1871,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_passableMask = 0;
             m_toolConfigured = true;
             if (m_aiType == AI_BATTLEZ_PATH) {
-                if (m_battleState != BZTASK_ADVANCE) {
+                if (m_battlezTask != BZTASK_ADVANCE) {
                     if (!this->CoordsEmpty()) {
                         RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
                     }
@@ -2305,7 +2305,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
                     sb->RestoreStatusBar();
                 }
                 if (sb->GetActiveTab() != TAB_RESOURCE) {
-                    sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
+                    sb->SetButtonState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
                 sb->RequestRedraw();
             }

@@ -18,10 +18,10 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
     if (static_cast<u32>(grunt->GetDwell()) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
         return 1;
     }
-    i32 targetTeamIndex = grunt->GetTargetTeam();
+    i32 targetPlayerIndex = grunt->GetBattlezTargetPlayerIndex();
     i32 targetUnavailable = 0;
-    if (targetTeamIndex != -1) {
-        GruntzPlayer* targetPlayer = &m_ctx->GetPlayer(targetTeamIndex);
+    if (targetPlayerIndex != -1) {
+        GruntzPlayer* targetPlayer = &m_ctx->GetPlayer(targetPlayerIndex);
         if (targetPlayer->IsEliminated() != false) {
             targetUnavailable = 1;
         } else if (targetPlayer->IsActive() == false) {

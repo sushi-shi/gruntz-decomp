@@ -17,8 +17,8 @@ public:
     CRainCloud() {}
     CRainCloud(CGameObject* obj);
 
-    virtual i32 Tick() OVERRIDE;
-    virtual i32 HitTest(i32 playerIndex, i32 unitIndex) OVERRIDE;
+    virtual i32 UpdateMovement() OVERRIDE;
+    virtual i32 OnGruntContact(i32 playerIndex, i32 unitIndex) OVERRIDE;
 };
 
 #endif // GRUNTZ_CRAINCLOUD_H

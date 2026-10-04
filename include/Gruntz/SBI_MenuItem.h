@@ -22,7 +22,7 @@ public:
         m_kind = SBI_KIND_MENU_ITEM;
         m_state = MENUITEM_UNSET;
         m_frame = NULL;
-        m_record = NULL;
+        m_stateFrames = NULL;
     }
 
     virtual ~CSBI_MenuItem() OVERRIDE;
@@ -46,12 +46,12 @@ public:
 
     i32 ResolveFrame(const char* key, i32 frameIndex);
     i32 SetState(SbiMenuItemState state, i32 playHighlightSound);
-    i32 ProbeState(SbiMenuItemState state);
+    i32 ClearMatchingState(SbiMenuItemState stateToClear);
     i32 ClearHighlight();
 
     SbiMenuItemState m_state;
 
-    CDDrawWorker* m_record;
+    CDDrawWorker* m_stateFrames;
 };
 
 inline CSBI_MenuItem::~CSBI_MenuItem() {

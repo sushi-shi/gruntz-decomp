@@ -1997,7 +1997,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_GRUNTZ) {
-            lv->SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
+            lv->SetButtonState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
             lv->RequestRedraw();
         } else {
             lv->RequestRedraw();
@@ -2022,7 +2022,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_RESOURCE) {
-            lv->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
+            lv->SetButtonState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
             lv->RequestRedraw();
         } else {
             lv->RequestRedraw();
@@ -2043,7 +2043,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_STATZ) {
-            lv->SetTabState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
+            lv->SetButtonState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
             lv->RequestRedraw();
         } else {
             lv->RequestRedraw();
@@ -2078,7 +2078,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_GAME) {
-            lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
+            lv->SetButtonState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         lv->SetGameTabContent(GAME_TAB_MENU, true);
         lv->RequestRedraw();
@@ -5530,7 +5530,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
             g->RestoreStatusBar();
         }
         if (g->GetActiveTab() != TAB_GAME) {
-            g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
+            g->SetButtonState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         g->SetGameTabContent(GAME_TAB_MISSION_STATUS, true);
         g->RequestRedraw();

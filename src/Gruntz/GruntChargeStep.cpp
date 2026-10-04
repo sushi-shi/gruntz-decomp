@@ -47,7 +47,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
     b32 hitGate = false;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
-        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g) && RectContains(gp->m_screenX, gp->m_screenY)) {
+        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
+            && IsWithinReach(gp->m_screenX, gp->m_screenY)) {
             hitGate = true;
         }
     }
@@ -60,7 +61,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     return 1;
                 }
                 if (hitGate != false && g == NULL) {
@@ -96,8 +97,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
             if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                ATTACK_GRUNT(g);
                 return 1;
             }
             if (g != NULL && static_cast<u32>(m_dwell) > 500) {
@@ -154,9 +155,9 @@ i32 CGrunt::StepDumbChaserBehavior() {
             }
             RepathToward(t);
             if (m_inCombat == false && m_stamina >= STAMINA_FULL
-                && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && IsWithinReach(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && IsGruntAtSavedScreenPos(t)) {
-                COMMIT_GRUNT_NEIGHBOR(t);
+                ATTACK_GRUNT(t);
                 m_aiState = AISTATE_ATTACK;
                 return 1;
             }
@@ -176,13 +177,13 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                if (IsWithinReach(t->m_object->m_screenX, t->m_object->m_screenY) == 0
                     || !IsGruntAtSavedScreenPos(t)) {
                     m_aiState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                COMMIT_GRUNT_NEIGHBOR(t);
+                ATTACK_GRUNT(t);
                 return 1;
             }
             m_aiState = AISTATE_CHASE;

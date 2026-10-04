@@ -286,11 +286,11 @@ public:
     }
 
     BattlezTask GetBattlezTask() const {
-        return m_battleState;
+        return m_battlezTask;
     }
 
     void SetBattlezTask(BattlezTask task) {
-        m_battleState = task;
+        m_battlezTask = task;
     }
 
     i32 GetRouteBlockedMask() const {
@@ -317,12 +317,12 @@ public:
         m_dwell = 0;
     }
 
-    i32 GetTargetTeam() const {
-        return m_targetTeam;
+    i32 GetBattlezTargetPlayerIndex() const {
+        return m_battlezTargetPlayerIndex;
     }
 
-    void SetTargetTeam(i32 team) {
-        m_targetTeam = team;
+    void SetBattlezTargetPlayerIndex(i32 playerIndex) {
+        m_battlezTargetPlayerIndex = playerIndex;
     }
 
     void ResetToSeek();
@@ -381,14 +381,14 @@ public:
     i32 StartDeathMovement();
     void LoadAnimationSet(i32 toyMode, i32 mobileToy);
 
-    i32 RectContains(i32 x, i32 y);
+    i32 IsWithinReach(i32 x, i32 y);
 
     void RecycleCoords();
     void RecycleHeadCoord();
     i32 IsInToyUseRange(i32 x, i32 y);
-    void SetNeighbor(i32 playerIndex, i32 unitIndex);
-    i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
-    CGrunt* FindGridNeighbor(i32 validate);
+    void SetAttackTargetIdentity(i32 playerIndex, i32 unitIndex);
+    i32 AttackGrunt(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
+    CGrunt* TryAttackRememberedTarget(i32 requireTargetAtTile);
 
     i32 StepDumbChaserBehavior();
 
@@ -425,7 +425,7 @@ public:
         i32 countStats
     );
 
-    i32 BuildGruntLoseItemAnimation();
+    i32 LoseMovementTool();
 
     i32 ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 defer);
 
@@ -438,7 +438,7 @@ public:
     SetGruntActionTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     void ConsiderArrival(i32 clearArrivalState);
     void SetColorIndex(i32 colorIndex);
-    i32 TryPowerupAtTile();
+    i32 TryDropToolAtCurrentTile();
 
     i32 PathScan();
 
@@ -480,8 +480,8 @@ public:
     PickupType m_colorIndex;
     i32 m_savedColorIndex;
     b32 m_entranceCommitted;
-    i32 m_neighborPlayerIndex;
-    i32 m_neighborUnitIndex;
+    i32 m_attackTargetPlayerIndex;
+    i32 m_attackTargetUnitIndex;
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
@@ -518,11 +518,11 @@ public:
     RECT m_toyUseExclusionRect;
     EnemyAiType m_aiType;
     GruntAiState m_aiState;
-    BattlezTask m_battleState;
+    BattlezTask m_battlezTask;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;
     PickupType m_defenderPickupType;
-    i32 m_targetTeam;
+    i32 m_battlezTargetPlayerIndex;
     i32 m_dwell;
     Coord m_arrivalCell;
     Coord m_unusedBattleCell; // invalidated with arrival/defender cells; never read
@@ -812,7 +812,7 @@ public:
 
     i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 
-    i32 StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex);
+    i32 StartTargetedAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex);
 
     i32 StartRangedAttackAnimation();
 

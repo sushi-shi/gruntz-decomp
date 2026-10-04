@@ -306,8 +306,8 @@ public:
 
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
 
-    i32 SpawnPowerupIcon(
-        PickupType type,
+    i32 SpawnPickup(
+        PickupType pickupType,
         i32 x,
         i32 y,
         i32 faceDirection,

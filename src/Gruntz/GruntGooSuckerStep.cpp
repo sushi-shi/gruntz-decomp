@@ -85,7 +85,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 goto L_yes;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     goto L_yes;
                 }
                 if (atTarget && g == NULL) {
@@ -122,7 +122,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
         }
         if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                ATTACK_GRUNT(g);
                 this->RecycleCoords();
                 return 1;
             }
@@ -145,8 +145,8 @@ L_ed006b:
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-        COMMIT_GRUNT_NEIGHBOR(g);
+        && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        ATTACK_GRUNT(g);
     }
     if (m_inCombat != false) {
         goto L_scanb;
@@ -192,7 +192,7 @@ L_scanb:
             if (gg->IsPending() == false) {
                 i32 gx = gg->GetTileX();
                 i32 gy = gg->GetTileY();
-                if (RectContains(
+                if (IsWithinReach(
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     )

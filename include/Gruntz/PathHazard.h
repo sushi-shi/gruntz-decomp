@@ -35,20 +35,20 @@ public:
         return LOGIC_PATHHAZARD;
     }
 
-    virtual i32 Tick();
-    virtual i32 SiblingTick();
+    virtual i32 UpdateMovement();
+    virtual i32 UpdateWaypointPause();
 
-    virtual i32 Arrive();
+    virtual i32 AdvanceWaypoint();
 
-    virtual i32 BeginLeg();
+    virtual i32 StartWaypointMovement();
 
     RVA(0x00013230, 0x8)
-    virtual i32 HitTest(i32 playerIndex, i32 unitIndex) {
+    virtual i32 OnGruntContact(i32 playerIndex, i32 unitIndex) {
         return 1;
     }
 
-    i32 ForwardTick();
-    i32 ForwardSiblingTick();
+    i32 HandleMovementAct();
+    i32 HandlePauseAct();
 
     double m_speed;
     double m_posX;
@@ -57,15 +57,15 @@ public:
     double m_unitY;
     double m_roundBiasX;
     double m_roundBiasY;
-    CPathWaypoint m_wp[13];
-    i32 m_wpIndex;
-    i32 m_wpX;
-    i32 m_wpY;
-    i32 m_wpCount;
+    CPathWaypoint m_waypoints[13];
+    i32 m_waypointIndex;
+    i32 m_targetX;
+    i32 m_targetY;
+    i32 m_waypointCount;
 
-    ClockInterval m_leg;
-    b32 m_strikeArmed;
-    ClockInterval m_strike;
+    ClockInterval m_waypointPauseTimer;
+    b32 m_flashActive;
+    ClockInterval m_flashTimer;
 };
 
 #endif // GRUNTZ_CPATHHAZARD_H

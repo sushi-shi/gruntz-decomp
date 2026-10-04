@@ -31,9 +31,9 @@ i32 CSBI_ImageSetAni::Init(
     const char* key,
     i32 frameStart,
     i32 frameEnd,
-    i32 intervalMs,
-    i32 loop,
-    i32 step
+    i32 frameDelayMs,
+    i32 looping,
+    i32 frameStep
 ) {
     CDDrawWorker* tbl;
 
@@ -55,12 +55,12 @@ i32 CSBI_ImageSetAni::Init(
     if (tbl == NULL) {
         goto fail;
     }
-    m_interval = intervalMs;
-    m_step = step;
-    m_loop = loop;
+    m_frameDelayMs = frameDelayMs;
+    m_frameStep = frameStep;
+    m_looping = looping;
 
     if (frameStart == -1) {
-        if (step >= 0) {
+        if (frameStep >= 0) {
             m_frameStart = tbl->GetMinIndex();
         } else {
             m_frameStart = tbl->GetMaxIndex();
@@ -69,7 +69,7 @@ i32 CSBI_ImageSetAni::Init(
         m_frameStart = frameStart;
     }
     if (frameEnd == -1) {
-        if (step >= 0) {
+        if (frameStep >= 0) {
             m_frameEnd = tbl->GetMaxIndex();
         } else {
             m_frameEnd = tbl->GetMinIndex();
@@ -107,13 +107,13 @@ i32 CSBI_ImageSetAni::Render() {
             );
         }
         u32 now = timeGetTime();
-        if (now - static_cast<u32>(m_lastTime) > static_cast<u32>(m_interval)) {
-            m_frameIndex += m_step;
-            m_lastTime = timeGetTime();
+        if (now - static_cast<u32>(m_lastFrameTimeMs) > static_cast<u32>(m_frameDelayMs)) {
+            m_frameIndex += m_frameStep;
+            m_lastFrameTimeMs = timeGetTime();
         }
-        if (m_step > 0) {
+        if (m_frameStep > 0) {
             if (m_frameIndex > m_frameEnd) {
-                if (m_loop != 0) {
+                if (m_looping != 0) {
                     m_frameIndex = m_frameStart;
                     return 1;
                 }
@@ -121,9 +121,9 @@ i32 CSBI_ImageSetAni::Render() {
                 m_frameIndex = m_frameEnd;
                 return 1;
             }
-        } else if (m_step < 0) {
+        } else if (m_frameStep < 0) {
             if (m_frameIndex < m_frameEnd) {
-                if (m_loop != 0) {
+                if (m_looping != 0) {
                     m_frameIndex = m_frameStart;
                     return 1;
                 }
@@ -139,10 +139,10 @@ i32 CSBI_ImageSetAni::Render() {
 }
 
 RVA(0x000e7c30, 0x7d)
-void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
+void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 frameStep, i32 looping, i32 frameDelayMs) {
 
     if (start == -1) {
-        if (step >= 0) {
+        if (frameStep >= 0) {
             m_frameStart = m_frameSet->GetMinIndex();
         } else {
             m_frameStart = m_frameSet->GetMaxIndex();
@@ -151,7 +151,7 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
         m_frameStart = start;
     }
     if (end == -1) {
-        if (step >= 0) {
+        if (frameStep >= 0) {
             m_frameEnd = m_frameSet->GetMaxIndex();
         } else {
             m_frameEnd = m_frameSet->GetMinIndex();
@@ -159,14 +159,14 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
     } else {
         m_frameEnd = end;
     }
-    if (interval != -1) {
-        m_interval = interval;
+    if (frameDelayMs != -1) {
+        m_frameDelayMs = frameDelayMs;
     }
-    m_step = step;
-    m_loop = loop;
+    m_frameStep = frameStep;
+    m_looping = looping;
     m_frameIndex = m_frameStart;
     m_redrawFrames = 2;
-    m_lastTime = timeGetTime();
+    m_lastFrameTimeMs = timeGetTime();
 }
 
 RVA(0x000e7cd0, 0xf8)
@@ -185,18 +185,18 @@ i32 CSBI_ImageSetAni::SerializeFields(
     switch (mode) {
 
         case SERIAL_LOAD:
-            s->Read(&m_interval, sizeof(m_interval));
-            s->Read(&m_lastTime, sizeof(m_lastTime));
-            s->Read(&m_loop, sizeof(m_loop));
-            s->Read(&m_step, sizeof(m_step));
+            s->Read(&m_frameDelayMs, sizeof(m_frameDelayMs));
+            s->Read(&m_lastFrameTimeMs, sizeof(m_lastFrameTimeMs));
+            s->Read(&m_looping, sizeof(m_looping));
+            s->Read(&m_frameStep, sizeof(m_frameStep));
             s->Read(&m_frameEnd, sizeof(m_frameEnd));
             s->Read(&m_frameStart, sizeof(m_frameStart));
             break;
         case SERIAL_SAVE:
-            s->Write(&m_interval, sizeof(m_interval));
-            s->Write(&m_lastTime, sizeof(m_lastTime));
-            s->Write(&m_loop, sizeof(m_loop));
-            s->Write(&m_step, sizeof(m_step));
+            s->Write(&m_frameDelayMs, sizeof(m_frameDelayMs));
+            s->Write(&m_lastFrameTimeMs, sizeof(m_lastFrameTimeMs));
+            s->Write(&m_looping, sizeof(m_looping));
+            s->Write(&m_frameStep, sizeof(m_frameStep));
             s->Write(&m_frameEnd, sizeof(m_frameEnd));
             s->Write(&m_frameStart, sizeof(m_frameStart));
             break;

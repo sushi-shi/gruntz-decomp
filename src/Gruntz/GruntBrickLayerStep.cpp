@@ -64,7 +64,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
                 goto L_combat_active;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     goto L_combat_active;
                 }
                 if (atTarget && g == NULL) {
@@ -98,7 +98,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         }
         if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                ATTACK_GRUNT(g);
                 this->RecycleCoords();
                 return 1;
             }
@@ -121,8 +121,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
         goto L_ed153;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-        COMMIT_GRUNT_NEIGHBOR(g);
+        && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        ATTACK_GRUNT(g);
         m_dwell = 0;
         return 1;
     }

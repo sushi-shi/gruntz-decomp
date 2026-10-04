@@ -76,21 +76,21 @@ i32 CSBI_MenuItem::Refresh(i32) {
 }
 
 RVA(0x000e81e0, 0x8b)
-i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
-    if (key == NULL) {
+i32 CSBI_MenuItem::ResolveFrame(const char* frameSetName, i32 frameIndex) {
+    if (frameSetName == NULL) {
         return 0;
     }
 
-    CDDrawWorker* rec = m_host->FindWorker(key);
-    m_record = rec;
-    if (rec == NULL) {
+    CDDrawWorker* frames = m_host->FindWorker(frameSetName);
+    m_stateFrames = frames;
+    if (frames == NULL) {
         return 0;
     }
 
     if (frameIndex == -1) {
-        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, rec->GetMinIndex()));
+        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(frames, frames->GetMinIndex()));
     } else {
-        SetFrame(rec->GetAt(frameIndex));
+        SetFrame(frames->GetAt(frameIndex));
     }
     return m_frame != NULL;
 }
@@ -99,11 +99,11 @@ RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
-        CImage* f = m_frame;
-        if (f) {
-            i32 y = m_rect.top + f->GetAnchorY();
-            i32 x = m_rect.left + f->GetAnchorX();
-            f->RenderFrame(g_gameReg->World()->GetDrawTarget()->m_backPair, x, y, 0);
+        CImage* image = m_frame;
+        if (image) {
+            i32 y = m_rect.top + image->GetAnchorY();
+            i32 x = m_rect.left + image->GetAnchorX();
+            image->RenderFrame(g_gameReg->World()->GetDrawTarget()->m_backPair, x, y, 0);
         }
     }
     return 1;
@@ -111,7 +111,7 @@ i32 CSBI_MenuItem::Render() {
 
 RVA(0x000e8310, 0x112)
 i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
-    if (m_state == state || m_record == NULL) {
+    if (m_state == state || m_stateFrames == NULL) {
         return 0;
     }
     if (state == MENUITEM_HIGHLIGHT && m_state == MENUITEM_SELECTED) {
@@ -127,8 +127,8 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT2");
     }
-    CDDrawWorker* r = m_record;
-    CImage* frame = r->GetAt(IDX(state));
+    CDDrawWorker* frames = m_stateFrames;
+    CImage* frame = frames->GetAt(IDX(state));
     SetFrame(frame);
     m_state = state;
     RequestRedraw();
@@ -136,14 +136,14 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 }
 
 RVA(0x000e8480, 0x4a)
-i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
-    if (state == MENUITEM_NORMAL || m_record == NULL) {
+i32 CSBI_MenuItem::ClearMatchingState(SbiMenuItemState stateToClear) {
+    if (stateToClear == MENUITEM_NORMAL || m_stateFrames == NULL) {
         return 0;
     }
-    if (state == MENUITEM_HIGHLIGHT && m_state == state) {
+    if (stateToClear == MENUITEM_HIGHLIGHT && m_state == stateToClear) {
         return SetState(MENUITEM_NORMAL, 1);
     }
-    if (state == MENUITEM_SELECTED && m_state == MENUITEM_SELECTED) {
+    if (stateToClear == MENUITEM_SELECTED && m_state == MENUITEM_SELECTED) {
         return SetState(MENUITEM_NORMAL, 1);
     }
     return 1;
@@ -167,20 +167,20 @@ i32 CSBI_MenuItem::SerializeFields(
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->World();
-    if (mgr == NULL) {
+    CDDrawSurfaceMgr* world = g_gameReg->World();
+    if (world == NULL) {
         return 0;
     }
 
-    char tmp[SERIAL_NAME_LEN];
+    char frameSetName[SERIAL_NAME_LEN];
     switch (mode) {
         case SERIAL_LOAD:
             ar->Read(&m_state, sizeof(m_state));
-            SERIAL_READ_WORKER(ar, mgr, tmp, m_record);
+            SERIAL_READ_WORKER(ar, world, frameSetName, m_stateFrames);
             break;
         case SERIAL_SAVE:
             ar->Write(&m_state, sizeof(m_state));
-            SERIAL_WRITE_WORKER(ar, tmp, m_record);
+            SERIAL_WRITE_WORKER(ar, frameSetName, m_stateFrames);
             break;
     }
 

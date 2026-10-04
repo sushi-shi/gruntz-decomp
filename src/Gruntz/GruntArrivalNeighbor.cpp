@@ -60,7 +60,7 @@ i32 CGrunt::StepPostGuardBehavior() {
         if (m_stamina < STAMINA_FULL) {
             return 1;
         }
-        FindGridNeighbor(1);
+        TryAttackRememberedTarget(1);
         return 1;
     }
 
@@ -74,12 +74,12 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (m_stamina < STAMINA_FULL) {
         return 1;
     }
-    if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+    if (IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
         return 1;
     }
     if (!IsGruntAtSavedScreenPos(occ)) {
         return 1;
     }
-    COMMIT_GRUNT_NEIGHBOR(occ);
+    ATTACK_GRUNT(occ);
     return 1;
 }
