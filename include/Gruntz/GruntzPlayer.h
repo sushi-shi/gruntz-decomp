@@ -64,6 +64,10 @@ public:
         return m_joined;
     }
 
+    b32 HasDropped() const {
+        return m_doneFlag;
+    }
+
     b32 IsEliminated() const {
         return m_clearedRound;
     }
