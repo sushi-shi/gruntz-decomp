@@ -34,7 +34,7 @@ struct CSnapshotHeader {
 class CWapObj;
 class CDDrawSubMgrPages;
 class CDDrawWorkerList;
-class CDDrawWorker;
+class CImageSet;
 class CDDrawChildGroup;
 class CDDrawWorkerRegistry;
 class CLogicRecordRegistry;
@@ -66,7 +66,7 @@ GZ_ENUM_FLAGS_OPS(DDrawSurfaceMgrFlags)
 
 class CDDrawSurfaceMgr : public CObject {
 public:
-    inline CDDrawWorker* FindWorker(LPCTSTR name);
+    inline CImageSet* FindWorker(LPCTSTR name);
     inline class CImage* FindFrame(LPCTSTR name, i32 index);
     CDDrawSurfaceMgr();
 

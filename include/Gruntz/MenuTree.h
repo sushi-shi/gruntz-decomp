@@ -11,7 +11,7 @@ class CMenuItem;
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
 
-class CDDrawWorker;
+class CImageSet;
 
 class CImage;
 
@@ -79,13 +79,13 @@ public:
     CMenuPage* m_activePage;
     CString m_focusSoundKey;
     CString m_activationSoundKey;
-    CDDrawWorker* m_leftCursorAnimation;
+    CImageSet* m_leftCursorAnimation;
     CImage* m_leftCursorFrame;
     i32 m_leftCursorFramePeriodMs;
     i32 m_leftCursorFrameTimerMs;
     i32 m_leftCursorOffsetX;
     i32 m_leftCursorFrameIndex;
-    CDDrawWorker* m_rightCursorAnimation;
+    CImageSet* m_rightCursorAnimation;
     CImage* m_rightCursorFrame;
     i32 m_rightCursorFramePeriodMs;
     i32 m_rightCursorFrameTimerMs;

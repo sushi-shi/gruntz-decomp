@@ -26,7 +26,7 @@ i32 DrawGlyphString(
     i32 x,
     i32 y,
     const char* str,
-    CDDrawWorker* font,
+    CImageSet* font,
     i32 advance
 ) {
     if (!ctx) {

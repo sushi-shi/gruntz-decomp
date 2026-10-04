@@ -301,7 +301,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
 
     pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
-        CDDrawWorker* worker = static_cast<CDDrawWorker*>(toRemove.GetNext(pos));
+        CImageSet* worker = static_cast<CImageSet*>(toRemove.GetNext(pos));
         surfaceMgr->GetImageRegistry()->RemoveWorker(worker);
     }
     toRemove.RemoveAll();

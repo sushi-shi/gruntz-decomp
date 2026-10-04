@@ -47,7 +47,7 @@ public:
 
     i32 m_baseX;
     i32 m_baseY;
-    CDDrawWorker* m_sprite;
+    CImageSet* m_sprite;
     b32 m_active;
 
     CImage* m_frameMinTens;

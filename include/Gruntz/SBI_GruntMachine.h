@@ -47,7 +47,7 @@ public:
 
     void SetFrames(i32 leftFrameIndex, i32 rightFrameIndex);
 
-    CDDrawWorker* m_machineFrames;
+    CImageSet* m_machineFrames;
     CImage* m_leftFrame;
     i32 m_leftFrameIndex;
     CImage* m_rightFrame;

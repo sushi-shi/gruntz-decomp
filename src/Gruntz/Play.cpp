@@ -3294,7 +3294,7 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CDDrawWorker* set = m_world->FindWorker("GAME_MESSAGEZ");
+    CImageSet* set = m_world->FindWorker("GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -3625,7 +3625,7 @@ i32 CPlay::LoadCursorAnimation(
     if (m_world == NULL) {
         return 0;
     }
-    CDDrawWorker* grid = m_world->FindWorker(spriteKey);
+    CImageSet* grid = m_world->FindWorker(spriteKey);
     m_cursorSprite = grid;
     if (grid == NULL) {
         return 0;
@@ -3664,7 +3664,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         m_cursorFrameCountdownMs = m_cursorFrameDelayMs;
         m_cursorFrameIndex = m_cursorFrameIndex + 1;
         i32 idx = m_cursorFrameIndex;
-        CDDrawWorker* g = m_cursorSprite;
+        CImageSet* g = m_cursorSprite;
         CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
@@ -3994,7 +3994,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
-    CDDrawWorker* set = m_world->FindWorker("GAME_MESSAGEZ");
+    CImageSet* set = m_world->FindWorker("GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -5956,7 +5956,7 @@ i32 CPlay::AdvanceLoadingBar(b32 final) {
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CDDrawWorker* spr = m_world->FindWorker("GAME_LOADINGBAR");
+    CImageSet* spr = m_world->FindWorker("GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }
@@ -6244,7 +6244,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         CObject* found = NULL;
         if (strlen(nameBuf) != 0) {
             res->GetImageRegistry()->m_workersByName.Lookup(nameBuf, found);
-            m_cursorSprite = static_cast<CDDrawWorker*>(found);
+            m_cursorSprite = static_cast<CImageSet*>(found);
         } else {
             m_cursorSprite = NULL;
         }

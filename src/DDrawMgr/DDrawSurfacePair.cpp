@@ -1158,7 +1158,7 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
 
 RVA(0x00166040, 0x66)
 i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
-    CDDrawWorker* p = OwnerMgr()->FindWorker(workerName);
+    CImageSet* p = OwnerMgr()->FindWorker(workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;
     return v != NULL;

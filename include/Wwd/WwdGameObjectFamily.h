@@ -23,7 +23,7 @@ GZ_ENUM_FORWARD(MoveMode);
 class CDDrawSurfacePair;
 class CDrawSubWorker;
 class CWwdGameObject;
-class CDDrawWorker;
+class CImageSet;
 
 class CImage;
 struct SoundCue;
@@ -372,7 +372,7 @@ public:
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
 
-    CDDrawWorker* GetImageSet() const {
+    CImageSet* GetImageSet() const {
         return m_imageSet;
     }
 
@@ -381,7 +381,7 @@ public:
     }
 
     void SetImageFrame(i32 frame) {
-        CDDrawWorker* imageSet = m_imageSet;
+        CImageSet* imageSet = m_imageSet;
         if (imageSet != NULL) {
             CImage* image = imageSet->GetAt(frame);
             m_frameImage = image;
@@ -402,7 +402,7 @@ public:
 
     i32 m_reserved18c; // reset to -1 with m_frameIndex; never read
     i32 m_frameIndex;
-    CDDrawWorker* m_imageSet;
+    CImageSet* m_imageSet;
     CImage* m_frameImage;
     SoundCue* m_soundCue;
     CAniAdvanceCursor m_animationCursor;

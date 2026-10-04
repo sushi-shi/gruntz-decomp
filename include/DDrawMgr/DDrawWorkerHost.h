@@ -20,7 +20,7 @@ struct CWwdSpatialMgr;
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
 
-class CDDrawWorker;
+class CImageSet;
 
 class CFileMemBase;
 
@@ -96,7 +96,7 @@ public:
     void SetTileSize(i32 tileWidthPx, i32 tileHeightPx);
 
     void SetTileSizeFromImage(CImage* image);
-    void SetTileSizeFromImageSet(CDDrawWorker* set);
+    void SetTileSizeFromImageSet(CImageSet* set);
     void Draw(CDDrawSurfacePair* ctx);
     i32 Prune();
     i32 ActivateVisibleObjects();
@@ -121,9 +121,9 @@ public:
     void SnapToTileCenter(struct Coord* out, i32 x, i32 y);
     i32 GetTileHandle(i32 tileX, i32 tileY);
 
-    CDDrawWorker* ImageSetAt(u32 index) {
+    CImageSet* ImageSetAt(u32 index) {
 
-        return static_cast<CDDrawWorker*>(m_imageSets[static_cast<int>(index)]);
+        return static_cast<CImageSet*>(m_imageSets[static_cast<int>(index)]);
     }
 
     float m_scrollCenterX;

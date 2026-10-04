@@ -34,7 +34,7 @@ i32 CSBI_ImageSet::SetupImage(
     i32 frameIndex,
     i32 extra
 ) {
-    CDDrawWorker* frames;
+    CImageSet* frames;
 
     if (host == NULL) {
         goto fail;
@@ -83,7 +83,7 @@ i32 CSBI_ImageSet::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
         i32 frameIndex = m_frameIndex;
-        CDDrawWorker* frames = m_frameSet;
+        CImageSet* frames = m_frameSet;
         CImage* image = frames->GetAt(frameIndex);
         SetFrame(image);
         if (image != NULL) {
@@ -124,7 +124,7 @@ i32 CSBI_ImageSet::SerializeFields(
             g_serialCounter++;
             archive->Read(frameSetName, SERIAL_NAME_LEN);
             if (strlen(frameSetName)) {
-                CDDrawWorker* frames;
+                CImageSet* frames;
 
                 frames = world->FindWorker(frameSetName);
                 m_frameSet = frames;

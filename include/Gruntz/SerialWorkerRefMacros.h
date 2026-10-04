@@ -82,7 +82,7 @@
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
         reg->GetImageRegistry()->m_workersByName.Lookup(buf, out);                                 \
-        CDDrawWorker* gm = static_cast<CDDrawWorker*>(out);                                        \
+        CImageSet* gm = static_cast<CImageSet*>(out);                                              \
         CImage* r = gm != 0 ? gm->GetAt(i) : 0;                                                    \
         field = r;                                                                                 \
     } else {                                                                                       \
@@ -95,7 +95,7 @@
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
         reg->GetImageRegistry()->m_workersByName.Lookup(buf, out);                                 \
-        field = static_cast<CDDrawWorker*>(out);                                                   \
+        field = static_cast<CImageSet*>(out);                                                      \
     } else {                                                                                       \
         field = 0;                                                                                 \
     }

@@ -123,7 +123,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
 
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
-    CDDrawWorker* worker = MapFind<CDDrawWorker>(m_workersByName, key);
+    CImageSet* worker = MapFind<CImageSet>(m_workersByName, key);
     if (worker != NULL) {
         m_workersByName.RemoveKey(key);
         delete worker;
@@ -256,7 +256,7 @@ i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 fram
 }
 
 RVA(0x001572b0, 0x38)
-i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
+i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex) {
     CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
@@ -275,13 +275,8 @@ void CDDrawPlacedWorker::Unload() {
 }
 
 RVA(0x00157330, 0xa5)
-CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
-    i32 x,
-    i32 y,
-    CDDrawWorker* source,
-    i32 frameIndex,
-    i32 addHead
-) {
+CDDrawFrameWorker*
+CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIndex, i32 addHead) {
     CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
     if (w->PlaceFrame(x, y, source, frameIndex) == 0) {
         if (w != NULL) {

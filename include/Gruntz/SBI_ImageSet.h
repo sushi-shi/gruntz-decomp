@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-class CDDrawWorker;
+class CImageSet;
 
 class CSBI_ImageSet : public CSBI_Image {
 public:
@@ -35,11 +35,11 @@ public:
 
     virtual void SetFrameIndex(i32 frameIndex);
 
-    CDDrawWorker* GetFrameSet() const {
+    CImageSet* GetFrameSet() const {
         return m_frameSet;
     }
 
-    CDDrawWorker* m_frameSet;
+    CImageSet* m_frameSet;
     i32 m_frameIndex;
 };
 

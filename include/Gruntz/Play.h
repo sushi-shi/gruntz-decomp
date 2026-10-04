@@ -45,7 +45,7 @@ class CFileMemBase;
 
 class CImage;
 
-class CDDrawWorker;
+class CImageSet;
 
 class GruntzPlayer;
 
@@ -380,7 +380,7 @@ public:
 
     CImage *m_loadingBarFill, *m_loadingBarEnd, *m_loadingBarStart;
 
-    CDDrawWorker* m_cursorSprite;
+    CImageSet* m_cursorSprite;
     CImage* m_cursorImage;
     b32 m_cursorUsesPlayerTint;
     i32 m_cursorFrameDelayMs;

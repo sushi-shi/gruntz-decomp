@@ -81,7 +81,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* frameSetName, i32 frameIndex) {
         return 0;
     }
 
-    CDDrawWorker* frames = m_host->FindWorker(frameSetName);
+    CImageSet* frames = m_host->FindWorker(frameSetName);
     m_stateFrames = frames;
     if (frames == NULL) {
         return 0;
@@ -127,7 +127,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT2");
     }
-    CDDrawWorker* frames = m_stateFrames;
+    CImageSet* frames = m_stateFrames;
     CImage* frame = frames->GetAt(IDX(state));
     SetFrame(frame);
     m_state = state;

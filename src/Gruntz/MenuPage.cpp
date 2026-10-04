@@ -262,7 +262,7 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     i32 right = m_bounds.right;
     i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
     i32 drawY = m_contentOffsetY + m_bounds.top;
-    CDDrawWorker* headerAnimation = m_headerAnimation;
+    CImageSet* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
             DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->GetMinIndex());
@@ -445,7 +445,7 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     i32 right = m_bounds.right;
     i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
     i32 drawY = m_contentOffsetY + m_bounds.top;
-    CDDrawWorker* headerAnimation = m_headerAnimation;
+    CImageSet* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
             DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->GetMinIndex());

@@ -47,7 +47,7 @@ i32 CSBI_GruntMachine::Initialize(
 
     CDDrawSurfaceMgr* world;
     CImage* backgroundImage;
-    CDDrawWorker* machineFrames;
+    CImageSet* machineFrames;
     CImage* leftImage;
     CShadeTable* shadeTable;
     CImage* rightImage;
@@ -114,7 +114,7 @@ i32 CSBI_GruntMachine::Render() {
     if (m_redrawFrames > 0) {
         i32 idx = m_leftFrameIndex;
         m_redrawFrames--;
-        CDDrawWorker* cfg = m_machineFrames;
+        CImageSet* cfg = m_machineFrames;
 
         m_leftFrame = cfg->GetAt(idx);
         idx = m_rightFrameIndex;

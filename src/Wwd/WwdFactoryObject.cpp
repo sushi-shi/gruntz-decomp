@@ -333,7 +333,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
         switch (stepRecord->m_stepMode) {
             case WWDSTEP_NEXT: {
                 CWwdSpriteObject* sprite = m_boundObject;
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -348,7 +348,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             }
             case WWDSTEP_PREV: {
                 CWwdSpriteObject* sprite = m_boundObject;
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -364,7 +364,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             case WWDSTEP_SET: {
                 CWwdSpriteObject* sprite = m_boundObject;
                 i32 frameIndex = stepRecord->GetFrameParameter();
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -374,7 +374,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             }
             case WWDSTEP_FIRST: {
                 CWwdSpriteObject* sprite = m_boundObject;
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -385,7 +385,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             }
             case WWDSTEP_LAST: {
                 CWwdSpriteObject* sprite = m_boundObject;
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -397,7 +397,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             case WWDSTEP_FORWARD_BY: {
                 CWwdSpriteObject* sprite = m_boundObject;
                 i32 frameOffset = stepRecord->GetFrameParameter();
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -411,7 +411,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             case WWDSTEP_BACK_BY: {
                 CWwdSpriteObject* sprite = m_boundObject;
                 i32 frameOffset = stepRecord->GetFrameParameter();
-                CDDrawWorker* imageSet = sprite->GetImageSet();
+                CImageSet* imageSet = sprite->GetImageSet();
                 if (imageSet == NULL) {
                     break;
                 }
@@ -550,7 +550,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             }
             case WWDLOOP_AT_FIRST: {
                 CWwdSpriteObject* loopSprite = m_boundObject;
-                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                CImageSet* imageSet = loopSprite->GetImageSet();
                 if (loopSprite->m_frameIndex == imageSet->GetMinIndex()) {
                     if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
@@ -560,7 +560,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             }
             case WWDLOOP_AT_LAST: {
                 CWwdSpriteObject* loopSprite = m_boundObject;
-                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                CImageSet* imageSet = loopSprite->GetImageSet();
                 if (loopSprite->m_frameIndex == imageSet->GetMaxIndex()) {
                     if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
@@ -570,7 +570,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             }
             case WWDLOOP_AFTER_FIRST: {
                 CWwdSpriteObject* loopSprite = m_boundObject;
-                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                CImageSet* imageSet = loopSprite->GetImageSet();
                 if (loopSprite->m_frameIndex == imageSet->GetMinIndex() + 1) {
                     if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
@@ -585,7 +585,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
                 break;
             case WWDLOOP_BEFORE_LAST: {
                 CWwdSpriteObject* loopSprite = m_boundObject;
-                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                CImageSet* imageSet = loopSprite->GetImageSet();
                 if (loopSprite->m_frameIndex == imageSet->GetMaxIndex() - 1) {
                     if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         CAnimationSequence* animation = m_animation;
@@ -743,13 +743,13 @@ i32 CAniFrameRecord::NextRandomValue() {
 }
 
 RVA(0x0015cc30, 0x1e)
-CImage* CDDrawWorker::GetFrame(i32 n) {
+CImage* CImageSet::GetFrame(i32 n) {
     return GetAt(n);
 }
 
 RVA(0x0015cc50, 0x38)
 void CWwdSpriteObject::ClampToFirstFrame() {
-    CDDrawWorker* seq = m_imageSet;
+    CImageSet* seq = m_imageSet;
     if (seq != NULL) {
         i32 n = seq->GetMinIndex();
         m_frameIndex = n;
@@ -760,7 +760,7 @@ void CWwdSpriteObject::ClampToFirstFrame() {
 
 RVA(0x0015cc90, 0x38)
 void CWwdSpriteObject::ClampToLastFrame() {
-    CDDrawWorker* seq = m_imageSet;
+    CImageSet* seq = m_imageSet;
     if (seq != NULL) {
         i32 n = seq->GetMaxIndex();
         m_frameIndex = n;

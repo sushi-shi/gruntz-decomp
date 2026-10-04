@@ -45,7 +45,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
+    CImageSet* spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;

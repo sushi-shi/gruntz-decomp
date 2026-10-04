@@ -22,7 +22,7 @@ struct SoundCue;
 class CDDrawSurfacePair;
 class CUserLogic;
 
-class CDDrawWorker;
+class CImageSet;
 
 class CImage;
 

@@ -12,7 +12,7 @@
 
 #include <stddef.h>
 
-class CDDrawWorker;
+class CImageSet;
 
 class CDDrawSurfaceMgr;
 
@@ -51,7 +51,7 @@ public:
 
     SbiMenuItemState m_state;
 
-    CDDrawWorker* m_stateFrames;
+    CImageSet* m_stateFrames;
 };
 
 inline CSBI_MenuItem::~CSBI_MenuItem() {

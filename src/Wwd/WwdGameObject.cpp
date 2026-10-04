@@ -55,14 +55,14 @@ b32 g_logicTypesRegistered;
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
-    CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
+    CImageSet* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     SetImageFrame(frame);
 }
 
 RVA(0x00150540, 0x65)
 void CWwdSpriteObject::SetImageSetByName(const char* name) {
-    CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
+    CImageSet* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     if (spr) {
         i32 n = spr->GetMinIndex();
@@ -269,7 +269,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CDDrawWorker* imageSet = OwnerMgr()->FindWorker(name);
+        CImageSet* imageSet = OwnerMgr()->FindWorker(name);
         m_imageSet = imageSet;
         if (imageSet != NULL && hasFrameImage == true) {
             i32 idx = m_frameIndex;
@@ -795,7 +795,7 @@ void CLogicRecord::Unload() {
 }
 
 RVA(0x00151eb0, 0x43)
-void CDDrawWorker::Unload() {
+void CImageSet::Unload() {
     for (i32 i = 0; i < m_items.GetSize(); i++) {
         CImage* el = static_cast<CImage*>(m_items.GetAt(i));
         if (el != NULL) {
@@ -809,7 +809,7 @@ void CDDrawWorker::Unload() {
 }
 
 RVA(0x00151f00, 0xa4)
-CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
+CImage* CImageSet::InsertFrame(CRezItm* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
         return NULL;
     }
@@ -826,7 +826,7 @@ CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
 }
 
 RVA(0x00151fb0, 0xa4)
-CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
+CImage* CImageSet::LoadFrame(char* path, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return NULL;
     }
@@ -846,7 +846,7 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
 
 RVA(0x00152060, 0xab)
 CImage*
-CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
+CImageSet::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return NULL;
     }
@@ -865,7 +865,7 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
 }
 
 RVA(0x00152110, 0xa9)
-CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
+CImage* CImageSet::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return NULL;
     }
@@ -886,10 +886,10 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001521c0, 0x2b)
-void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
+void CImageSet::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
 RVA(0x001521f0, 0xbc)
-i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
+i32 CImageSet::BuildFramesFromArchive(CRezDir* tab) {
     i32 count = 0;
     CRezTyp* sym = tab->GetFirstType();
     while (sym != NULL) {
@@ -920,7 +920,7 @@ i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
 }
 
 RVA(0x001522b0, 0xf7)
-i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
+i32 CImageSet::ValidateFramesFromArchive(CRezDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;
@@ -958,7 +958,7 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
 }
 
 RVA(0x001523b0, 0x3b)
-i32 CDDrawWorker::ReloadFrame(CRezItm* rec, i32 n, i32 flag) {
+i32 CImageSet::ReloadFrame(CRezItm* rec, i32 n, i32 flag) {
     CImage* el = GetAt(n);
     if (el == NULL) {
         return 0;
@@ -967,7 +967,7 @@ i32 CDDrawWorker::ReloadFrame(CRezItm* rec, i32 n, i32 flag) {
 }
 
 RVA(0x001523f0, 0x82)
-i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
+i32 CImageSet::GetMemoryUsage(i32 raw) {
     i32 sum = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -992,7 +992,7 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
 }
 
 RVA(0x00152480, 0x4e)
-i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
+i32 CImageSet::SetAllTypes(ShadeMode type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -1005,7 +1005,7 @@ i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
 }
 
 RVA(0x001524d0, 0x41)
-i32 CDDrawWorker::SetAllLightLevels(i32 value) {
+i32 CImageSet::SetAllLightLevels(i32 value) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -1018,7 +1018,7 @@ i32 CDDrawWorker::SetAllLightLevels(i32 value) {
 }
 
 RVA(0x00152520, 0x4b)
-i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
+i32 CImageSet::SetAllFormats(CShadeTable* format) {
     if (!format) {
         return 0;
     }
@@ -1036,7 +1036,7 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152570, 0x24)
-ShadeMode CDDrawWorker::GetFirstFrameState() {
+ShadeMode CImageSet::GetFirstFrameState() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
     if (frame == NULL) {
         return SHADE_COPY;
@@ -1051,7 +1051,7 @@ ShadeMode CDDrawWorker::GetFirstFrameState() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001525a0, 0x1f)
-i32 CDDrawWorker::GetFirstFrameLightLevel() {
+i32 CImageSet::GetFirstFrameLightLevel() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
     if (frame == NULL) {
         return 1;
@@ -1064,7 +1064,7 @@ i32 CDDrawWorker::GetFirstFrameLightLevel() {
 }
 
 RVA(0x001525c0, 0x76)
-i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
+i32 CImageSet::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
         for (i32 i = 0; i < m_items.GetSize(); i++) {
             CImage* cur = static_cast<CImage*>(m_items.GetAt(i));

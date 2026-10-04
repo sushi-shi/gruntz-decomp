@@ -81,7 +81,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     exBottom = max(m_object->m_screenY, exBottom);
     m_object->m_extent.bottom = exBottom;
 
-    CDDrawWorker* frameSet = Anim()->GetImageSet();
+    CImageSet* frameSet = Anim()->GetImageSet();
     if (frameSet != NULL) {
         CString name;
         name = frameSet->GetName();

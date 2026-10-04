@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
-class CDDrawWorker;
+class CImageSet;
 
 class CDDrawWorkerList : public CWapObj {
 public:
@@ -28,7 +28,7 @@ public:
     virtual CDDrawFrameWorker*
     CreateFrameWorker(i32 x, i32 y, const char* workerName, i32 frameIndex, i32 addHead);
     virtual CDDrawFrameWorker*
-    CreateFrameWorker(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex, i32 addHead);
+    CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIndex, i32 addHead);
     virtual CDDrawFrameWorker* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
 
     virtual void RenderAndPruneWorkers(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);

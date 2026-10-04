@@ -11,7 +11,7 @@
 
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
-class CDDrawWorker;
+class CImageSet;
 class CMenuTree;
 class CAnimatedMenuItem;
 
@@ -134,13 +134,13 @@ public:
     i32 m_columnOffsetX;
     i32 m_contentOffsetX;
     i32 m_contentOffsetY;
-    CDDrawWorker* m_headerAnimation;
+    CImageSet* m_headerAnimation;
 
     CMenuItem* m_focusedItem;
 };
 
 #define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
-    CDDrawWorker* animation = m_world->FindWorker(animationKey);                                   \
+    CImageSet* animation = m_world->FindWorker(animationKey);                                      \
     m_headerAnimation = animation;                                                                 \
     return animation != NULL
 

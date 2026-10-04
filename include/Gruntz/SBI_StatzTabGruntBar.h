@@ -16,7 +16,7 @@
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
-class CDDrawWorker;
+class CImageSet;
 
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
@@ -61,12 +61,8 @@ public:
 
     i32 UpdateIcons();
 
-    static b32 UpdateIconImage(
-        CDDrawWorker* const& frames,
-        i32 frameIndex,
-        i32& previousIndex,
-        CImage*& image
-    );
+    static b32
+    UpdateIconImage(CImageSet* const& frames, i32 frameIndex, i32& previousIndex, CImage*& image);
 
     CImage* m_healthBackgroundImage;
     CImage* m_healthIconImage;
@@ -82,10 +78,10 @@ public:
     i32 m_groupMarker;
     i32 m_playerIndex;
     i32 m_unitIndex;
-    CDDrawWorker* m_selectionFrames;
+    CImageSet* m_selectionFrames;
     CImage* m_selectionImage;
     i32 m_selectionFrameIndex;
-    CDDrawWorker* m_iconFrames;
+    CImageSet* m_iconFrames;
 
     ClockInterval m_selectionAnimationClock;
 };

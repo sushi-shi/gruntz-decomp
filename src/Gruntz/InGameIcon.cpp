@@ -104,7 +104,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekTiming.Clear();
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
-    CDDrawWorker* frameSet = m_wwdObject->GetImageSet();
+    CImageSet* frameSet = m_wwdObject->GetImageSet();
     if (frameSet != NULL) {
         CString name;
         name = frameSet->GetName();

@@ -42,7 +42,7 @@ class SoundCueRegistry;
 
 class CDDrawWorkerRegistry;
 
-class CDDrawWorker;
+class CImageSet;
 
 class CDDrawSurfaceMgr;
 
@@ -164,7 +164,7 @@ public:
     i32 ToggleMonolithOverlay();
     i32 CheatRevealTreasures();
 
-    i32 SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx);
+    i32 SetGruntColor(CImageSet* sink, const char* key, i32 idx);
     void CheatSkeletonToggle();
     void CheatEclipseToggle();
     i32 WarpCheat();

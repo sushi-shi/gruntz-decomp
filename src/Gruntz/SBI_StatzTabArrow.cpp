@@ -79,7 +79,7 @@ i32 CSBI_StatzTabGruntBar::Initialize(
     i32 showSelectionGroup
 ) {
     CDDrawSurfaceMgr* world;
-    CDDrawWorker* iconFrames;
+    CImageSet* iconFrames;
 
     if (host == NULL) {
         goto fail;
@@ -113,8 +113,7 @@ i32 CSBI_StatzTabGruntBar::Initialize(
 
     CImage* toyBackground;
     if (showSelectionGroup != 0) {
-        CDDrawWorker* selectionFrames =
-            m_host->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR");
+        CImageSet* selectionFrames = m_host->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR");
         m_selectionFrames = selectionFrames;
         if (selectionFrames == NULL) {
             return 0;
@@ -126,7 +125,7 @@ i32 CSBI_StatzTabGruntBar::Initialize(
         }
         toyBackground = m_iconFrames->GetAt(0x22);
     } else {
-        CDDrawWorker* selectionFrames =
+        CImageSet* selectionFrames =
             m_host->FindWorker("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR");
         m_selectionFrames = selectionFrames;
         if (selectionFrames == NULL) {

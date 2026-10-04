@@ -101,7 +101,7 @@ i32 CDDrawWorkerHost::Read(
 
     if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
-        CDDrawWorker* set = (m_imageSets.GetSize() > 0) ? ImageSetAt(0) : NULL;
+        CImageSet* set = (m_imageSets.GetSize() > 0) ? ImageSetAt(0) : NULL;
         for (i32 f = 0; f < set->m_items.GetSize(); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
@@ -349,7 +349,7 @@ void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161fa0, 0x6c)
-void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
+void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
@@ -851,7 +851,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
                 continue;
             }
             u32 setIdx = static_cast<u32>(handle) >> 16;
-            CDDrawWorker* frame = ImageSetAt(setIdx);
+            CImageSet* frame = ImageSetAt(setIdx);
             if (frame == NULL) {
                 result = 0;
                 if (errOut != NULL) {

@@ -53,13 +53,13 @@ public:
     }
     virtual void SetFramePeriod(i32 framePeriodMs);
 
-    CDDrawWorker* GetStateAnimation();
+    CImageSet* GetStateAnimation();
     CImage* GetCurrentFrame();
     i32 AdvanceFrame();
 
-    CDDrawWorker* m_normalAnimation;
-    CDDrawWorker* m_selectedAnimation;
-    CDDrawWorker* m_disabledAnimation;
+    CImageSet* m_normalAnimation;
+    CImageSet* m_selectedAnimation;
+    CImageSet* m_disabledAnimation;
     i32 m_frameIndex;
     i32 m_frameTimerMs;
     i32 m_framePeriodMs;

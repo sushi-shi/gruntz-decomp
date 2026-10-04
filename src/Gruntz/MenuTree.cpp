@@ -188,7 +188,7 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
     if (!m_world) {
         return 0;
     }
-    CDDrawWorker* animation = m_world->FindWorker(animationKey);
+    CImageSet* animation = m_world->FindWorker(animationKey);
     m_leftCursorAnimation = animation;
     if (!animation) {
         return 0;
@@ -210,7 +210,7 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
     if (!m_world) {
         return 0;
     }
-    CDDrawWorker* animation = m_world->FindWorker(animationKey);
+    CImageSet* animation = m_world->FindWorker(animationKey);
     m_rightCursorAnimation = animation;
     if (!animation) {
         return 0;
@@ -225,7 +225,7 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
 
 RVA(0x00182ed0, 0xbc)
 i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
-    CDDrawWorker* leftAnimation = m_leftCursorAnimation;
+    CImageSet* leftAnimation = m_leftCursorAnimation;
     if (leftAnimation) {
         if (static_cast<u32>(m_leftCursorFrameTimerMs) > static_cast<u32>(deltaMs)) {
             m_leftCursorFrameTimerMs -= deltaMs;
@@ -240,7 +240,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
             }
         }
     }
-    CDDrawWorker* rightAnimation = m_rightCursorAnimation;
+    CImageSet* rightAnimation = m_rightCursorAnimation;
     if (rightAnimation) {
         if (static_cast<u32>(m_rightCursorFrameTimerMs) > static_cast<u32>(deltaMs)) {
             m_rightCursorFrameTimerMs -= deltaMs;
