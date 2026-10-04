@@ -15,6 +15,23 @@ public:
 
     i32 Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind);
     void Free();
+
+    void GetTeamColor(SpriteTeamColorVariant variant, u16& color) const {
+        switch (variant) {
+            case SPRITE_TEAM_COLOR_PRIMARY:
+                color = m_teamColor1;
+                break;
+            case SPRITE_TEAM_COLOR_SECONDARY:
+                color = m_teamColor2;
+                break;
+            case SPRITE_TEAM_COLOR_TERTIARY:
+                color = m_teamColor3;
+                break;
+            default:
+                color = m_teamColor1;
+                break;
+        }
+    }
     CShadeTableCache* m_cache;
     CShadeTable* m_shadeTable;
     u16 m_teamColor1;
@@ -51,20 +68,7 @@ public:
             color = 0;
             return;
         }
-        switch (variant) {
-            case SPRITE_TEAM_COLOR_PRIMARY:
-                color = sprite->m_teamColor1;
-                break;
-            case SPRITE_TEAM_COLOR_SECONDARY:
-                color = sprite->m_teamColor2;
-                break;
-            case SPRITE_TEAM_COLOR_TERTIARY:
-                color = sprite->m_teamColor3;
-                break;
-            default:
-                color = sprite->m_teamColor1;
-                break;
-        }
+        sprite->GetTeamColor(variant, color);
     }
 
     CGruntPalette* GetToy(i32 colorId);
