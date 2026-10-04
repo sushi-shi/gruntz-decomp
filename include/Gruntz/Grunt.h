@@ -311,6 +311,10 @@ public:
         m_defenderQueuePosition = position;
     }
 
+    i32 GetDefenderRadius() const {
+        return m_defenderRadius;
+    }
+
     Coord DefenderPosition() const {
         return m_defenderPx;
     }

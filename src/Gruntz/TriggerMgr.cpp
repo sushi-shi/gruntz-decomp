@@ -96,7 +96,7 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
             i32 dx = candidate->GetScreenTileX() - tx;
             i32 dy = candidate->GetScreenTileY() - ty;
             i32 d = SquaredDistance(dx, dy);
-            if (d < bestDist && d < g->m_defenderRadius * 2) {
+            if (d < bestDist && d < g->GetDefenderRadius() * 2) {
                 best = candidate;
                 bestDist = d;
             }
