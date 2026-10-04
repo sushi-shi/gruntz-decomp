@@ -2463,7 +2463,7 @@ gruntzmgr	?ResetWorldState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	511e4c5bd1d7	0
 gruntzmgr	?RestoreMusicVolumeIfActive@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	4	ba8d58a76f33	0x91620	100.0000	
 gruntzmgr	?RestoreVideoMode@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	f15d2fbee6c4	0x8ddd0	100.0000	
 gruntzmgr	?ResumeMusicIfEnabled@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	2f837f75b41a	0x92030	100.0000	
-gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	99.7523	99.7523	79	5bcfe012c252	0x83450	100.0000	
+gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	100.0000	99.7523	79	5bcfe012c252	0x83450	100.0000	
 gruntzmgr	?RunDebugGruntTypeDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	f3285397e9eb	0x929e0	100.0000	
 gruntzmgr	?RunLoadGameDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	d93f288948fc	0x92500	100.0000	
 gruntzmgr	?RunModalDialog@CGruntzMgr@@QAEHPBDP6GHPAUHWND__@@IIJ@ZH@Z	100.0000	100.0000	10	3add8dfda620	0x90260	100.0000	
@@ -4084,7 +4084,7 @@ spriteloaders	?Serialize@CTimer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	7e9
 spriteloaders	?SerializeDispatch@CTimer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	99.4340	99.4340	5	1fa160e6ff36	0x9c1c0	99.4340	
 spriteloaders	?SetTime@CTimer@@QAEXHH@Z	100.0000	100.0000	6	8a67fc0ca06a	0x9c090	100.0000	
 spriteloaders	?Tick@CTimer@@QAEHH@Z	98.8075	98.8075	55	7c72f93d6e23	0x9bca0	98.8075	
-spriteref	?Build@CGruntPalette@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	83.1877	83.1877	3	80eee5267547	0xe2df0	100.0000	
+spriteref	?Build@CGruntPalette@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	100.0000	83.1877	3	80eee5267547	0xe2df0	100.0000	
 spriteref	?Free@CGruntPalette@@QAEXXZ	100.0000	100.0000	7	7e59314982f9	0xe32e0	100.0000	
 spritereftable	?Add@CGruntPaletteTable@@QAEPAVCGruntPalette@@PADW4ColorTint@@@Z	100.0000	100.0000	13	bbaf275c30a2	0xe2890	100.0000	
 spritereftable	?BuildToolToyColorTable@CGruntPaletteTable@@QAEHPAVCRezMgr@@@Z	100.0000	100.0000	5	2042ce49a763	0xe2400	100.0000	
