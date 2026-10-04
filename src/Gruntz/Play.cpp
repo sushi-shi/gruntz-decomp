@@ -4720,7 +4720,7 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_SECRET_SWITCH:
-                    g_gameReg->GetGameStats()->m_secretsAvailable++;
+                    g_gameReg->GetGameStats()->AddAvailableSecret();
                     // fall through
                 case TILEKIND_SECRET_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(

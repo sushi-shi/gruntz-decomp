@@ -16,6 +16,7 @@ GZ_ENUM_CONST_END(AmbientSoundActState)
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 #include <Lith/BDefs.h>
+#include <Wap32/CoordUnset.h>
 
 struct AmbientPoint {
     i32 m_x;
@@ -48,6 +49,24 @@ public:
             volume = (volume * m_volumeScale) / 100;
         }
         return LTCLAMP(volume, 0, 0x64);
+    }
+
+    b32 IsListenerInRange(i32 x, i32 y) const {
+        i32 firstBoxLeft = m_primaryRegion.left;
+        b32 inBox = false;
+        if (firstBoxLeft == COORD_UNSET) {
+            inBox = true;
+        } else if (x > firstBoxLeft && x < m_primaryRegion.right && y > m_primaryRegion.top
+                   && y < m_primaryRegion.bottom) {
+            inBox = true;
+        } else {
+            i32 secondBoxLeft = m_secondaryRegion.left;
+            if (secondBoxLeft != COORD_UNSET && x > secondBoxLeft && x < m_secondaryRegion.right
+                && y > m_secondaryRegion.top && y < m_secondaryRegion.bottom) {
+                inBox = true;
+            }
+        }
+        return inBox;
     }
 
     i32 SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind);

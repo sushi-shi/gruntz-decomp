@@ -148,7 +148,7 @@ public:
         m_initOnce = false;
         m_secretBannerOnce = false;
         for (i32 t = 0; t < 4; t++) {
-            m_trailSprites[t] = NULL;
+            m_warpStonePieceSprites[t] = NULL;
         }
         for (i32 i = 0; i < 8; i++) {
             m_readyFlags[i] = 0;
@@ -186,14 +186,14 @@ public:
 
     i32 BuildWarpStoneGlitterAnimation();
 
-    i32 StepGlitterAnim();
-    void MoveLettersByDir();
+    i32 UpdateWarpStoneGlitterAnimation();
+    void UpdateGruntSprintAnimation();
     i32 BuildGruntSprintAnimation();
     i32 BuildBootyPerfectAnimation();
 
     i32 CheckPerfectBonus();
 
-    void GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY);
+    void PickGruntSprintStartPosition(GruntDirection direction, i32* outX, i32* outY);
 
     b32 m_initGate;
     b32 m_secretHudHandled;
@@ -203,14 +203,14 @@ public:
     b32 m_initOnce;
     b32 m_secretBannerOnce;
 
-    i32 m_letterIdx;
-    i32 m_radius;
-    i32 m_angleStep;
-    i32 m_scratchX;
-    i32 m_scratchY;
-    CWwdSpriteObject* m_trailSprites[4];
+    i32 m_warpStonePieceIndex;
+    i32 m_pieceOrbitRadius;
+    i32 m_pieceOrbitAngle;
+    i32 m_pieceOrbitX;
+    i32 m_pieceOrbitY;
+    CWwdSpriteObject* m_warpStonePieceSprites[4];
 
-    CWwdSpriteObject* m_cursorLetter;
+    CWwdSpriteObject* m_warpStoneGlitterSprite;
     b32 m_levelCompleteGate;
 
     CWwdSpriteObject* m_sprintSprites[8];

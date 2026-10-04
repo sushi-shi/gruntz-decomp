@@ -710,25 +710,11 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     return 1;
 }
 
+// @early-stop
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
 
-    i32 firstBoxLeft = m_primaryRegion.left;
-    i32 inBox = 0;
-    if (firstBoxLeft == COORD_UNSET) {
-        inBox = 1;
-    } else if (x > firstBoxLeft && x < m_primaryRegion.right && y > m_primaryRegion.top
-               && y < m_primaryRegion.bottom) {
-        inBox = 1;
-    } else {
-        i32 secondBoxLeft = m_secondaryRegion.left;
-        if (secondBoxLeft != COORD_UNSET && x > secondBoxLeft && x < m_secondaryRegion.right
-            && y > m_secondaryRegion.top && y < m_secondaryRegion.bottom) {
-            inBox = 1;
-        }
-    }
-
-    if (inBox == 0) {
+    if (IsListenerInRange(x, y) == false) {
         if (m_isPlaying != false && m_sound != NULL) {
             SetVolumeLevel(0, 0x3e8, true);
             m_isPlaying = false;

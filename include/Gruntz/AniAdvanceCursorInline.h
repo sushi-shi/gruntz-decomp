@@ -11,16 +11,16 @@ inline i32 CAniAdvanceCursor::IsComplete() const {
 
 inline void CAniAdvanceCursor::AdvanceToNextRecord() {
     CAniElement* animation = m_animation;
-    m_index = m_index + 1;
-    CAniRecordView* record = animation->RecordAt(m_index);
-    m_element = record;
+    m_recordIndex = m_recordIndex + 1;
+    CAniRecordView* record = animation->RecordAt(m_recordIndex);
+    m_currentRecord = record;
     if (record == NULL) {
-        m_index = 0;
-        m_element = static_cast<CAniRecordView*>(animation->AtChecked(0));
+        m_recordIndex = 0;
+        m_currentRecord = static_cast<CAniRecordView*>(animation->AtChecked(0));
     }
-    if (m_element != NULL) {
+    if (m_currentRecord != NULL) {
         m_curDraw = m_pendingDraw;
-        m_pendingDraw = m_element->m_drawValue;
+        m_pendingDraw = m_currentRecord->m_drawValue;
     }
 }
 
