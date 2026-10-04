@@ -1428,8 +1428,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             g_playActive = true;
             self->m_renderDisabled = false;
             self->m_mgr->CheckSavedMode();
-            self->m_mgr->ChatLog()->ClearMessages();
         }
+        self->m_mgr->ChatLog()->ClearMessages();
         return 1;
     }
 
