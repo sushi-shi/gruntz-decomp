@@ -39,6 +39,13 @@ public:
         return m_finishReason;
     }
 
+    CWarlord* GetLocalWarlord() const {
+        return m_localWarlord;
+    }
+    void SetLocalWarlord(CWarlord* warlord) {
+        m_localWarlord = warlord;
+    }
+
     FinishLevelState GetFinishState() const {
         return m_finishState;
     }

@@ -360,15 +360,15 @@ i32 CBattlezMapConfig::StepBoard() {
     i32 forced = 0;
     CGrunt* forcedUnit = NULL;
     if (m_repickTimer - m_repickLastFire > m_resourceCreationTime) {
-        i32 r = rand() % TM_UNITS_PER_PLAYER;
+        i32 r = GetRandom(TM_UNITS_PER_PLAYER - 1);
         CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, r);
         forcedUnit = u;
         forced = 0;
         if (u != NULL && u->GetAiState() == AISTATE_RETURN && u->GetDefenderQueuePosition() == 0) {
             forced = 1;
         }
-        if (!forced && rand() % 10 != 0) {
-            i32 r2 = rand() % TM_UNITS_PER_PLAYER;
+        if (!forced && GetRandom(9) != 0) {
+            i32 r2 = GetRandom(TM_UNITS_PER_PLAYER - 1);
             CGrunt* u2 = m_triggerMgr->UnitAt(m_playerIndex, r2);
             if (u2 != NULL) {
                 ChooseIdleBehavior(u2);
@@ -1403,7 +1403,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 goto returnZero;
             }
             if (wingzOrToobGate && unit->GetAiState() != AISTATE_RETURN) {
-                if (rand() % 5) {
+                if (GetRandom(4)) {
                     EnterDefenderMode(unit, 0x12);
                 } else {
                     EnterDefenderMode(unit, 0x16);
@@ -1622,12 +1622,12 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0002ad40, 0x71)
 CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
-    i32 band = rand() % 4;
+    i32 band = GetRandom(3);
     if (band == m_playerIndex) {
         band++;
     }
     band = band % 4;
-    i32 cell = rand() % TM_UNITS_PER_PLAYER;
+    i32 cell = GetRandom(TM_UNITS_PER_PLAYER - 1);
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         CGrunt* u = m_triggerMgr->UnitAt(band, i);
         if (u != NULL && u->IsSpawnProtected() == false) {
@@ -1669,7 +1669,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->IsSpawnProtected() != false) {
         return 0;
     }
-    i32 roll = rand() % 4;
+    i32 roll = GetRandom(3);
     if (actor->GetCarriedToyType() != PICKUP_NONE && roll == 0) {
         CGameObject* ul = other->m_object;
         if ((static_cast<CGrunt*>(actor))->IsInToyUseRange(ul->m_screenX, ul->m_screenY) != 0) {
@@ -1708,8 +1708,8 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
 
     i32 ycoord = actor->GetScreenTileY();
     i32 xcoord = actor->GetScreenTileX();
-    ycoord += rand() % 10 - 5;
-    i32 r2 = rand() % 10;
+    ycoord += GetRandom(9) - 5;
+    i32 r2 = GetRandom(9);
     RECT box;
     box.left = actor->GetScreenTileX() - 5;
     xcoord += r2 - 5;
@@ -2377,8 +2377,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     {
         i32 oy = g->GetScreenTileY();
         i32 ox = g->GetScreenTileX();
-        i32 row = rand() % 3 + oy - 1;
-        i32 col = rand() % 3 + ox - 1;
+        i32 row = GetRandom(2) + oy - 1;
+        i32 col = GetRandom(2) + ox - 1;
         if (static_cast<u32>(col) >= static_cast<u32>(m_board->GetWidth())
             || static_cast<u32>(row) >= static_cast<u32>(m_board->GetHeight())) {
             return 1;
@@ -2832,7 +2832,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         return 0;
     }
 
-    i32 r = rand() % TM_UNITS_PER_PLAYER;
+    i32 r = GetRandom(TM_UNITS_PER_PLAYER - 1);
     for (i32 scanned = 0; scanned < TM_UNITS_PER_PLAYER; scanned++) {
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
@@ -3306,7 +3306,8 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         }
         if (u->GetBattlezTask() == BZTASK_ASSIGNED_TARGET) {
             Coord arrival = u->ArrivalCell();
-            if (!(arrival.m_x == targetPlayer && arrival.m_y == targetUnit) && (rand() % 3) != 0) {
+            if (!(arrival.m_x == targetPlayer && arrival.m_y == targetUnit)
+                && (GetRandom(2)) != 0) {
                 ok = false;
             }
         }

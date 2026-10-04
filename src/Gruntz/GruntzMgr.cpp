@@ -45,6 +45,7 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
@@ -2798,7 +2799,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                     ShadeMode st = fmt->m_drawType;
                     if (st != SHADE_DST_BY_LEVEL) {
                         set->SetAllTypes(SHADE_DST_BY_LEVEL);
-                        set->SetAllLightLevels(rand() % 256);
+                        set->SetAllLightLevels(GetRandom(255));
                         AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
                         set->SetAllTypes(SHADE_COPY);
