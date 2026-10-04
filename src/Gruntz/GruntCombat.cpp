@@ -1325,12 +1325,12 @@ i32 CGrunt::ApplyCombatHitEffects(
         if (this->m_arrivalPending == false) {
             m_triggerMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
         }
-        CGruntzMapMgr* oldGrid = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* oldGrid = g_gameReg->GetTileGrid();
         i32 ox = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         oldGrid->ReleaseCellOccupancy(ox, oy);
 
-        CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* newGrid = g_gameReg->GetTileGrid();
         newGrid->AcquireCellOccupancy(nxt, nyt, this->m_playerIndex, this->m_unitIndex);
 
         if (!CoordsEmpty()) {
