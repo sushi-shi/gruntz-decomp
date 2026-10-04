@@ -112,7 +112,7 @@ public:
         return 0;
     }
     RVA(0x0008c950, 0x3)
-    virtual i32 GetFrame() {
+    virtual i32 GetNetworkCommandTick() {
         return 0;
     }
 

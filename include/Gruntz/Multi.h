@@ -63,7 +63,7 @@ public:
     virtual i32 OnChar(i32 charCode, i32 keyData) OVERRIDE;
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 UnusedPlayQuery() OVERRIDE;
-    virtual i32 GetFrame() OVERRIDE;
+    virtual i32 GetNetworkCommandTick() OVERRIDE;
 
     virtual i32 LoadLevel(i32 level, i32 unused) OVERRIDE;
 

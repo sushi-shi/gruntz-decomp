@@ -3112,7 +3112,7 @@ void CPlay::DrawDebugStatsFull() {
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
             m_packetsSent,
             m_packetsRcvd,
-            GetFrame(),
+            GetNetworkCommandTick(),
             g_frameTime
         );
         strcat(buf, scratch);
@@ -3209,7 +3209,7 @@ void CPlay::DrawDebugStats() {
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
             m_packetsSent,
             m_packetsRcvd,
-            GetFrame(),
+            GetNetworkCommandTick(),
             g_frameTime
         );
         strcat(buf, scratch);

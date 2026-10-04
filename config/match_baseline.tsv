@@ -2393,8 +2393,8 @@ gruntzmgr	?ForwardRButtonDblClkToState@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	2
 gruntzmgr	?ForwardRButtonDownToState@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	2	3426be0b373a	0x8db20	100.0000	
 gruntzmgr	?ForwardRButtonUpToState@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	2	ac41a477fdb8	0x8db60	100.0000	
 gruntzmgr	?GetCapsChecked@CDDrawDeviceManager@@QAEHXZ	100.0000	100.0000	2	26f9f54d63bc	0x8dd80	100.0000	
-gruntzmgr	?GetFrame@CMulti@@UAEHXZ	100.0000	100.0000	3	0d1676ddf328	0x8d220	100.0000	
-gruntzmgr	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c950	100.0000	
+gruntzmgr	?GetNetworkCommandTick@CMulti@@UAEHXZ	100.0000	100.0000	3	0d1676ddf328	0x8d220	100.0000	
+gruntzmgr	?GetNetworkCommandTick@CPlay@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c950	100.0000	
 gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	2	727bea5e9ba8	0x8fa70	100.0000	
 gruntzmgr	?GetRect@CGruntzMgr@@QAEPAUtagRECT@@PAU2@@Z	100.0000	100.0000	5	6b72fc86515f	0x8e3a0	100.0000	
 gruntzmgr	?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6c4e5160b9ee	0x85500	100.0000	

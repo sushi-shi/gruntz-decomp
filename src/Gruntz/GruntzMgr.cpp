@@ -1075,7 +1075,7 @@ i32 CMulti::UnusedPlayQuery() {
 }
 
 RVA(0x0008d220, 0xa)
-i32 CMulti::GetFrame() {
+i32 CMulti::GetNetworkCommandTick() {
     return m_session->GetCommandTick();
 }
 
