@@ -73,6 +73,10 @@ public:
         m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 
+    void StopFlashing() {
+        m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    }
+
     inline void SetDrawFillReversed(ShadeMode mode, CShadeTable* table);
     inline void SetDrawFill(ShadeMode mode, CShadeTable* table);
     ShadeMode GetShadeMode() const {

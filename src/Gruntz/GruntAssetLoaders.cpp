@@ -70,7 +70,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
     FinishActiveAction();
     STOP_GRUNT_LOOP_SOUNDS;
 
-    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    m_object->StopFlashing();
     m_deathAnimStarted = true;
     m_health = 0;
     m_entranceCommitted = false;
