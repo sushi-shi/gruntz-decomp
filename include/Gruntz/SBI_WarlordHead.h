@@ -38,11 +38,11 @@ public:
         i32 extra
     ) OVERRIDE;
 
-    i32 ShowFrames(ShadeMode show, CShadeTable* palDescr);
+    i32 SetHeadShading(ShadeMode shadeMode, CShadeTable* shadeTable);
 
-    i32 SetState(i32 dir);
+    i32 SetDisplayState(i32 state);
 
-    i32 m_direction;
+    i32 m_displayState;
 };
 
 #endif // SBI_WARLORDHEAD_H

@@ -2069,14 +2069,14 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                     if (p->HasJoinedRound() != false && p->HasDropped() == false) {
                         sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(p->GetColor()), 0);
                         if (pi == m_multiplayerPlayerIndex) {
-                            (*slot)->SetState(1);
+                            (*slot)->SetDisplayState(1);
                         }
                     } else {
                         sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
-                        (*slot)->SetState(2);
+                        (*slot)->SetDisplayState(2);
                     }
 
-                    (*slot)->ShowFrames(SHADE_PAL_16, sel);
+                    (*slot)->SetHeadShading(SHADE_PAL_16, sel);
                     slot++;
                     pi++;
                 } while (pi < 4);
