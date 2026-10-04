@@ -152,7 +152,7 @@ typedef i32 (CUserLogic::*CActHandler)();
     out.m_y >>= TILE_SHIFT_PX;                                                                     \
     out.m_x >>= TILE_SHIFT_PX;
 
-#define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
+#define DECLARE_FIRST_ANIMATION_FRAME(frame, animation, record)                                    \
     CAnimationSequence* animation = m_wwdObject->m_animationCursor.m_animation;                    \
     CAniFrameRecord* record = animation->RecordAt(0);                                              \
     i32 frame = record->m_frameParameter;
@@ -176,7 +176,7 @@ typedef i32 (CUserLogic::*CActHandler)();
         SET_OBJECT_FLAGS_INLINE(0x10000);                                                          \
     }
 
-#define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
+#define APPLY_FIRST_ANIMATION_FRAME_SPRITE(name, animation, record)                                \
     CAnimationSequence* animation = m_wwdObject->m_animationCursor.GetAnimation();                 \
     CAniFrameRecord* record = animation->RecordAt(0);                                              \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_frameParameter);

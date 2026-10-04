@@ -35,8 +35,8 @@ i32 CAniFrameRecord::Parse(SoundCueRegistry* soundRegistry, const i16* recordWor
     m_frameParameter = *p++;
     m_duration = *p++;
     m_eventCode = *p++;
-    m_positionDeltaX = *p++;
-    m_positionDeltaY = *p++;
+    m_positionParameterX = *p++;
+    m_positionParameterY = *p++;
     m_reserved28 = static_cast<u16>(*p++);
     m_cues = NULL;
     m_cueCount = 0;

@@ -433,16 +433,16 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             case WWDPOS_PLOT_OFFSET: {
                 CAniFrameRecord* positionRecord = m_currentRecord;
                 CWwdSpriteObject* sprite = m_boundObject;
-                sprite->m_plotDX = positionRecord->m_positionDeltaX;
-                sprite->m_plotDY = positionRecord->m_positionDeltaY;
+                sprite->m_plotDX = positionRecord->m_positionParameterX;
+                sprite->m_plotDY = positionRecord->m_positionParameterY;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
                 CAniFrameRecord* positionRecord = m_currentRecord;
                 CWwdSpriteObject* sprite = m_boundObject;
                 i32 x = sprite->m_screenX;
-                i32 dy = positionRecord->m_positionDeltaY;
-                i32 dx = positionRecord->m_positionDeltaX;
+                i32 dy = positionRecord->m_positionParameterY;
+                i32 dx = positionRecord->m_positionParameterX;
                 if (HAS(sprite->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
                     sprite->m_screenX = x - dx;
                 } else {
@@ -454,8 +454,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
             case WWDPOS_MOVE_ABSOLUTE:
                 SET_SCREEN_POS(
                     m_boundObject,
-                    m_currentRecord->m_positionDeltaX,
-                    m_currentRecord->m_positionDeltaY
+                    m_currentRecord->m_positionParameterX,
+                    m_currentRecord->m_positionParameterY
                 );
                 break;
             default:

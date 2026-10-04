@@ -508,7 +508,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     if (SwitchAnimationByName(geom, 0) == 0) {
         return 0;
     }
-    APPLY_CURRENT_ANIMATION_FRAME_SPRITE(sprite, desc, elem)
+    APPLY_FIRST_ANIMATION_FRAME_SPRITE(sprite, desc, elem)
     SET_ANIMATION_ACT("A");
     return 1;
 }

@@ -573,7 +573,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     CAnimationSequence* anim = m_idleAnims[idx];
     SwitchAnimation(anim);
 
-    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+    DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
 
     SetImageFrameByName("GRUNTZ_" + m_warlordName + s_idleSuffix, frame);
 
