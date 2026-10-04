@@ -131,14 +131,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     case CHEAT_BRICK_TEXT_DISPLAY:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING)
                                               & ~DEBUG_DISPLAY_TIMING_ALTERNATE;
-                        g_brickText1.Empty();
-                        g_brickText2.Empty();
+                        g_profileTextLine1.Empty();
+                        g_profileTextLine2.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_BRICK_TEXT_ALT_DISPLAY:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING_ALTERNATE)
                                               & ~DEBUG_DISPLAY_TIMING;
-                        g_brickText1.Empty();
+                        g_profileTextLine1.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_ELAPSED_TIME_DISPLAY:

@@ -2176,61 +2176,61 @@ i32 g_screenShakeMinDelayMs;
 DATA(0x0024550c)
 i32 g_screenShakeMaxDelayMs;
 
-RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
-RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)
-RVA_DYNINIT(0x00082bc0, 0xe, g_brickText1)
-RVA_DYNINIT(0x00082be0, 0xa, g_brickText1)
+RVA_DYNINIT(0x00082b80, 0xa, g_profileTextLine1)
+RVA_DYNINIT(0x00082ba0, 0xa, g_profileTextLine1)
+RVA_DYNINIT(0x00082bc0, 0xe, g_profileTextLine1)
+RVA_DYNINIT(0x00082be0, 0xa, g_profileTextLine1)
 DATA(0x00245524)
-CString g_brickText1;
+CString g_profileTextLine1;
 
-RVA_DYNINIT(0x00082c00, 0xa, g_brickText2)
-RVA_DYNINIT(0x00082c20, 0xa, g_brickText2)
-RVA_DYNINIT(0x00082c40, 0xe, g_brickText2)
-RVA_DYNINIT(0x00082c60, 0xa, g_brickText2)
+RVA_DYNINIT(0x00082c00, 0xa, g_profileTextLine2)
+RVA_DYNINIT(0x00082c20, 0xa, g_profileTextLine2)
+RVA_DYNINIT(0x00082c40, 0xe, g_profileTextLine2)
+RVA_DYNINIT(0x00082c60, 0xa, g_profileTextLine2)
 DATA(0x00245528)
-CString g_brickText2;
+CString g_profileTextLine2;
 
-RVA_DYNINIT(0x00082c80, 0xa, g_brickText3)
-RVA_DYNINIT(0x00082ca0, 0xa, g_brickText3)
-RVA_DYNINIT(0x00082cc0, 0xe, g_brickText3)
-RVA_DYNINIT(0x00082ce0, 0xa, g_brickText3)
+RVA_DYNINIT(0x00082c80, 0xa, g_profileTextLine3)
+RVA_DYNINIT(0x00082ca0, 0xa, g_profileTextLine3)
+RVA_DYNINIT(0x00082cc0, 0xe, g_profileTextLine3)
+RVA_DYNINIT(0x00082ce0, 0xa, g_profileTextLine3)
 DATA(0x0024552c)
-CString g_brickText3;
+CString g_profileTextLine3;
 
-RVA_DYNINIT(0x00082d00, 0xa, g_brickText4)
-RVA_DYNINIT(0x00082d20, 0xa, g_brickText4)
-RVA_DYNINIT(0x00082d40, 0xe, g_brickText4)
-RVA_DYNINIT(0x00082d60, 0xa, g_brickText4)
+RVA_DYNINIT(0x00082d00, 0xa, g_profileTextLine4)
+RVA_DYNINIT(0x00082d20, 0xa, g_profileTextLine4)
+RVA_DYNINIT(0x00082d40, 0xe, g_profileTextLine4)
+RVA_DYNINIT(0x00082d60, 0xa, g_profileTextLine4)
 DATA(0x00245530)
-CString g_brickText4;
+CString g_profileTextLine4;
 
-RVA_DYNINIT(0x00082d80, 0xa, g_brickText5)
-RVA_DYNINIT(0x00082da0, 0xa, g_brickText5)
-RVA_DYNINIT(0x00082dc0, 0xe, g_brickText5)
-RVA_DYNINIT(0x00082de0, 0xa, g_brickText5)
+RVA_DYNINIT(0x00082d80, 0xa, g_profileTextLine5)
+RVA_DYNINIT(0x00082da0, 0xa, g_profileTextLine5)
+RVA_DYNINIT(0x00082dc0, 0xe, g_profileTextLine5)
+RVA_DYNINIT(0x00082de0, 0xa, g_profileTextLine5)
 DATA(0x00245514)
-CString g_brickText5;
+CString g_profileTextLine5;
 
-RVA_DYNINIT(0x00082e00, 0xa, g_brickText6)
-RVA_DYNINIT(0x00082e20, 0xa, g_brickText6)
-RVA_DYNINIT(0x00082e40, 0xe, g_brickText6)
-RVA_DYNINIT(0x00082e60, 0xa, g_brickText6)
+RVA_DYNINIT(0x00082e00, 0xa, g_profileTextLine6)
+RVA_DYNINIT(0x00082e20, 0xa, g_profileTextLine6)
+RVA_DYNINIT(0x00082e40, 0xe, g_profileTextLine6)
+RVA_DYNINIT(0x00082e60, 0xa, g_profileTextLine6)
 DATA(0x00245518)
-CString g_brickText6;
+CString g_profileTextLine6;
 
-RVA_DYNINIT(0x00082e80, 0xa, g_brickText7)
-RVA_DYNINIT(0x00082ea0, 0xa, g_brickText7)
-RVA_DYNINIT(0x00082ec0, 0xe, g_brickText7)
-RVA_DYNINIT(0x00082ee0, 0xa, g_brickText7)
+RVA_DYNINIT(0x00082e80, 0xa, g_profileTextLine7)
+RVA_DYNINIT(0x00082ea0, 0xa, g_profileTextLine7)
+RVA_DYNINIT(0x00082ec0, 0xe, g_profileTextLine7)
+RVA_DYNINIT(0x00082ee0, 0xa, g_profileTextLine7)
 DATA(0x0024551c)
-CString g_brickText7;
+CString g_profileTextLine7;
 
-RVA_DYNINIT(0x00082f00, 0xa, g_brickText8)
-RVA_DYNINIT(0x00082f20, 0xa, g_brickText8)
-RVA_DYNINIT(0x00082f40, 0xe, g_brickText8)
-RVA_DYNINIT(0x00082f60, 0xa, g_brickText8)
+RVA_DYNINIT(0x00082f00, 0xa, g_profileTextLine8)
+RVA_DYNINIT(0x00082f20, 0xa, g_profileTextLine8)
+RVA_DYNINIT(0x00082f40, 0xe, g_profileTextLine8)
+RVA_DYNINIT(0x00082f60, 0xa, g_profileTextLine8)
 DATA(0x00245520)
-CString g_brickText8;
+CString g_profileTextLine8;
 
 DATA(0x00245534)
 i32 g_attractStateCount = 0;
