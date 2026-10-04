@@ -584,10 +584,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 
         m_sprintSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
         m_sprintSprites[i]->SetAnimationByName("GAME_GRUNTSPRINT", 0);
-        {
-            CWwdSpriteObject* o = m_sprintSprites[i];
-            o->SetDrawFill(SHADE_PAL_16, h);
-        }
+        m_sprintSprites[i]->SetDrawFill(SHADE_PAL_16, h);
 
         i32 outX, outY;
         PickGruntSprintStartPosition(static_cast<GruntDirection>(i + 1), &outX, &outY);
