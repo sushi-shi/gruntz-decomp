@@ -33,13 +33,13 @@ public:
         : CWapObj(owner, id, flags) {
         m_boundObject = NULL;
         m_animation = NULL;
-        m_element = NULL;
+        m_currentRecord = NULL;
     }
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 id, i32 flags, CWapObj::ENoSeed)
         : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
         m_boundObject = NULL;
         m_animation = NULL;
-        m_element = NULL;
+        m_currentRecord = NULL;
     }
     virtual ~CAniAdvanceCursor() OVERRIDE {
         Unload();
@@ -74,8 +74,8 @@ public:
     CWwdSpriteObject* m_boundObject;
     CAniElement* m_animation;
 
-    CAniRecordView* m_element;
-    i32 m_index;
+    CAniRecordView* m_currentRecord;
+    i32 m_recordIndex;
     u32 m_frameTicksLeft;
     b32 m_useElapsedTime;
     b32 m_finished;
