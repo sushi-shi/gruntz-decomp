@@ -911,7 +911,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
 // @early-stop
 RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
-    CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
+    CTileActionEvent* elem = FindActionAt(tileX, tileY);
     if (elem != NULL) {
         if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
             i32* flags = elem->m_playerFlags;

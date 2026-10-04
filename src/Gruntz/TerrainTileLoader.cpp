@@ -157,8 +157,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
-                CTileActionEvent* event =
-                    state->m_tileTriggers->FindActionByCellKey(CellKey(tileX, tileY));
+                CTileActionEvent* event = state->m_tileTriggers->FindActionAt(tileX, tileY);
                 if (event->BreakTopBrick(unit) != 0) {
                     state->m_tileTriggers->RemoveActionEvent(event);
                 }
@@ -537,8 +536,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                 return 1;
             }
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
-                CTileActionEvent* event =
-                    state->m_tileTriggers->FindActionByCellKey(CellKey(tileX, tileY));
+                CTileActionEvent* event = state->m_tileTriggers->FindActionAt(tileX, tileY);
                 if (event
                         ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
                     == 0) {

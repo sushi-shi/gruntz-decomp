@@ -2528,7 +2528,6 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
     m_gruntWellLevel = value;
 }
 
-// @early-stop
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;

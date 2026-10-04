@@ -125,7 +125,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == false) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && g_gameReg->IsCustomLevel() == false) {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdSpriteObject* o = m_object;
         o->SetSortKey(0);

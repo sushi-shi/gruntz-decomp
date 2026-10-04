@@ -1592,7 +1592,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
                     && type != TILEKIND_GAUNTLET_BRICK_C) {
                     continue;
                 }
-                CTileActionEvent* o = root->GetTileTriggers()->FindActionByCellKey(CellKey(tx, ty));
+                CTileActionEvent* o = root->GetTileTriggers()->FindActionAt(tx, ty);
                 if (o->BreakTopBrick(NULL)) {
                     root->GetTileTriggers()->RemoveActionEvent(o);
                 }

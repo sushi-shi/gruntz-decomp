@@ -6697,7 +6697,7 @@ i32 CPlay::DrawLevelInfoText() {
 
     GameModeId mode = g_gameReg->GetGameMode();
     if (mode == GAMEMODE_QUESTZ) {
-        if (g_gameReg->m_isCustomLevel != false) {
+        if (g_gameReg->IsCustomLevel() != false) {
             s1.LoadString(IDS_CUSTOM_QUEST_LEVEL);
         } else {
             i32 stage = m_levelIndex;
@@ -6839,13 +6839,13 @@ i32 CPlay::DrawLevelInfoText() {
             }
         }
     } else if (mode == GAMEMODE_BATTLEZ) {
-        if (g_gameReg->m_isCustomLevel != false) {
+        if (g_gameReg->IsCustomLevel() != false) {
             s1.LoadString(IDS_CUSTOM_BATTLEZ_LEVEL);
         } else {
             s1.LoadString(IDS_BATTLEZ_LEVEL);
         }
     } else if (mode == GAMEMODE_MULTIPLAYER) {
-        if (g_gameReg->m_isCustomLevel != false) {
+        if (g_gameReg->IsCustomLevel() != false) {
             s1.LoadString(IDS_CUSTOM_MULTIPLAYER_LEVEL);
         } else {
             s1.LoadString(IDS_MULTIPLAYER_LEVEL);
@@ -6929,7 +6929,7 @@ i32 CPlay::ClearPlacedObjects() {
 RVA(0x000da200, 0x9b)
 i32 CPlay::GetMusicVariant() {
     CGruntzMgr* gr = g_gameReg;
-    if (gr->GetGameMode() == GAMEMODE_QUESTZ && gr->m_isCustomLevel == false) {
+    if (gr->GetGameMode() == GAMEMODE_QUESTZ && gr->IsCustomLevel() == false) {
         return (m_levelIndex + 1) % 2;
     }
     DATA(0x0024c26c)
