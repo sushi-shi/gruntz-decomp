@@ -42,7 +42,7 @@ static __inline void HiPost(i32 cmdId) {
     PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, cmdId, 0);
 }
 
-inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {
+inline b32 CStatusBarMgr::BeginGruntPlacement(i32 slot) {
     if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(0x66)) {
         return false;
     }

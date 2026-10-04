@@ -2287,7 +2287,7 @@ recorder_place:
     }
     if (this->m_gruntPlacementActive != false) {
         this->m_gruntPlacementActive = false;
-        this->m_statusBar->CommitSlot(false);
+        this->m_statusBar->FinishGruntPlacement(false);
         this->SelectCursor(0);
         if (vk != VK_INSERT) {
             goto tail_default;
@@ -2470,7 +2470,7 @@ tail_default2:
                 lv->SelectBrickResource(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_INSERT:
-                lv->ActivateSlot(-1);
+                lv->SelectGruntOvenForPlacement(-1);
                 break;
         }
     }
@@ -2568,7 +2568,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
             m_gruntPlacementActive = false;
-            m_statusBar->CommitSlot(eventArg);
+            m_statusBar->FinishGruntPlacement(eventArg);
             SelectCursor(0);
             return 1;
         }
@@ -2865,7 +2865,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         RECT er;
         SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
         if (::PtInRect(&er, px, py)) {
-            if (!m_statusBar->FindReadySlot()) {
+            if (!m_statusBar->ConsumeReadyGrunt()) {
                 return 1;
             }
             char ab = static_cast<char>(g_curPlayer);
@@ -6961,7 +6961,7 @@ i32 CPlay::CancelCursorAction() {
     if (m_gruntPlacementActive != false) {
         CStatusBarMgr* statusBar = m_statusBar;
         m_gruntPlacementActive = false;
-        statusBar->CommitSlot(false);
+        statusBar->FinishGruntPlacement(false);
         SelectCursor(0);
         changed = true;
     }

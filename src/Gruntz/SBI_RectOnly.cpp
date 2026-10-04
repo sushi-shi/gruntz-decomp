@@ -566,7 +566,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (cmd < SBICMD_GRUNT_SLOT_FIRST || cmd > SBICMD_GRUNT_SLOT_LAST) {
                 return 0;
             }
-            ActivateSlot(IDX(cmd) - IDX(SBICMD_GRUNT_SLOT_FIRST));
+            SelectGruntOvenForPlacement(IDX(cmd) - IDX(SBICMD_GRUNT_SLOT_FIRST));
             return 1;
 
         case TAB_RESOURCE:
@@ -2470,7 +2470,7 @@ void CStatusBarMgr::TickGruntWell() {
     changed = true;
 noChange:;
     if (m_gruntWellLevel == GRUNT_WELL_FULL) {
-        if (AnySlotActive()) {
+        if (StartAvailableGruntOven()) {
             changed = true;
             SetGruntWell(GRUNT_WELL_EMPTY);
         }
@@ -2487,15 +2487,15 @@ noChange:;
 }
 
 RVA(0x00105520, 0x21)
-void CStatusBarMgr::ResetSlots() {
+void CStatusBarMgr::ResetGruntOvens() {
     for (i32 i = 0; i < 5; i++) {
-        ArmSlot(i);
+        EmptyGruntOven(i);
     }
     m_selectedGruntOvenSlot = -1;
 }
 
 RVA(0x00105560, 0x33)
-void CStatusBarMgr::ArmSlot(i32 idx) {
+void CStatusBarMgr::EmptyGruntOven(i32 idx) {
     m_gruntOvenSlots[idx].m_state = GRUNT_OVEN_EMPTY;
     m_gruntOvenSlots[idx].m_frameIndex = 1;
     if (m_gruntOvenImages[idx]) {
@@ -2504,7 +2504,7 @@ void CStatusBarMgr::ArmSlot(i32 idx) {
 }
 
 RVA(0x001055b0, 0x109)
-i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
+i32 CStatusBarMgr::StartGruntOven(i32 idx) {
     GruntOvenSlot* sp = &m_gruntOvenSlots[idx];
     if (sp->m_state != GRUNT_OVEN_EMPTY) {
         return 0;
@@ -2526,9 +2526,9 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
 }
 
 RVA(0x00105710, 0x23)
-i32 CStatusBarMgr::AnySlotActive() {
+i32 CStatusBarMgr::StartAvailableGruntOven() {
     for (i32 i = 0; i < 5; i++) {
-        if (LoadGooCookingSprite(i)) {
+        if (StartGruntOven(i)) {
             return 1;
         }
     }
@@ -2596,7 +2596,7 @@ void CStatusBarMgr::UpdateStatusSystems() {
 
 RVA(0x00105920, 0x47)
 void CStatusBarMgr::Reset() {
-    ResetSlots();
+    ResetGruntOvens();
     m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
     m_gruntWellLevel = GRUNT_WELL_EMPTY;
     ResetConveyorBelts();
@@ -2879,9 +2879,9 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
 }
 
 RVA(0x00106790, 0x62)
-void CStatusBarMgr::CommitSlot(b32 active) {
-    if (active) {
-        ArmSlot(m_selectedGruntOvenSlot);
+void CStatusBarMgr::FinishGruntPlacement(b32 placed) {
+    if (placed) {
+        EmptyGruntOven(m_selectedGruntOvenSlot);
         m_selectedGruntOvenSlot = -1;
     } else {
         m_gruntOvenSlots[m_selectedGruntOvenSlot].m_frameIndex = s_gruntOvenReadyFrame;
@@ -3833,10 +3833,10 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
 }
 
 RVA(0x00109a90, 0x25)
-i32 CStatusBarMgr::FindReadySlot() {
+i32 CStatusBarMgr::ConsumeReadyGrunt() {
     for (i32 i = 0; i < 5; i++) {
         if (m_gruntOvenSlots[i].m_state == GRUNT_OVEN_READY) {
-            ArmSlot(i);
+            EmptyGruntOven(i);
             return 1;
         }
     }
@@ -4465,18 +4465,18 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b930, 0x1a7)
-i32 CStatusBarMgr::ActivateSlot(i32 idx) {
+i32 CStatusBarMgr::SelectGruntOvenForPlacement(i32 idx) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false) {
         if (idx == -1) {
             for (i32 slot = 0; slot < 5; slot++) {
                 if (m_gruntOvenSlots[slot].m_state == GRUNT_OVEN_READY) {
-                    return ActivateReadySlot(slot);
+                    return BeginGruntPlacement(slot);
                 }
             }
             return 0;
         }
         if (m_gruntOvenSlots[idx].m_state == GRUNT_OVEN_READY) {
-            return ActivateReadySlot(idx);
+            return BeginGruntPlacement(idx);
         }
     }
     return 0;

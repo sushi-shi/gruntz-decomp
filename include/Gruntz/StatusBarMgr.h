@@ -97,7 +97,7 @@ GZ_ENUM_CONST_END(GruntWellPct)
     }
 
 class CStatusBarMgr {
-    inline b32 ActivateReadySlot(i32 slot);
+    inline b32 BeginGruntPlacement(i32 slot);
 
 public:
     CStatusBarMgr();
@@ -114,9 +114,9 @@ public:
     void StartDestructWarning(i32 countdownMs);
     i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
     void ResetCounters();
-    void ResetSlots();
-    void ArmSlot(i32 idx);
-    i32 AnySlotActive();
+    void ResetGruntOvens();
+    void EmptyGruntOven(i32 idx);
+    i32 StartAvailableGruntOven();
     void AdvanceGruntWell(i32 delta);
     void DrainGruntWell(i32 delta);
     void SetGruntWellTarget(i32 value);
@@ -126,11 +126,11 @@ public:
     void ToggleUnitSample(i32 unitIndex);
     void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
-    void CommitSlot(b32 active);
+    void FinishGruntPlacement(b32 placed);
     void ClearHlCell(i32 group, StatusBarHighlightRow row);
     i32 SetHlCell(i32 row, i32 handle, i32 group);
     i32 SetHlCellByTier(i32 handle, i32 group);
-    i32 FindReadySlot();
+    i32 ConsumeReadyGrunt();
     void LockDestructButton(i32 resetWarningAnimation);
 
     i32 BuildStatusBarTabs();
@@ -144,7 +144,7 @@ public:
     void BuildGameTabResumeButton(b32 show);
     void BuildGameTabPauseButton();
 
-    i32 LoadGooCookingSprite(i32);
+    i32 StartGruntOven(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
     void UpdateRezMachineSnoozeStatusBar();
@@ -207,7 +207,7 @@ public:
     void InitTabRects();
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
     void CloseLevelOverlay();
-    i32 ActivateSlot(i32 idx);
+    i32 SelectGruntOvenForPlacement(i32 idx);
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 
     const RECT* GetBarRect() const {
