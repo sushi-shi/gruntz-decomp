@@ -842,10 +842,7 @@ i32 CGrunt::StepArrivalDrop(
                         AddTailCoord(static_cast<Coord*>(probe.GetNext(pos)));
                     }
                 } else {
-                    pos = probe.GetHeadPosition();
-                    while (pos != NULL) {
-                        g_coordPool.Push(probe.GetNext(pos));
-                    }
+                    RecycleCoordList(probe);
                 }
                 probe.RemoveAll();
             }
