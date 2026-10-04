@@ -395,9 +395,9 @@ i32 CMulti::EnterState(GameStateId previousState) {
     m_mgr->RefreshGameClock();
     g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = timeGetTime;
-    m_drainTimer = 0;
-    m_lastTime = tg();
-    m_frameDelta = 0;
+    m_sendCountdownMs = 0;
+    m_lastFrameTimeMs = tg();
+    m_frameDeltaMs = 0;
     m_reserved5ec = 0;
     m_reserved5e8 = 0;
     m_accumTime = 0;
@@ -454,9 +454,9 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_frameTime = 0;
     m_savedClock = 0;
     m_reserved5d0 = 0;
-    m_drainTimer = 0;
-    m_lastTime = timeGetTime();
-    m_frameDelta = 0;
+    m_sendCountdownMs = 0;
+    m_lastFrameTimeMs = timeGetTime();
+    m_frameDeltaMs = 0;
     m_reserved5ec = 0;
     m_reserved5e8 = 0;
     m_accumTime = 0;
@@ -487,9 +487,9 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_frameTime = 0;
     m_savedClock = 0;
     m_reserved5d0 = 0;
-    m_drainTimer = 0;
-    m_lastTime = timeGetTime();
-    m_frameDelta = 0;
+    m_sendCountdownMs = 0;
+    m_lastFrameTimeMs = timeGetTime();
+    m_frameDeltaMs = 0;
     m_reserved5ec = 0;
     m_reserved5e8 = 0;
     m_accumTime = 0;
@@ -525,47 +525,48 @@ RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
-    i32 oldT = m_lastTime;
-    i32 t = timeGetTime();
-    m_lastTime = t;
+    i32 previousFrameTimeMs = m_lastFrameTimeMs;
+    i32 frameTimeMs = timeGetTime();
+    m_lastFrameTimeMs = frameTimeMs;
 
-    m_frameDelta = t - oldT;
-    m_accumTime += m_frameDelta;
+    m_frameDeltaMs = frameTimeMs - previousFrameTimeMs;
+    m_accumTime += m_frameDeltaMs;
     i32 newId = m_session->GetCommandTick();
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
-        CGruntzCmdMgr* mgr = Mgr()->GetCommandMgr();
-        CGruntzCommand* node;
-        if (mgr->m_pendingLocalCommands.IsEmpty()) {
-            node = NULL;
+        CGruntzCmdMgr* commandManager = Mgr()->GetCommandMgr();
+        CGruntzCommand* command;
+        if (commandManager->m_pendingLocalCommands.IsEmpty()) {
+            command = NULL;
         } else {
-            node = static_cast<CGruntzCommand*>(mgr->m_pendingLocalCommands.RemoveHead());
+            command =
+                static_cast<CGruntzCommand*>(commandManager->m_pendingLocalCommands.RemoveHead());
         }
-        if (node) {
-            node->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
+        if (command) {
+            command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
 
-            i32 v = m_processedCommandTick + static_cast<i32>(m_commandDelay) * 2;
-            node->m_scheduleSlot = static_cast<u8>(v % 128);
+            i32 scheduleTick = m_processedCommandTick + static_cast<i32>(m_commandDelay) * 2;
+            command->m_scheduleSlot = static_cast<u8>(scheduleTick % 128);
         }
-        m_session->ScheduleCommand(node, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
+        m_session->ScheduleCommand(command, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
     }
-    i32 dt = m_frameDelta;
-    dt = static_cast<i32>(min(static_cast<u32>(dt), g_frameDelta));
-    m_packetsRcvd = m_session->Poll(dt);
+    i32 pollElapsedMs = m_frameDeltaMs;
+    pollElapsedMs = static_cast<i32>(min(static_cast<u32>(pollElapsedMs), g_frameDelta));
+    m_packetsRcvd = m_session->Poll(pollElapsedMs);
     m_packetsSent = 0;
 
-    if (static_cast<u32>(m_frameDelta) >= static_cast<u32>(m_drainTimer)) {
-        m_drainTimer = 0;
+    if (static_cast<u32>(m_frameDeltaMs) >= static_cast<u32>(m_sendCountdownMs)) {
+        m_sendCountdownMs = 0;
     } else {
-        m_drainTimer = m_drainTimer - m_frameDelta;
+        m_sendCountdownMs = m_sendCountdownMs - m_frameDeltaMs;
     }
-    if (m_drainTimer == 0) {
+    if (m_sendCountdownMs == 0) {
         m_packetsSent = m_session->SendTick();
-        m_drainTimer = m_resendInterval;
+        m_sendCountdownMs = m_resendInterval;
     }
-    i32 fin = 0;
+    i32 tickAdvanced = 0;
     if (m_session->AdvanceTick() && m_pollAbort == false) {
-        fin = 1;
+        tickAdvanced = 1;
     }
     TickStateMgrs();
     CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
@@ -573,28 +574,28 @@ i32 CMulti::Render() {
         mainPlane->ActivateVisibleObjects();
     }
 
-    if (fin != 0) {
+    if (tickAdvanced != 0) {
         if (m_session->VerifyChecksums() == 0 && m_outOfSync == false) {
             if (m_isHost != false) {
                 BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC, DPSEND_GUARANTEED);
                 OnOutOfSync();
                 AdvanceGameFrame();
-                m_drainTimer = 0;
+                m_sendCountdownMs = 0;
                 return 1;
             }
             BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC_REPORT, DPSEND_GUARANTEED);
         }
         AdvanceGameFrame();
-        m_drainTimer = 0;
+        m_sendCountdownMs = 0;
         return 1;
     }
     RenderGameFrame();
     CheckDropTimeout();
-    SoundStream* win = m_world->GetSoundStream();
-    if (win) {
-        i32 now = timeGetTime();
-        win->TickVolumeRamps(now);
-        win->TickStreams(now);
+    SoundStream* soundStream = m_world->GetSoundStream();
+    if (soundStream) {
+        i32 soundTimeMs = timeGetTime();
+        soundStream->TickVolumeRamps(soundTimeMs);
+        soundStream->TickStreams(soundTimeMs);
     }
     ActiveWait(2);
     return 1;

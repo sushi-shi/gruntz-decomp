@@ -266,9 +266,9 @@ public:
     i32 m_processedCommandTick;
     // @identity-TODO: session reset only zeroes this word.
     i32 m_reserved5d0;
-    i32 m_drainTimer;
-    i32 m_frameDelta;
-    i32 m_lastTime;
+    i32 m_sendCountdownMs;
+    i32 m_frameDeltaMs;
+    i32 m_lastFrameTimeMs;
     u32 m_accumTime;
     i32 m_lastFrameSyncTime;
     // @identity-TODO: state entry and session reset zero both words; timing code
