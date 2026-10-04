@@ -20,7 +20,7 @@ rva	unit	function	lost_max	cur
 0x153ff0	cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	98.5070
 0x1544d0	cimage	?BlitShadeFlipV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.2632
 0x154270	cimage	?BlitShadeNorm@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.8571
-0x153470	cimage	?RenderImage@CImage@@UAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	98.0233
+0x153470	cimage	?RenderImage@CImage@@UAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	97.9933
 0x14a200	ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	79.9049	79.8770
 0x14b770	ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.5866	77.3231
 0x14c9f0	ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	82.0433	80.9266
@@ -73,8 +73,8 @@ rva	unit	function	lost_max	cur
 0x0862f0	gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z	98.6709	98.6558
 0x175e40	imagepool	?InitBmp@CDib@@QAEHPBDPAUHDC__@@I@Z	100.0000	97.9776
 0x161590	imageset3g	?GetStride@CPixelTileImageSet@@UAEHXZ	100.0000	99.5000
-0x0984b0	ingameicon	?UpdateAvailablePickup@CInGameIcon@@QAEHXZ	93.8843	93.7190
 0x0986b0	ingameicon	?TryGivePickupToGrunt@CInGameIcon@@QAEHHH@Z	96.3765	96.2956
+0x0984b0	ingameicon	?UpdateAvailablePickup@CInGameIcon@@QAEHXZ	93.8843	93.7190
 0x163300	levelplane	?ActivateVisibleObjects@CLevelPlane@@QAEHXZ	100.0000	99.9286
 0x162010	levelplane	?Draw@CLevelPlane@@QAEXPAVCRenderBuffer@@@Z	87.7566	83.2420
 0x1638c0	levelplane	?Load@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	99.9841
@@ -104,6 +104,7 @@ rva	unit	function	lost_max	cur
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	100.0000	96.5811
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
+0x0b1ee0	spotlight	?Update@CSpotLight@@QAEHXZ	81.3820	76.7079
 0x09c0e0	spriteloaders	?AddTime@CLevelTimer@@QAEXHH@Z	100.0000	99.8214
 0x0e2df0	spriteref	?Build@CGruntPalette@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	100.0000	83.1877
 0x0e8cb0	statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	95.3077
