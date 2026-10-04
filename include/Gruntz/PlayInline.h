@@ -12,6 +12,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/Timer.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>
@@ -30,6 +31,15 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     m_scrollEdgeActive = 0;
     m_scrollEdgeLock = 0;
     m_levelTimer = NULL;
+}
+
+inline void CPlay::FreeLevelTimer() {
+    CTimer* timer = m_levelTimer;
+    if (timer != NULL) {
+        timer->Reset();
+        delete timer;
+        m_levelTimer = NULL;
+    }
 }
 
 inline void CPlay::FreeStartMarkers() {

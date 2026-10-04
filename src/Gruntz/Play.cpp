@@ -330,12 +330,7 @@ void CPlay::ReleaseResources() {
         m_chatBox = NULL;
     }
     SAFE_DELETE(m_tileTriggers)
-    CTimer* fm = m_levelTimer;
-    if (fm) {
-        fm->Reset();
-        delete fm;
-        m_levelTimer = NULL;
-    }
+    FreeLevelTimer();
     FreeStartMarkers();
     for (i32 k = 0; k < 4; k++) {
         FreePlacedObjectCells(k);
@@ -1345,12 +1340,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
                 if (!self->m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
-                    CTimer* spr = self->m_levelTimer;
-                    if (spr != NULL) {
-                        spr->Reset();
-                        delete spr;
-                        self->m_levelTimer = NULL;
-                    }
+                    self->FreeLevelTimer();
                 }
             }
             {
