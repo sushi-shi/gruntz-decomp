@@ -59,12 +59,12 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         return 1;
     }
     if (m_board->CellFlagsAtUnchecked(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y) & 0x20) {
-        if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
+        if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }
         if (unit->TileSwitch(unit->m_arrivalCell.m_x, unit->m_arrivalCell.m_y, 0, 0xd87, 0, 0)
             != 0) {
-            unit->m_dwell = 0;
+            unit->ResetDwell();
             return 1;
         }
         unit->SetBattlezTask(BZTASK_ADVANCE);
@@ -75,6 +75,6 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         unit->RecycleCoords();
     }
     ResetToSeek(unit);
-    unit->m_dwell = 0;
+    unit->ResetDwell();
     return 1;
 }

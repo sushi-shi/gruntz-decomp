@@ -15,7 +15,7 @@
 
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
-    if (static_cast<u32>(grunt->m_dwell) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
+    if (static_cast<u32>(grunt->GetDwell()) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
         return 1;
     }
     i32 targetTeamIndex = grunt->GetTargetTeam();
@@ -51,7 +51,7 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
             }
             if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
                 grunt->TileSwitch(col, row, 0, 0xd87, 0, 0);
-                grunt->m_dwell = 0;
+                grunt->ResetDwell();
                 return 1;
             }
         }

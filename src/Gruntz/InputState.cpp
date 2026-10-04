@@ -30,11 +30,11 @@ i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
 RVA(0x00038340, 0x46)
 void CInputState::ConfigureGameplayKeys() {
     if (m_keyboard) {
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_SHIFT;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = VK_RETURN;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_SPACE;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON4)] = VK_MENU;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON5)] = VK_CONTROL;
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON0, VK_SHIFT);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON1, VK_RETURN);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON2, VK_SPACE);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON4, VK_MENU);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON5, VK_CONTROL);
     }
 }
 
@@ -50,7 +50,7 @@ i32 CInputState::SelectDevices(DirectInputMgr2* manager, InputDeviceSel selectio
     m_deviceSelection = INPUTDEV_NONE;
     switch (selection) {
         case INPUTDEV_KEYBOARD: {
-            CKeyboardDevice* d = manager->m_keyboard;
+            CKeyboardDevice* d = manager->GetKeyboard();
             m_keyboard = d;
             m_primaryDevice = d;
             break;
@@ -80,23 +80,23 @@ i32 CInputState::SelectDevices(DirectInputMgr2* manager, InputDeviceSel selectio
             break;
         }
         case INPUTDEV_KEYBOARD_JOYSTICK1: {
-            m_keyboard = manager->m_keyboard;
+            m_keyboard = manager->GetKeyboard();
             CJoystickDevice* d = manager->GetJoystick(0);
             m_joystick = d;
             m_deviceGroup = manager->CreateDeviceGroup(m_keyboard, d, NULL, NULL, NULL, NULL, 0);
             break;
         }
         case INPUTDEV_KEYBOARD_JOYSTICK1_MOUSE: {
-            m_keyboard = manager->m_keyboard;
+            m_keyboard = manager->GetKeyboard();
             CJoystickDevice* d = manager->GetJoystick(0);
             m_joystick = d;
-            m_mouse = manager->m_mouse;
+            m_mouse = manager->GetMouse();
             m_deviceGroup = manager->CreateDeviceGroup(m_keyboard, d, m_mouse, NULL, NULL, NULL, 0);
             break;
         }
         case INPUTDEV_KEYBOARD_MOUSE:
-            m_keyboard = manager->m_keyboard;
-            m_mouse = manager->m_mouse;
+            m_keyboard = manager->GetKeyboard();
+            m_mouse = manager->GetMouse();
             m_deviceGroup =
                 manager->CreateDeviceGroup(m_keyboard, m_mouse, NULL, NULL, NULL, NULL, 0);
             break;

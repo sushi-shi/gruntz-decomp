@@ -55,7 +55,7 @@
 
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
-    if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
+    if (static_cast<u32>(unit->GetDwell()) > static_cast<u32>(m_repathBudget)) {
         POSITION pos = m_triggerMgr->GetPuddleHeadPosition();
         CGruntPuddle* best = NULL;
         i32 bestDist = INT_MAX;
@@ -85,7 +85,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
         if (best != NULL) {
             RouteUnitTo(unit, best->GetTileX(), best->GetTileY(), 0xd87, 0, 0);
         }
-        unit->m_dwell = 0;
+        unit->ResetDwell();
     }
     return 1;
 }
