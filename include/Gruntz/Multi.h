@@ -65,7 +65,7 @@ public:
     virtual i32 UnusedPlayQuery() OVERRIDE;
     virtual i32 GetFrame() OVERRIDE;
 
-    virtual i32 LoadByMode(i32 mode, i32 unused) OVERRIDE;
+    virtual i32 LoadLevel(i32 level, i32 unused) OVERRIDE;
 
     virtual void OnExit() OVERRIDE;
     virtual void TickStateMgrs() OVERRIDE;
@@ -120,7 +120,7 @@ public:
     i32 RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam);
     void SendLobbyKeepAlive();
 
-    i32 Connect(i32 mode);
+    i32 LoadAndSynchronizeLevel(i32 level);
     i32 StartTitle();
     void CheckDropTimeout();
 
@@ -214,7 +214,7 @@ public:
     u32 FrameSyncWait();
     i32 SetupTcpIpConfig();
     i32 CreateLocalPlayer();
-    i32 WaitForConnect();
+    i32 WaitForGameConfig();
     i32 SendGameConfig(CNetPlayerNode* recipient);
     i32 ApplyGameConfig(CNetGameConfigPacket* config);
     i32 ResetPlayerCommands(i32 playerId);
@@ -242,11 +242,11 @@ public:
     b32 m_versionMismatch;
     b32 m_outOfSync;
     b32 m_syncGate;
-    b32 m_pumpGuard;
-    b32 m_connected;
+    b32 m_waitingForPlayers;
+    b32 m_gameStarted;
     b32 m_waitDialogReplyReceived;
     b32 m_lobbyLaunch;
-    b32 m_connectAccepted;
+    b32 m_gameConfigUpdated;
     b32 m_savedEffectsEnabled;
     b32 m_roundComplete;
     CString m_providerConfigPrefix;

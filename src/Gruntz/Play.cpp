@@ -284,7 +284,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         PostLoadImageBanks();
-        if (!LoadByMode(areaArg, 1)) {
+        if (!LoadLevel(areaArg, 1)) {
             return 0;
         }
         if (!LoadCursorSprites(0, false)) {
@@ -362,7 +362,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
             return 0;
         }
         m_stepCountdown = 2;
-    } else if (m_renderDisabled == false || m_mgr->GetGameMode() == GAMEMODE_MULTIPLAYER) {
+    } else if (m_loadingScreenVisible == false || m_mgr->GetGameMode() == GAMEMODE_MULTIPLAYER) {
         if (!EnterMode(previousState)) {
             return 0;
         }
@@ -377,7 +377,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
     m_pickupPlacementActive = false;
     m_cursorTargetValid = false;
     m_selectionDragActive = false;
-    if (m_renderDisabled == false) {
+    if (m_loadingScreenVisible == false) {
         if (previousState != GAMESTATE_HELP) {
             m_mgr->m_worldSounds->Resume();
         }
@@ -419,7 +419,7 @@ i32 CPlay::Render() {
     m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
 
-    if (m_renderDisabled != false) {
+    if (m_loadingScreenVisible != false) {
         return 1;
     }
 
@@ -882,7 +882,7 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 RVA(0x000ca200, 0xe54)
-i32 CPlay::LoadByMode(i32 level, i32) {
+i32 CPlay::LoadLevel(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
     CRezDir* bank;
@@ -1123,7 +1123,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     LoadLoadingBarSprite();
     AdvanceLoadingBar(false);
-    FreeListTeardown();
+    ClearLevelState();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1423,12 +1423,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_randomColorsCurseActive = false;
         self->m_defeatCountdownActive = false;
         self->m_focusPlayerIndex = 3;
-        self->m_renderDisabled = true;
-        g_playActive = false;
+        self->m_loadingScreenVisible = true;
+        g_skipNextRestoreMessage = false;
         ResetViewport();
         if ((g_gameReg)->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-            g_playActive = true;
-            self->m_renderDisabled = false;
+            g_skipNextRestoreMessage = true;
+            self->m_loadingScreenVisible = false;
             self->m_mgr->CheckSavedMode();
         }
         self->m_mgr->ChatLog()->ClearMessages();
@@ -1444,7 +1444,7 @@ fail0:
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
-    FreeListTeardown();
+    ClearLevelState();
     if (m_world) {
         m_world->ChildGroup()->ClearChildren();
     }
@@ -1456,7 +1456,7 @@ void CPlay::OnExit() {
 }
 
 RVA(0x000cb480, 0x22c)
-void CPlay::FreeListTeardown() {
+void CPlay::ClearLevelState() {
     i32 i;
     i32 k;
     if (m_world == NULL) {
@@ -1629,8 +1629,8 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     if (m_inputBlocked != false) {
         return 1;
     }
-    if (m_renderDisabled != false) {
-        m_renderDisabled = false;
+    if (m_loadingScreenVisible != false) {
+        m_loadingScreenVisible = false;
         m_inputBlocked = true;
         EnterMode(GAMESTATE_PLAY);
         m_waitingForStart = true;
@@ -1685,7 +1685,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_inputBlocked != false) {
         return 1;
     }
-    if (this->m_renderDisabled != false) {
+    if (this->m_loadingScreenVisible != false) {
         return 1;
     }
     if (this->m_waitingForStart != false) {
@@ -2490,9 +2490,9 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     if (m_inputBlocked != false) {
         return 1;
     }
-    if (m_renderDisabled != false) {
+    if (m_loadingScreenVisible != false) {
         m_inputBlocked = true;
-        m_renderDisabled = false;
+        m_loadingScreenVisible = false;
         EnterMode(GAMESTATE_PLAY);
         m_waitingForStart = true;
         return 1;
@@ -2885,9 +2885,9 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_inputBlocked != false) {
         return 1;
     }
-    if (m_renderDisabled != false) {
+    if (m_loadingScreenVisible != false) {
         m_inputBlocked = true;
-        m_renderDisabled = false;
+        m_loadingScreenVisible = false;
         EnterMode(GAMESTATE_PLAY);
         m_waitingForStart = true;
         return 1;
@@ -6146,7 +6146,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     }
 
     s->Write(&m_cursorAnimationActive, sizeof(m_cursorAnimationActive));
-    s->Write(&m_renderDisabled, sizeof(m_renderDisabled));
+    s->Write(&m_loadingScreenVisible, sizeof(m_loadingScreenVisible));
     s->Write(&m_levelTimeExpired, sizeof(m_levelTimeExpired));
     s->Write(&m_initialFramePending, sizeof(m_initialFramePending));
     s->Write(&m_inputBlocked, sizeof(m_inputBlocked));
@@ -6283,7 +6283,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     }
 
     ar->Read(&m_cursorAnimationActive, sizeof(m_cursorAnimationActive));
-    ar->Read(&m_renderDisabled, sizeof(m_renderDisabled));
+    ar->Read(&m_loadingScreenVisible, sizeof(m_loadingScreenVisible));
     ar->Read(&m_levelTimeExpired, sizeof(m_levelTimeExpired));
     ar->Read(&m_initialFramePending, sizeof(m_initialFramePending));
     ar->Read(&m_inputBlocked, sizeof(m_inputBlocked));
@@ -6969,7 +6969,7 @@ i32 CPlay::CancelCursorAction() {
 
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
-    if (m_renderDisabled == false && m_waitingForStart == false && m_levelOverlayOpen == false
+    if (m_loadingScreenVisible == false && m_waitingForStart == false && m_levelOverlayOpen == false
         && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == false
         && m_statusBar->m_levelOverlayActive == false
         && m_statusBar->m_quitConfirmationActive == false && g_gameReg->GetFrameGate() == false

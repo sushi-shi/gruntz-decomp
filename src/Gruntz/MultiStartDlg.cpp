@@ -1071,11 +1071,11 @@ void CMultiStartDlg::Watchdog() {
             RefreshLatencyControl();
             g_playerRosterChanged = false;
         }
-        if (g_multiState->m_connectAccepted != false) {
+        if (g_multiState->m_gameConfigUpdated != false) {
             EnableChatControls();
             RefreshWorldControls();
             RefreshLatencyControl();
-            g_multiState->m_connectAccepted = false;
+            g_multiState->m_gameConfigUpdated = false;
         }
         g_watchdogBusy = false;
         return;

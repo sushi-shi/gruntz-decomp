@@ -120,11 +120,11 @@ public:
 
     virtual i32 LoadImageBanks();
 
-    virtual i32 LoadByMode(i32 level, i32 unused);
+    virtual i32 LoadLevel(i32 level, i32 unused);
 
     virtual i32 HandleDragMove(i32 keyFlags, i32 x, i32 y);
     virtual void OnExit();
-    virtual void FreeListTeardown();
+    virtual void ClearLevelState();
     virtual void ModeCleanup();
 
     virtual i32 DrawStateMessage();
@@ -388,7 +388,7 @@ public:
 
     CWwdSpriteObject* m_cursorSnapSprite;
     b32 m_cursorAnimationActive;
-    b32 m_renderDisabled;
+    b32 m_loadingScreenVisible;
     b32 m_playerCommandPending;
     b32 m_levelTimeExpired;
     b32 m_waitingForStart;
@@ -422,7 +422,7 @@ void ResetPlayerColorAvailability();
 
 extern GruntDeathType g_areaPitDeath;
 
-extern b32 g_playActive;
+extern b32 g_skipNextRestoreMessage;
 extern i32 g_deactivateProfileMs;
 extern i32 g_flipProfileMs;
 extern b32 g_playerColorAvailable[TINT_COUNT];
