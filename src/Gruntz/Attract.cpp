@@ -373,7 +373,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
 // Zero-ref: retail has no caller or address-taking reference.
 // @early-stop
 RVA(0x000fab90, 0xaa)
-i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
+i32 CPreviewState::LoadPreviewImage(char* imageName, i32 present, i32 unused3, i32 unused4) {
     if (m_world == NULL) {
         return 0;
     }
@@ -383,16 +383,16 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (m_stateResources == NULL) {
         return 0;
     }
-    char buf[64];
-    sprintf(buf, "\\SCREENZ\\%s", name);
-    CRezItm* sym = StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
-    if (sym == NULL) {
+    char resourcePath[64];
+    sprintf(resourcePath, "\\SCREENZ\\%s", imageName);
+    CRezItm* imageResource = StateResources()->GetRezFromPath(resourcePath, IMGTAG_XCP);
+    if (imageResource == NULL) {
         return 0;
     }
-    if (World()->GetDisplayBuffers()->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
+    if (World()->GetDisplayBuffers()->LoadPageImage(imageResource, DDRAW_PAGE_BACK) == 0) {
         return 0;
     }
-    if (doFlip != 0) {
+    if (present != 0) {
         World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
     }
     return 1;
