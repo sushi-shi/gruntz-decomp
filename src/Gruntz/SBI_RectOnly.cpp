@@ -2333,10 +2333,10 @@ i32 CStatusBarMgr::SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode)
         return 0;
     }
 
-    CSBI_SideTab* r = m_unitSideTabs[unitIndex];
-    if (r != NULL) {
-        r->m_sampleMode = sampleMode;
-        r->SetEnabled(1);
+    CSBI_SideTab* sideTab = m_unitSideTabs[unitIndex];
+    if (sideTab != NULL) {
+        sideTab->m_sampleMode = sampleMode;
+        sideTab->SetEnabled(1);
         if (m_activeTab == TAB_STATZ) {
 
             m_unitSampleArrows[unitIndex]->SetSampledDirection(m_position, true);
@@ -2349,10 +2349,10 @@ i32 CStatusBarMgr::SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode)
 
 RVA(0x00104f90, 0xa8)
 i32 CStatusBarMgr::ClearUnitSample(i32 unitIndex) {
-    CSBI_SideTab* r = m_unitSideTabs[unitIndex];
-    if (r != NULL) {
-        r->m_sampleMode = STATUS_SAMPLE_NONE;
-        r->SetEnabled(0);
+    CSBI_SideTab* sideTab = m_unitSideTabs[unitIndex];
+    if (sideTab != NULL) {
+        sideTab->m_sampleMode = STATUS_SAMPLE_NONE;
+        sideTab->SetEnabled(0);
         if (m_activeTab == TAB_STATZ) {
 
             m_unitSampleArrows[unitIndex]->SetUnsampledDirection(m_position, true);
@@ -2365,52 +2365,53 @@ i32 CStatusBarMgr::ClearUnitSample(i32 unitIndex) {
 
 RVA(0x00105070, 0x10e)
 i32 CStatusBarMgr::BuildSideTabs() {
-    i32 i = 0;
-    for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
-        RECT rc;
+    i32 unitIndex = 0;
+    for (i32 tabBottom = 0xd9; tabBottom < 0x1e7; tabBottom += 0x12) {
+        RECT tabRect;
         if (m_position == STATUSBAR_DOCK_RIGHT) {
-            rc.left = m_barRect.left - 0x1c;
-            rc.right = m_barRect.left;
+            tabRect.left = m_barRect.left - 0x1c;
+            tabRect.right = m_barRect.left;
         } else {
-            rc.left = m_barRect.right;
-            rc.right = m_barRect.right + 0x1c;
+            tabRect.left = m_barRect.right;
+            tabRect.right = m_barRect.right + 0x1c;
         }
-        rc.top = strid - 0x11;
-        rc.bottom = strid;
-        CSBI_SideTab* newobj = new CSBI_SideTab;
+        tabRect.top = tabBottom - 0x11;
+        tabRect.bottom = tabBottom;
+        CSBI_SideTab* sideTab = new CSBI_SideTab;
 
-        b32 ok = newobj->Initialize(
+        b32 initialized = sideTab->Initialize(
             this,
             g_gameReg->World(),
-            static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
+            static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + unitIndex),
             TAB_CONTROLS,
-            rc,
+            tabRect,
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
             g_curPlayer,
-            i,
-            m_unitSampleModes[i],
+            unitIndex,
+            m_unitSampleModes[unitIndex],
             m_position == STATUSBAR_DOCK_RIGHT
         );
-        if (ok == false) {
-            delete newobj;
+        if (initialized == false) {
+            delete sideTab;
             return 0;
         }
-        AddTabItem(0, newobj);
-        m_unitSideTabs[i] = newobj;
-        i++;
+        AddTabItem(0, sideTab);
+        m_unitSideTabs[unitIndex] = sideTab;
+        unitIndex++;
     }
     return 1;
 }
 
 RVA(0x00105280, 0x61)
-i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
+i32 CStatusBarMgr::HitTestSideTabs(i32 screenX, i32 screenY) {
     if (m_gameplayControlsDisabled == false) {
-        for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            if (m_unitSideTabs[i] && m_unitSideTabs[i]->IsEnabled()) {
-                CSBI_SideTab* p = m_unitSideTabs[i];
-                b32 hit = p->IsEnabled() ? p->ContainsPoint(x, y) : false;
-                if (hit) {
-                    return i;
+        for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
+            if (m_unitSideTabs[unitIndex] && m_unitSideTabs[unitIndex]->IsEnabled()) {
+                CSBI_SideTab* sideTab = m_unitSideTabs[unitIndex];
+                b32 containsPoint =
+                    sideTab->IsEnabled() ? sideTab->ContainsPoint(screenX, screenY) : false;
+                if (containsPoint) {
+                    return unitIndex;
                 }
             }
         }

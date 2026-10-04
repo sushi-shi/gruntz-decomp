@@ -176,7 +176,7 @@ public:
     i32 SelectBrickResource(ResourceSlotRow row);
     i32 SetGameTabContent(GameTabContent content, b32 forceReload);
     i32 ClearButtonHighlights(StatusBarTab idx);
-    i32 HitTestSideTabs(i32 x, i32 y);
+    i32 HitTestSideTabs(i32 screenX, i32 screenY);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
