@@ -30,6 +30,12 @@ public:
     void SetCustomLevel(b32 customLevel) {
         m_isCustomLevel = customLevel;
     }
+    void AddAvailableSecret() {
+        ++m_secretsAvailable;
+    }
+    void RecordSecretFound() {
+        ++m_secretsFound;
+    }
     void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void ClearFlagCaptures();
 

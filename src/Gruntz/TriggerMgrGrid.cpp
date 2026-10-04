@@ -557,7 +557,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 0;
             }
             {
-                g_gameReg->GetGameStats()->m_secretsFound++;
+                g_gameReg->GetGameStats()->RecordSecretFound();
                 {
                     SoundCueRegistry* set = m_world->m_soundRegistry;
                     set->PlayCue("GAME_SECRETSWITCH");
