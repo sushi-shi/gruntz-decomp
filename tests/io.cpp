@@ -7,12 +7,14 @@
 #include <string>
 #include <cstdio>
 #include <unistd.h>
+void checkSaveTransactions(const std::string& path);
 int main(int argc, char** argv) {
     assert(argc == 2);
 #ifdef __EMSCRIPTEN__
     static_assert(sizeof(void*) == 4, "This suite must exercise wasm32");
 #endif
     const std::string path = argv[1];
+    checkSaveTransactions(path + "-transactions");
     io::File closed;
     assert(!closed.write("x", 1));
     assert(closed.error() == io::NotOpen && !closed.finish());

@@ -513,7 +513,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!PassClickToPlayState(si->m_levelId, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x421);
             }
-            if (!RestoreGameFromFile(this, si->m_serial)) {
+            if (!RestoreGameFromFile(this, m_saveGame->SnapshotPath(si))) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x465);
             }
             CheckSavedMode();

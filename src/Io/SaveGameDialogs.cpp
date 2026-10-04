@@ -138,8 +138,7 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
             }
             if (wParam == IDOK) {
                 CSaveGame* saves = static_cast<CSaveGame*>(g_gameReg->m_saveGame);
-                if (!saves->CloseTempFile(g_slotState)
-                    || !saves->Save(NULL, SAVE_STRING_SAVING_GAME)) return true;
+                if (!saves->DeleteSnapshot(g_slotState)) return true;
                 EndDialog(hDlg, 1);
                 return true;
             }
@@ -286,7 +285,7 @@ void LabelSaveSlot(
     i32 deleteControlId
 ) {
     b32 flag;
-    if (TempFileExists(item)) {
+    if (g_gameReg->m_saveGame->SnapshotExists(item)) {
         SetDlgItemTextA(hWnd, nameControlId, item->m_name);
         flag = true;
     } else {
@@ -490,7 +489,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         if (stricmp(name, "(Empty)") == 0) {
             sprintf(name, "Saved Game #%i", slot + 1);
         }
-        if (TempFileExists(obj->GetSlot(slot))) {
+        if (obj->SnapshotExists(obj->GetSlot(slot))) {
             g_slotState = obj->GetSlot(slot);
             if (g_slotState != NULL) {
                 EnableWindow(hDlg, false);
@@ -501,13 +500,19 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
                 }
             }
         }
+        const SaveSlot previous = *obj->GetSlot(slot);
+        SaveSlot* previousSelection = g_gameReg->m_saveInfoRec;
         obj->InitializeNamedSlotAt(slot, name, g_gameReg);
         if (!g_gameReg->FillSaveInfo(obj->GetSlot(slot), name)) {
+            *obj->GetSlot(slot) = previous;
+            g_gameReg->m_saveInfoRec = previousSelection;
             g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
             return 1;
         }
         EndDialog(hDlg, 1);
-        if (!obj->Save(obj->GetSlot(slot)->m_savePath, SAVE_STRING_SAVING_GAME)) {
+        if (!obj->SaveSnapshot(obj->GetSlot(slot), SAVE_STRING_SAVING_GAME)) {
+            *obj->GetSlot(slot) = previous;
+            g_gameReg->m_saveInfoRec = previousSelection;
             g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
         }
         return 1;
@@ -569,7 +574,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     io::File f;
-    if (f.open(lev->m_savePath, io::ReadOnly) == false) {
+    if (f.open(gate->SnapshotPath(lev), io::ReadOnly) == false) {
         g_previewImage = NULL;
         return;
     }

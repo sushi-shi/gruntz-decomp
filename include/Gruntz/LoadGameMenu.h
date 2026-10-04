@@ -18,7 +18,6 @@ void LabelGameInfoSlot(
     i32 deleteControlId
 );
 
-int TempFileExists(SaveSlot* p);
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg);
 
 #endif

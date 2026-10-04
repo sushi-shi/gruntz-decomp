@@ -3,6 +3,7 @@
 #endif
 #include <Io/Settings.h>
 #include <Io/File.h>
+#include <Io/FileTransaction.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -150,14 +151,7 @@ bool Settings::save() const {
     // Validate and encode before touching the previous configuration on disk.
     io::MemoryOutput bytes;
     if (!encode(bytes)) return false;
-    const std::string temporary = m_path + ".tmp";
-    io::File file;
-    if (!file.open(temporary, io::Replace)) return false;
+    io::FileTransaction file(m_path);
     const std::vector<unsigned char>& data = bytes.bytes();
-    const bool written = file.write(data.empty() ? NULL : &data[0], data.size());
-    const bool closed = file.finish();
-    if (!written || !closed || !io::replaceFile(temporary, m_path)) {
-        remove(temporary.c_str()); return false;
-    }
-    return true;
+    return file.good() && file.write(data.empty() ? NULL : &data[0], data.size()) && file.commit();
 }

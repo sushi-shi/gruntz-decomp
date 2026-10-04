@@ -5359,7 +5359,7 @@ i32 CPlay::ResetPlayState() {
                     reg = g_gameReg;
                 }
             }
-            (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
+            (static_cast<CSaveGame*>(reg->m_saveGame))->SaveProgress();
         }
         CGameLevel* g = m_mgr->m_world->m_level;
         ResetGoals(g->m_header.m_startX, g->m_header.m_startY);

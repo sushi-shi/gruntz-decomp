@@ -3437,6 +3437,28 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "filetransaction",
+      "source": "src/Io/FileTransaction.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "savepaths",
+      "source": "src/Io/SavePaths.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

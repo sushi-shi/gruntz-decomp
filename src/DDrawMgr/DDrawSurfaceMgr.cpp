@@ -1,5 +1,6 @@
 #include <StdAfx.h>
 #include <Io/StreamArchive.h>
+#include <Io/FileTransaction.h>
 
 #include <Ints.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -197,8 +198,8 @@ i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
     if (!path || !name) return 0;
-    io::File file;
-    return file.open(path, io::Replace) && SnapshotChildren(cb, file, name, typeId) && file.finish();
+    io::FileTransaction file(path);
+    return file.good() && SnapshotChildren(cb, file, name, typeId) && file.commit();
 }
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, io::Output& target, const std::string& name, LogicTypeId typeId) {
@@ -256,8 +257,8 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, io::Output& target, const
     return S.Ready();
 }
 
-i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* path, LogicTypeId typeId) {
-    if (!path) return 0;
+i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, const std::string& path, LogicTypeId typeId) {
+    if (path.empty()) return 0;
     io::File file;
     return file.open(path, io::ReadOnly) && RestoreChildren(cb, file, typeId) && file.finish();
 }

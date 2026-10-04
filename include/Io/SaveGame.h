@@ -10,6 +10,7 @@
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/QuestLevelStats.h>
 #include <Io/FileStream.h>
+#include <Io/Bytes.h>
 
 #include <string.h>
 
@@ -41,10 +42,8 @@ struct SaveSlot {
         char m_name[0x21];
         char m_snapshot[0x21];
     };
-    union {
-        char m_savePath[0x40];
-        char m_serial[0x40];
-    };
+    // Bounded filename in the progress record; resolve through SnapshotPath.
+    char m_savePath[0x40];
     char m_levelName[0x83];
     b32 m_isCustom;
     b32 m_isBattlez;
@@ -58,7 +57,10 @@ public:
     void Reset();
     void Init();
     i32 Load();
-    i32 Save(char* screenshotPath, i32 messageId);
+    i32 SaveProgress();
+    i32 SaveSnapshot(SaveSlot* slot, i32 messageId);
+    std::string SnapshotPath(const SaveSlot* slot) const;
+    bool SnapshotExists(const SaveSlot* slot) const;
     i32 ComputeAll();
     i32 Verify();
     i32 InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* mgr);
@@ -73,7 +75,7 @@ public:
     i32 InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mgr);
     i32 StoreSlot(i32 idx, const SaveSlot* src);
 
-    i32 CloseTempFile(SaveSlot* r);
+    i32 DeleteSnapshot(SaveSlot* slot);
     void SetMaxLevel(QuestLevel v);
     void SetCurLevel(QuestLevel v);
     QuestLevel CurrentLevel() const {
@@ -91,6 +93,9 @@ public:
     u32 m_magic;
     QuestLevelStats m_levelStats[SAVE_LEVEL_STATS_COUNT];
     SaveSlot m_slots[SAVE_SLOT_COUNT];
+private:
+    i32 SlotIndex(const SaveSlot* slot) const;
+    bool WriteProgress(io::Output& target);
 };
 
 inline CSaveGame::~CSaveGame() {
@@ -113,7 +118,6 @@ extern CDib* g_previewImage;
 void FillSaveDialog(HWND hDlg, CSaveGame* saveGame);
 i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame);
 
-int TempFileExists(SaveSlot* p);
 void LabelSaveSlot(
     HWND hWnd,
     SaveSlot* item,

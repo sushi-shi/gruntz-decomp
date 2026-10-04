@@ -10,6 +10,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <RectMacros.h>
 #include <Io/Settings.h>
+#include <Io/FileTransaction.h>
+#include <Gruntz/SaveScreenshot.h>
 
 i32 SaveScreenshot(
     CDDSurface* src,
@@ -21,9 +23,6 @@ i32 SaveScreenshot(
     i32 saveFlag
 ) {
     char nameBuf[0x80];
-    RECT dstRect;
-    RECT srcRect;
-
     if (src == NULL) {
         return 0;
     }
@@ -43,6 +42,19 @@ i32 SaveScreenshot(
         name = nameBuf;
     }
 
+    if (saveFlag) {
+        io::File file;
+        if (!file.open(name, io::Update) || !file.seek(0, io::End)) return 0;
+        return SaveScreenshot(src, owner, width, height, file) && file.finish();
+    }
+    io::FileTransaction file(name);
+    return file.good() && SaveScreenshot(src, owner, width, height, file) && file.commit();
+}
+
+i32 SaveScreenshot(CDDSurface* src, CGruntzMgr* owner, i32 width, i32 height, io::Output& target) {
+    if (!src || !owner || !owner->m_world || !target.good()) return 0;
+    RECT dstRect;
+    RECT srcRect;
     CDDrawDeviceManager* manager = owner->m_world->GetDeviceManager();
     if (manager == NULL) {
         return 0;
@@ -52,7 +64,7 @@ i32 SaveScreenshot(
         return 0;
     }
 
-    CGruntzMgr* gameManager = g_gameReg;
+    CGruntzMgr* gameManager = owner;
     SET_RECT_COMPONENTS(srcRect, 0, 0, 0, 0);
     SET_RECT_COMPONENTS(dstRect, 0, 0, 0, 0);
     srcRect.right = gameManager->GetModeSize().cx;
@@ -63,7 +75,7 @@ i32 SaveScreenshot(
         manager->RemoveSurface(image);
         return 0;
     }
-    i32 result = image->SaveFile(name, FMT_BMP, NULL, saveFlag);
+    i32 result = image->SaveRle16(target);
     manager->RemoveSurface(image);
     return result;
 }
