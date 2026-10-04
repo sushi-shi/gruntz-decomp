@@ -2357,7 +2357,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
         if (o->m_statusBar) {
             (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
         }
-        o->PostHudRect();
+        o->FinishSelectionDrag();
     }
     return result;
 }
@@ -2406,7 +2406,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
         if (o->m_statusBar) {
             (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
         }
-        o->PostHudRect();
+        o->FinishSelectionDrag();
     }
     return result;
 }

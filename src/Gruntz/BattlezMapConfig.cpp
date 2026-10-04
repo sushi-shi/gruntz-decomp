@@ -526,7 +526,7 @@ candidateFound:
     );
     i32 cell;
     if (allowReserved != false) {
-        cell = m_ctx->GetTriggerMgr()->PlaceObject(
+        cell = m_ctx->GetTriggerMgr()->SpawnGrunt(
             m_playerIndex,
             screen.m_x,
             screen.m_y,
@@ -542,7 +542,7 @@ candidateFound:
             NULL
         );
     } else {
-        cell = m_ctx->GetTriggerMgr()->PlaceObject(
+        cell = m_ctx->GetTriggerMgr()->SpawnGrunt(
             m_playerIndex,
             screen.m_x,
             screen.m_y,
@@ -3359,7 +3359,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (occupied >= m_ctx->GetPlayer(m_playerIndex).GetMaxGruntz()) {
         return 0;
     }
-    i32 cell = m_triggerMgr->PlaceObject(
+    i32 cell = m_triggerMgr->SpawnGrunt(
         m_playerIndex,
         (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
         (ay << TILE_SHIFT_PX) + TILE_HALF_PX,

@@ -322,7 +322,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
 RVA(0x00067f80, 0x313)
 // @early-stop
-i32 CGrunt::LoadEntranceConfig() {
+i32 CGrunt::UpdateEntranceAnimation() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         RESOLVE_ENTRANCE_OCCUPANT();
         CWwdSpriteObject* h = m_object;
@@ -359,10 +359,10 @@ i32 CGrunt::LoadEntranceConfig() {
 }
 
 RVA(0x00068370, 0x14c)
-i32 CGrunt::RearmEntranceDrop() {
+i32 CGrunt::UpdateBombRunAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (cur->IsComplete()) {
-        m_bombRunActive = false;
+        m_bombRunStarting = false;
         SwitchAnimation(AT(m_poseItem, GRUNT_ITEM2));
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -371,7 +371,7 @@ i32 CGrunt::RearmEntranceDrop() {
         SetImageFrameByName(name, frame);
     }
 
-    if (m_bombRunActive == false) {
+    if (m_bombRunStarting == false) {
         i32 playerIndex;
         i32 unitIndex;
         m_entranceCommitted = false;
@@ -424,7 +424,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_moveTile.m_y = dy;
     SET_ANIMATION_ACT("M");
     m_timePerTile = static_cast<i32>(g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64));
-    m_bombRunActive = true;
+    m_bombRunStarting = true;
     PLAY_GRUNT_CUE_IN_VIEW(8);
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
     char* cn = FacingData()->ItemName().GetBuffer(0);
@@ -527,13 +527,13 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
 }
 
 RVA(0x000690a0, 0x1c5)
-i32 CGrunt::UpdateEntranceAnim() {
+i32 CGrunt::UpdateScrollUseAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(anim, static_cast<u32>(g_engineFrameDelta))
     if (!anim->IsComplete()) {
         return 0;
     }
 
-    if (m_entranceStamped == false) {
+    if (m_toyBreakStarted == false) {
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -541,12 +541,12 @@ i32 CGrunt::UpdateEntranceAnim() {
         char* buf = (&m_frameSetName)->GetBuffer(0);
         SetImageFrameByName(buf, frame);
 
-        m_entranceStamped = true;
+        m_toyBreakStarted = true;
         i32 v = m_moveVariant;
         if (v != 0) {
-            LoadGruntAbilityTuning(v);
+            CastSpell(v);
         } else {
-            LoadGruntAbilityTuning(m_moveKind);
+            CastSpell(m_moveKind);
         }
         return 0;
     }

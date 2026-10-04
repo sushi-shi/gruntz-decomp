@@ -691,9 +691,9 @@ void CMulti::RenderGameFrame() {
             ->Fill(0);
         m_statusBar->Deactivate();
     }
-    if (m_worldReady == false) {
-        if (Mgr()->m_triggerMgr->m_armed != false) {
-            Mgr()->m_triggerMgr->ScrollToActiveRecord();
+    if (m_selectionDragActive == false) {
+        if (Mgr()->m_triggerMgr->m_cameraTrackingActive != false) {
+            Mgr()->m_triggerMgr->UpdateCameraTracking();
         } else {
             LoadScrollSpeedOptions();
         }
@@ -735,8 +735,8 @@ void CMulti::RenderGameFrame() {
     Mgr()->m_triggerMgr->RenderActionOptionsMenu();
     AdvanceCursorAnimation(g_frameDelta);
     SaveUnderAndDrawCursor(h);
-    if (m_worldReady != false) {
-        h->DrawBox(&m_hudRect, 0xff);
+    if (m_selectionDragActive != false) {
+        h->DrawBox(&m_selectionRect, 0xff);
     }
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);

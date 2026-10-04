@@ -216,8 +216,8 @@ public:
     i32 m_reserved14c;
     i32 m_cursorX;
     i32 m_cursorY;
-    i32 m_snapOriginX;
-    i32 m_snapOriginY;
+    i32 m_statusBarDragOffsetX;
+    i32 m_statusBarDragOffsetY;
 
     CDDSurface* m_cursorSavedSurfaces[2];
 

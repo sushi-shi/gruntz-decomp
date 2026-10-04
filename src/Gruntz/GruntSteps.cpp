@@ -1034,8 +1034,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_attackQueued, sizeof(m_attackQueued));
     ar->Write(&m_inCombat, sizeof(m_inCombat));
     ar->Write(&m_daFlag, sizeof(m_daFlag));
-    ar->Write(&m_entranceStamped, sizeof(m_entranceStamped));
-    ar->Write(&m_bombRunActive, sizeof(m_bombRunActive));
+    ar->Write(&m_toyBreakStarted, sizeof(m_toyBreakStarted));
+    ar->Write(&m_bombRunStarting, sizeof(m_bombRunStarting));
     ar->Write(&m_arrivalActive, sizeof(m_arrivalActive));
     ar->Write(&m_reachRect, sizeof(m_reachRect));
     ar->Write(&m_reachExclusionRect, sizeof(m_reachExclusionRect));

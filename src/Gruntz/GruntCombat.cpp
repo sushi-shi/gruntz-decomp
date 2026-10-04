@@ -293,26 +293,26 @@ void CGrunt::ComputeFacing(double dt) {
 }
 
 RVA(0x00057100, 0x590)
-i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
-    SpellId idx = static_cast<SpellId>(forced);
-    if (forced == 0) {
-        i32 m = 3;
+i32 CGrunt::CastSpell(i32 spellOverride) {
+    SpellId spell = static_cast<SpellId>(spellOverride);
+    if (spellOverride == 0) {
+        i32 spellCount = 3;
         if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-            m = 6;
+            spellCount = 6;
         }
-        if (m == 0) {
-            i32 coin = static_cast<char>(rand());
-            idx = static_cast<SpellId>(coin & 1);
+        if (spellCount == 0) {
+            i32 randomBit = static_cast<char>(rand());
+            spell = static_cast<SpellId>(randomBit & 1);
         } else {
-            idx = static_cast<SpellId>(rand() % m + 1);
+            spell = static_cast<SpellId>(rand() % spellCount + 1);
         }
     }
 
-    SoundCueRegistry* slot =
+    SoundCueRegistry* sounds =
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
-    slot->PlayCue(s_gameAttack);
+    sounds->PlayCue(s_gameAttack);
 
-    switch (idx) {
+    switch (spell) {
         case SPELL_FREEZE: {
             CreateLightFx(
                 g_gameReg->World()->ChildGroup(),
@@ -362,7 +362,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 8,
                 true
             );
-            return m_triggerMgr->LoadGruntResurrectTuning(
+            return m_triggerMgr->ResurrectGruntsInArea(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetInt("Spellz", s_ressurectionRadius, 8)
@@ -418,7 +418,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 true
             );
 
-            CWwdSpriteObject* n = g_gameReg->World()->ChildGroup()->CreateSprite(
+            CWwdSpriteObject* northBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y - 0x20,
@@ -426,14 +426,15 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
-            n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
-            CLogicRecord* ni = n->GetLogicRecord();
-            ni->m_speed =
+            northBall->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
+            CLogicRecord* northBallLogic = northBall->GetLogicRecord();
+            northBallLogic->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
-            n->m_smarts = 0;
-            n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            northBall->m_smarts = 0;
+            northBall->m_points =
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* e = g_gameReg->World()->ChildGroup()->CreateSprite(
+            CWwdSpriteObject* eastBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x + 0x20,
                 m_lastTilePx.m_y,
@@ -441,14 +442,15 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
-            e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
-            CLogicRecord* ei = e->GetLogicRecord();
-            ei->m_speed =
+            eastBall->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
+            CLogicRecord* eastBallLogic = eastBall->GetLogicRecord();
+            eastBallLogic->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
-            e->m_smarts = 0;
-            e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            eastBall->m_smarts = 0;
+            eastBall->m_points =
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* s = g_gameReg->World()->ChildGroup()->CreateSprite(
+            CWwdSpriteObject* southBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y + 0x20,
@@ -456,14 +458,15 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
-            s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
-            CLogicRecord* si = s->GetLogicRecord();
-            si->m_speed =
+            southBall->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
+            CLogicRecord* southBallLogic = southBall->GetLogicRecord();
+            southBallLogic->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
-            s->m_smarts = 0;
-            s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            southBall->m_smarts = 0;
+            southBall->m_points =
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* w = g_gameReg->World()->ChildGroup()->CreateSprite(
+            CWwdSpriteObject* westBall = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x - 0x20,
                 m_lastTilePx.m_y,
@@ -471,12 +474,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
-            w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
-            CLogicRecord* wi = w->GetLogicRecord();
-            wi->m_speed =
+            westBall->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
+            CLogicRecord* westBallLogic = westBall->GetLogicRecord();
+            westBallLogic->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
-            w->m_smarts = 0;
-            w->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
+            westBall->m_smarts = 0;
+            westBall->m_points =
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
             return 1;
         }
         default:
@@ -1118,7 +1122,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (attackerGruntKind == GRUNT_CONVERSION) {
         CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
         if (enemy != NULL
-            && m_triggerMgr->SpawnGrunt(
+            && m_triggerMgr->ConvertGrunt(
                    this->m_playerIndex,
                    this->m_unitIndex,
                    srcPlayerIndex,
@@ -1529,12 +1533,12 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
     REGISTER_ACT(registry, "I", &CGrunt::UpdateToolUseAnimation);
     REGISTER_ACT(registry, "J", &CGrunt::UpdatePickupAnimation);
-    REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
+    REGISTER_ACT(registry, "K", &CGrunt::UpdateEntranceAnimation);
     REGISTER_ACT(registry, "L", &CGrunt::UpdateVehicleUseAnimation);
-    REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);
+    REGISTER_ACT(registry, "M", &CGrunt::UpdateBombRunAnimation);
     REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
     REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_ACT(registry, "P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_ACT(registry, "P", &CGrunt::UpdateScrollUseAnimation);
     REGISTER_ACT(registry, "Q", &CGrunt::UpdateFreezeAnimation);
     REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
     REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
@@ -2377,10 +2381,10 @@ void CGrunt::AdvanceMotion() {
                 if (IsNotAnimationAct("M")) {
                     return;
                 }
-                if (m_bombRunActive != false) {
+                if (m_bombRunStarting != false) {
                     return;
                 }
-            } else if (m_entranceStamped != false) {
+            } else if (m_toyBreakStarted != false) {
                 return;
             }
         }

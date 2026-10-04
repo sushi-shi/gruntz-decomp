@@ -67,7 +67,7 @@
             return 0;                                                                              \
         if (_cell->GetPlayerIndex() != g_curPlayer)                                                \
             return 0;                                                                              \
-        if (!_cell->LoadGruntAbilityTuning(N))                                                     \
+        if (!_cell->CastSpell(N))                                                                  \
             return 0;                                                                              \
         PLAYCUE("GAME_MAJORCHEAT");                                                                \
         AppendChatMessage(MSG);                                                                    \

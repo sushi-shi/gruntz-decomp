@@ -259,7 +259,7 @@ public:
     i32 SetDefeatCountdown(b32 active, i32 durationMs);
     inline void CancelDefeatCountdown();
     i32 CanQuickSave();
-    i32 PostHudRect();
+    i32 FinishSelectionDrag();
 
     i32 DrawWorldPresent();
 
@@ -315,17 +315,17 @@ public:
     CChatBox* m_chatBox;
 
     CTileTriggerContainer* m_tileTriggers;
-    b32 m_dragSnapActive;
+    b32 m_statusBarDragActive;
     b32 m_dragInProgress;
     // @identity-TODO: initialized and save-streamed, but never used by play logic.
     i32 m_reserved2f0;
     i32 m_cursorFrame;
     i32 m_cursorId;
     Coord m_cursorOffset;
-    i32 m_dragClampMaxX;
-    i32 m_dragClampMaxY;
-    b32 m_worldReady;
-    RECT m_hudRect;
+    i32 m_selectionAnchorX;
+    i32 m_selectionAnchorY;
+    b32 m_selectionDragActive;
+    RECT m_selectionRect;
 
     CMinimap* m_minimap;
     ClockInterval m_bootyTiming;
@@ -469,8 +469,8 @@ inline CPlay::CPlay() {
     m_ambientInitDone = true;
     m_stepCountdown = 0;
     m_savedMusicSequence = NULL;
-    m_worldReady = false;
-    m_dragSnapActive = false;
+    m_selectionDragActive = false;
+    m_statusBarDragActive = false;
     m_playerCommandPending = false;
     m_dragInhibit1 = false;
     m_dragInhibit2 = false;

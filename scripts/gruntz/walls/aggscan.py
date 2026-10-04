@@ -323,12 +323,12 @@ def _hermetic() -> int:
 #: a real signature defect: a callee retail hands one block and our source
 #: declared as separate scalars. They must keep matching, in both columns.
 CONTROL = {
-    "?AddToList3@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId"
+    "?AddActionEvent@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId"
     "@@HHHUtagRECT@@@Z": (16, 1,
         "the level record's extent rect, which our source read as four i32 "
         "named player0..3 - the second live instance of the pattern, and the "
         "last one; a signature slip here puts the row back in retail's column"),
-    "?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z": (16, 2,
+    "?SelectUnitsInRect@CTriggerMgr@@QAEXUtagRECT@@H@Z": (16, 2,
         "a rect by value at both of its call sites"),
     "?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z": (16, 4,
         "four sites, so the row also proves the sweep is not finding one hole "

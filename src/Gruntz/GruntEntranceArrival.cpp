@@ -370,7 +370,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
         this->RecycleCoords();
 
-        m_entranceStamped = false;
+        m_toyBreakStarted = false;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
 
@@ -523,13 +523,13 @@ i32 CGrunt::UpdateToyUseAnimation() {
     }
 
     i64 diff = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
-    if (diff >= m_toyTiming.m_interval && m_entranceStamped == false && ready == true) {
+    if (diff >= m_toyTiming.m_interval && m_toyBreakStarted == false && ready == true) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* nm = (&m_frameSetName)->GetBuffer(0);
         SetImageFrameByName(nm, frame);
-        m_entranceStamped = true;
+        m_toyBreakStarted = true;
         PLAY_GRUNT_CUE_IN_VIEW(0xc);
         return 0;
     }
@@ -851,10 +851,10 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
 
     i64 toyElapsedMs = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
     if (toyElapsedMs >= m_toyTiming.m_interval) {
-        if (m_entranceStamped == false && IsGruntAtSavedScreenPos(this)) {
+        if (m_toyBreakStarted == false && IsGruntAtSavedScreenPos(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
-            m_entranceStamped = true;
+            m_toyBreakStarted = true;
             SwitchAnimationAndMaybeAdvance(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
             DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -1181,7 +1181,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
         m_timePerTile = g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64);
         m_entranceActive = true;
-        m_bombRunActive = true;
+        m_bombRunStarting = true;
         SetEntrancePos(1, 1);
     } else if (m_activePickupType == PICKUP_TOOB) {
         m_entranceActive = true;
@@ -1244,7 +1244,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
                 CreateStaminaSprite();
             }
             if (m_activePickupType == PICKUP_WAND) {
-                LoadGruntAbilityTuning(m_moveVariant);
+                CastSpell(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = Max(0, hp);
                 if (m_health <= 0) {

@@ -515,8 +515,8 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_reserved14c, sizeof(m_reserved14c));
     ar->Write(&m_cursorX, sizeof(m_cursorX));
     ar->Write(&m_cursorY, sizeof(m_cursorY));
-    ar->Write(&m_snapOriginX, sizeof(m_snapOriginX));
-    ar->Write(&m_snapOriginY, sizeof(m_snapOriginY));
+    ar->Write(&m_statusBarDragOffsetX, sizeof(m_statusBarDragOffsetX));
+    ar->Write(&m_statusBarDragOffsetY, sizeof(m_statusBarDragOffsetY));
     ar->Write(&m_cursorSavedRects[0], sizeof(m_cursorSavedRects[0]));
     ar->Write(&m_cursorSavedRects[1], sizeof(m_cursorSavedRects[1]));
     ar->Write(&m_cursorScreenRects[0], sizeof(m_cursorScreenRects[0]));
@@ -547,8 +547,8 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_reserved14c, sizeof(m_reserved14c));
     ar->Read(&m_cursorX, sizeof(m_cursorX));
     ar->Read(&m_cursorY, sizeof(m_cursorY));
-    ar->Read(&m_snapOriginX, sizeof(m_snapOriginX));
-    ar->Read(&m_snapOriginY, sizeof(m_snapOriginY));
+    ar->Read(&m_statusBarDragOffsetX, sizeof(m_statusBarDragOffsetX));
+    ar->Read(&m_statusBarDragOffsetY, sizeof(m_statusBarDragOffsetY));
     ar->Read(&m_cursorSavedRects[0], sizeof(m_cursorSavedRects[0]));
     ar->Read(&m_cursorSavedRects[1], sizeof(m_cursorSavedRects[1]));
     ar->Read(&m_cursorScreenRects[0], sizeof(m_cursorScreenRects[0]));
