@@ -335,13 +335,13 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    RECT playerFlags
+    RECT revealedToPlayer
 ) {
     CTileActionEvent* event = new CTileActionEvent;
     if (event == NULL) {
         return NULL;
     }
-    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, revealedToPlayer)) {
         delete event;
         return NULL;
     }
@@ -361,24 +361,24 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    RECT playerFlags = {0, 0, 0, 0};
+    RECT revealedToPlayer = {0, 0, 0, 0};
     switch (static_cast<PlayerSlot>(playerSlot)) {
         case PLAYER_SLOT_1:
-            playerFlags.top = 1;
+            revealedToPlayer.top = 1;
             break;
         case PLAYER_SLOT_2:
-            playerFlags.right = 1;
+            revealedToPlayer.right = 1;
             break;
         case PLAYER_SLOT_3:
-            playerFlags.bottom = 1;
+            revealedToPlayer.bottom = 1;
             break;
         case PLAYER_SLOT_ALL:
-            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
+            revealedToPlayer.top = revealedToPlayer.right = revealedToPlayer.bottom = 1;
         case PLAYER_SLOT_0:
-            playerFlags.left = 1;
+            revealedToPlayer.left = 1;
             break;
     }
-    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, revealedToPlayer)) {
         delete event;
         return NULL;
     }
@@ -893,7 +893,7 @@ i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
 }
 
 RVA(0x00117ec0, 0x7f)
-CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
+CGiantRockLogic* CTileTriggerContainer::FindNearbyGiantRock(i32 tileX, i32 tileY) {
     for (i32 scanX = tileX - 1; scanX < tileX + 2; scanX++) {
         for (i32 scanY = tileY - 1; scanY < tileY + 2; scanY++) {
 
@@ -910,16 +910,16 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
 
 // @early-stop
 RVA(0x00117f60, 0xa1)
-i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
+i32 CTileTriggerContainer::RevealTileContents(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionAt(tileX, tileY);
     if (elem != NULL) {
         if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
-            i32* flags = elem->m_playerFlags;
+            i32* flags = elem->m_revealedToPlayer;
             for (i32 i = 0; i < 4; i++) {
                 flags[i] = 1;
             }
         } else {
-            elem->m_playerFlags[playerSlot] = 1;
+            elem->m_revealedToPlayer[playerSlot] = 1;
         }
         elem->SetActionCode(elem->GetActionCode());
         return 1;
@@ -928,6 +928,6 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     if (FindLogic(CellKey(tileX, tileY), TRIGID_COVERED_POWERUP_26) != NULL) {
         return 1;
     }
-    CGiantRockLogic* found = ScanNeighborhood(tileX, tileY);
+    CGiantRockLogic* found = FindNearbyGiantRock(tileX, tileY);
     return found != NULL;
 }

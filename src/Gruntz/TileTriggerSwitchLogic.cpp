@@ -1063,7 +1063,7 @@ CTileActionEvent::CTileActionEvent() {
 RVA(0x00112da0, 0x100)
 i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     m_actionCode = code;
-    if (GetPlayerFlags(g_curPlayer) == 0
+    if (IsRevealedToPlayer(g_curPlayer) == 0
         && static_cast<u32>(IDX(code) - IDX(BRICKTILE_BROWN_1)) <= 0x1a) {
         switch (code) {
             case BRICKTILE_BROWN_1:
@@ -1248,7 +1248,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             }
             i32 slot = grunt->GetPlayerIndex();
             if (slot == IDX(PLAYER_SLOT_ALL)) {
-                i32* flags = m_playerFlags;
+                i32* flags = m_revealedToPlayer;
                 flags[0] = 1;
                 flags[1] = 1;
                 flags[2] = 1;
@@ -1256,7 +1256,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                 SetActionCode(m_actionCode);
                 return 0;
             }
-            m_playerFlags[slot] = 1;
+            m_revealedToPlayer[slot] = 1;
             SetActionCode(m_actionCode);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
@@ -1455,15 +1455,15 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
         }
     }
 
-    i32* flags = m_playerFlags;
-    memset(flags, 0, sizeof(m_playerFlags));
+    i32* flags = m_revealedToPlayer;
+    memset(flags, 0, sizeof(m_revealedToPlayer));
     if (playerSlot == PLAYER_SLOT_ALL) {
         flags[0] = 1;
         flags[1] = 1;
         flags[2] = 1;
         flags[3] = 1;
     } else {
-        m_playerFlags[IDX(playerSlot)] = 1;
+        m_revealedToPlayer[IDX(playerSlot)] = 1;
     }
     SetActionCode(m_actionCode);
     return 1;
@@ -1728,10 +1728,10 @@ i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
     ar->Write(&m_tileY, sizeof(m_tileY));
     ar->Write(&m_cellKey, sizeof(m_cellKey));
     ar->Write(&m_live, sizeof(m_live));
-    ar->Write(&m_playerFlags[0], sizeof(m_playerFlags[0]));
-    ar->Write(&m_playerFlags[1], sizeof(m_playerFlags[1]));
-    ar->Write(&m_playerFlags[2], sizeof(m_playerFlags[2]));
-    ar->Write(&m_playerFlags[3], sizeof(m_playerFlags[3]));
+    ar->Write(&m_revealedToPlayer[0], sizeof(m_revealedToPlayer[0]));
+    ar->Write(&m_revealedToPlayer[1], sizeof(m_revealedToPlayer[1]));
+    ar->Write(&m_revealedToPlayer[2], sizeof(m_revealedToPlayer[2]));
+    ar->Write(&m_revealedToPlayer[3], sizeof(m_revealedToPlayer[3]));
     return 1;
 }
 
@@ -1748,10 +1748,10 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
     ar->Read(&m_tileY, sizeof(m_tileY));
     ar->Read(&m_cellKey, sizeof(m_cellKey));
     ar->Read(&m_live, sizeof(m_live));
-    ar->Read(&m_playerFlags[0], sizeof(m_playerFlags[0]));
-    ar->Read(&m_playerFlags[1], sizeof(m_playerFlags[1]));
-    ar->Read(&m_playerFlags[2], sizeof(m_playerFlags[2]));
-    ar->Read(&m_playerFlags[3], sizeof(m_playerFlags[3]));
+    ar->Read(&m_revealedToPlayer[0], sizeof(m_revealedToPlayer[0]));
+    ar->Read(&m_revealedToPlayer[1], sizeof(m_revealedToPlayer[1]));
+    ar->Read(&m_revealedToPlayer[2], sizeof(m_revealedToPlayer[2]));
+    ar->Read(&m_revealedToPlayer[3], sizeof(m_revealedToPlayer[3]));
     return 1;
 }
 

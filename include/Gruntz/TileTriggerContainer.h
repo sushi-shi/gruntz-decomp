@@ -98,8 +98,13 @@ public:
 
     void AddLogicFromRecord(TileCollisionKind tileType, TrigLogicId logicType, CGameObject* object);
 
-    CTileActionEvent*
-    AddActionEvent(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, RECT playerFlags);
+    CTileActionEvent* AddActionEvent(
+        BrickTileId actionCode,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        RECT revealedToPlayer
+    );
 
     CGiantRockLogic* AddGiantRockLogic(
         i32 tileX,
@@ -122,7 +127,7 @@ public:
     CTileActionEvent* FindActionByCellKey(i32 cellKey);
     CTileActionEvent* FindActionAt(i32 tileX, i32 tileY);
 
-    CGiantRockLogic* ScanNeighborhood(i32 tileX, i32 tileY);
+    CGiantRockLogic* FindNearbyGiantRock(i32 tileX, i32 tileY);
 
     CTileTriggerSwitchLogic* AddSwitchLogic(
         TrigLogicId logicType,
@@ -150,7 +155,7 @@ public:
 
     void RemoveAll();
 
-    i32 SetCell(i32 tileX, i32 tileY, i32 playerSlot);
+    i32 RevealTileContents(i32 tileX, i32 tileY, i32 playerSlot);
 
     void Shutdown();
 

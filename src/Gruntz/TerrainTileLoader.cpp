@@ -140,7 +140,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, 0x5b);
                 }
             } else if (cellType == TILEKIND_GIANT_ROCK) {
-                CGiantRockLogic* rock = state->m_tileTriggers->ScanNeighborhood(tileX, tileY);
+                CGiantRockLogic* rock = state->m_tileTriggers->FindNearbyGiantRock(tileX, tileY);
                 if (rock == NULL) {
                     CString diag;
                     diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
@@ -223,7 +223,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     i32 topY = tileY - radius;
                     i32 bottomY = tileY + radius;
                     for (i32 scanX = tileX - radius; scanX <= tileX + radius; scanX++) {
-                        if (state->m_tileTriggers->SetCell(scanX, topY, playerIndex) != 0
+                        if (state->m_tileTriggers->RevealTileContents(scanX, topY, playerIndex) != 0
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = topY * 0x20 + 0x10;
@@ -288,7 +288,8 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                             }
                         }
 
-                        if (state->m_tileTriggers->SetCell(scanX, bottomY, playerIndex) != 0
+                        if (state->m_tileTriggers->RevealTileContents(scanX, bottomY, playerIndex)
+                                != 0
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = bottomY * 0x20 + 0x10;
@@ -357,7 +358,8 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     i32 leftX = tileX - radius;
                     i32 rightX = tileX + radius;
                     for (i32 scanY = topY + 1; scanY < bottomY; scanY++) {
-                        if (state->m_tileTriggers->SetCell(leftX, scanY, playerIndex) != 0
+                        if (state->m_tileTriggers->RevealTileContents(leftX, scanY, playerIndex)
+                                != 0
                             && g_curPlayer == playerIndex) {
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
@@ -422,7 +424,8 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                             }
                         }
 
-                        if (state->m_tileTriggers->SetCell(rightX, scanY, playerIndex) != 0
+                        if (state->m_tileTriggers->RevealTileContents(rightX, scanY, playerIndex)
+                                != 0
                             && playerIndex == g_curPlayer) {
                             i32 fxX = rightX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;

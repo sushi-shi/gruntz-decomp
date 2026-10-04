@@ -28,7 +28,7 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        const RECT& playerFlags
+        const RECT& revealedToPlayer
     ) {
         if (m_live != false) {
             return 0;
@@ -39,16 +39,16 @@ public:
         m_cellKey = cellKey;
         m_owner = owner;
         m_live = true;
-        m_playerFlags[0] = playerFlags.left;
-        m_playerFlags[1] = playerFlags.top;
-        m_playerFlags[2] = playerFlags.right;
-        m_playerFlags[3] = playerFlags.bottom;
+        m_revealedToPlayer[0] = revealedToPlayer.left;
+        m_revealedToPlayer[1] = revealedToPlayer.top;
+        m_revealedToPlayer[2] = revealedToPlayer.right;
+        m_revealedToPlayer[3] = revealedToPlayer.bottom;
         SetActionCode(code);
         return 1;
     }
 
-    i32 GetPlayerFlags(i32 playerIndex) const {
-        return m_playerFlags[playerIndex];
+    i32 IsRevealedToPlayer(i32 playerIndex) const {
+        return m_revealedToPlayer[playerIndex];
     }
 
     BrickTileId GetActionCode() const {
@@ -74,7 +74,7 @@ public:
     b32 m_live;
 
     CTileTriggerContainer* m_owner;
-    i32 m_playerFlags[4];
+    i32 m_revealedToPlayer[4];
 };
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

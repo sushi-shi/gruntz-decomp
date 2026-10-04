@@ -1565,7 +1565,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
-                    CGiantRockLogic* gr = root->GetTileTriggers()->ScanNeighborhood(tx, ty);
+                    CGiantRockLogic* gr = root->GetTileTriggers()->FindNearbyGiantRock(tx, ty);
                     if (gr == NULL) {
                         CString msg;
                         msg.Format(
