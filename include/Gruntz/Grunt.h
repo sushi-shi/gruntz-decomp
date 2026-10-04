@@ -614,6 +614,10 @@ public:
         return m_combatTiming.Expired();
     }
 
+    void StartHold(u32 durationMs) {
+        m_holdTiming.Start(durationMs);
+    }
+
     i32 IsHoldPending() {
         return !m_holdTiming.Expired();
     }
