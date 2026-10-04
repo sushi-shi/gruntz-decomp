@@ -3780,7 +3780,7 @@ sbi_rectonly	?DockStatusBarLeft@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	8	787221
 sbi_rectonly	?DockStatusBarRight@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	8	e2ffcaad0a22	0xfe520	100.0000	
 sbi_rectonly	?DrainGruntWell@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	4	36055d40038b	0x105780	100.0000	
 sbi_rectonly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	5	7723cfd91937	0x10a2f0	100.0000	
-sbi_rectonly	?DropFallingItemAt@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	6	9ff8b4a1de56	0x107920	100.0000	
+sbi_rectonly	?TryDiscardSelectedResourceAt@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	6	9ff8b4a1de56	0x107920	100.0000	
 sbi_rectonly	?EmptyGruntOven@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	95a0e33ecec0	0x105560	100.0000	
 sbi_rectonly	?FinishGruntPlacement@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	5	e94d42ad1d4c	0x106790	100.0000	
 sbi_rectonly	?FinishResourcePlacement@CStatusBarMgr@@QAEXHH@Z	100.0000	100.0000	3	1ec2a98933db	0x106820	100.0000	
@@ -3799,7 +3799,7 @@ sbi_rectonly	?OnClick@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	2	fc30e0746985
 sbi_rectonly	?OnDoubleClick@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	2	776837415b4a	0x100550	100.0000	
 sbi_rectonly	?OnPointerDrag@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	2	a8b53c727ade	0x100590	100.0000	
 sbi_rectonly	?OnPointerRelease@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	1	d09bc4721d0e	0xff9d0	100.0000	
-sbi_rectonly	?PlaceCursorTarget@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	13	fd6624adece0	0x105800	100.0000	
+sbi_rectonly	?SelectUnitAndCenterCamera@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	13	fd6624adece0	0x105800	100.0000	
 sbi_rectonly	?PrepareNextResource@CStatusBarMgr@@QAEHXZ	98.4768	98.4768	14	530c3c78d46f	0x107d00	98.4768	
 sbi_rectonly	?QueuePickupReward@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	10	0014ce04bbcb	0x108410	100.0000	
 sbi_rectonly	?Refresh@CStatusBarItem@@UAEHH@Z	100.0000	100.0000	1	7dcb0acb0e2f	0x100600	100.0000	
@@ -3845,9 +3845,9 @@ sbi_rectonly	?TickGruntWell@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	a9c8d1c78a
 sbi_rectonly	?ToggleUnitSample@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	3fdaf82dcf6d	0x107aa0	100.0000	
 sbi_rectonly	?TryActivate@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	4	8497cb64768e	0x104d60	100.0000	
 sbi_rectonly	?UnusedPointerAction@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	386d8b544f2f	0x100570	100.0000	
-sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	23	94cdba7adcf9	0x1076a0	100.0000	
+sbi_rectonly	?UpdateResourceGrinderAnimation@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	23	94cdba7adcf9	0x1076a0	100.0000	
 sbi_rectonly	?UpdateDestructWarningAnimation@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	11	68552b1dad7f	0x10b320	100.0000	
-sbi_rectonly	?UpdateGruntOvenStatusBar@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	17	f28f1ddff61b	0x105310	99.7895	
+sbi_rectonly	?UpdateGruntOvens@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	17	f28f1ddff61b	0x105310	99.7895	
 sbi_rectonly	?UpdateResourceDeliveryAnimation@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	27	6a96fef78985	0x106bb0	100.0000	
 sbi_rectonly	?UpdateResourceMachineAnimation@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	23	deee7e11a35e	0x105e40	100.0000	
 sbi_rectonly	?UpdateConveyorAnimations@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	19	6f3cfa11b600	0x105990	100.0000	
