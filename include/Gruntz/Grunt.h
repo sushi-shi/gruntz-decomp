@@ -357,7 +357,7 @@ public:
     i32 CreateSelectedSprite();
 
     void ReadConfigFromButeMgr();
-    i32 LoadGruntMovingDeathConfig();
+    i32 StartDeathMovement();
     void LoadAnimNameTable(i32 kind, i32 toyOnly);
 
     i32 RectContains(i32 x, i32 y);
@@ -779,7 +779,7 @@ public:
 
     i32 StepToyerBehavior();
 
-    i32 FinishEntranceMove();
+    i32 UpdateMovingDeathAnimation();
 
     i32 UpdateFreezeAnimation();
 

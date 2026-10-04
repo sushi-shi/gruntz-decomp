@@ -1541,7 +1541,7 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "P", &CGrunt::UpdateScrollUseAnimation);
     REGISTER_ACT(registry, "Q", &CGrunt::UpdateFreezeAnimation);
     REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
-    REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
+    REGISTER_ACT(registry, "S", &CGrunt::UpdateMovingDeathAnimation);
 }
 
 RVA(0x0005caa0, 0x5e4)

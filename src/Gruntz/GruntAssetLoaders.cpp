@@ -126,7 +126,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzSink, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(0x35a);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-            LoadGruntMovingDeathConfig();
+            StartDeathMovement();
             goto tail;
 
         case DEATH_HOLE:
@@ -191,7 +191,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(tag);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-            LoadGruntMovingDeathConfig();
+            StartDeathMovement();
             goto tail;
         }
 
@@ -222,7 +222,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(tag);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-            LoadGruntMovingDeathConfig();
+            StartDeathMovement();
             goto tail;
         }
 

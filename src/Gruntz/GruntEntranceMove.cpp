@@ -686,7 +686,7 @@ i32 CGrunt::UpdateFreezeAnimation() {
 }
 
 RVA(0x00069fd0, 0x69)
-i32 CGrunt::FinishEntranceMove() {
+i32 CGrunt::UpdateMovingDeathAnimation() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (!cur->IsComplete()) {
@@ -698,7 +698,7 @@ i32 CGrunt::FinishEntranceMove() {
 }
 
 RVA(0x0006a060, 0x520)
-i32 CGrunt::LoadGruntMovingDeathConfig() {
+i32 CGrunt::StartDeathMovement() {
     m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_movingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
