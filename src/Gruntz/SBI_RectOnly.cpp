@@ -1821,9 +1821,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 CSBI_ImageSet** cachep = &m_resourceSlotSprites[4];
                 i32 y = by + 0x155;
                 for (i = 0; i < 4; i++) {
-                    CSBI_ImageSet* set;
+                    CSBI_ImageSet* toolIcon;
                     NEW_STATUS_BAR_ITEM(
-                        set,
+                        toolIcon,
                         CSBI_ImageSet,
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_TOOL_RESOURCE_FIRST) + i),
@@ -1833,10 +1833,11 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         cfgp[-24],
                         0
                     );
-                    AddTabItem(3, set);
-                    cachep[-4] = set;
+                    AddTabItem(3, toolIcon);
+                    cachep[-4] = toolIcon;
+                    CSBI_ImageSet* toyIcon;
                     NEW_STATUS_BAR_ITEM(
-                        set,
+                        toyIcon,
                         CSBI_ImageSet,
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_TOY_RESOURCE_FIRST) + i),
@@ -1846,10 +1847,11 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         cfgp[0],
                         0
                     );
-                    AddTabItem(3, set);
-                    cachep[0] = set;
+                    AddTabItem(3, toyIcon);
+                    cachep[0] = toyIcon;
+                    CSBI_ImageSet* brickIcon;
                     NEW_STATUS_BAR_ITEM(
-                        set,
+                        brickIcon,
                         CSBI_ImageSet,
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_BRICK_RESOURCE_FIRST) + i),
@@ -1859,8 +1861,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         cfgp[24],
                         0
                     );
-                    AddTabItem(3, set);
-                    cachep[4] = set;
+                    AddTabItem(3, brickIcon);
+                    cachep[4] = brickIcon;
                     cfgp += 6;
                     cachep += 1;
                     y += 0x20;
