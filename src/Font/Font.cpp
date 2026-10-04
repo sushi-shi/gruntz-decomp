@@ -16,10 +16,10 @@
 
 RVA(0x00179700, 0x10)
 Font::Font() {
-    m_surfaces = NULL;
-    m_glyphs = NULL;
-    m_ready = false;
-    m_count = 0;
+    m_glyphBitmaps = NULL;
+    m_glyphSizes = NULL;
+    m_storageAllocated = false;
+    m_glyphCount = 0;
 }
 
 RVA(0x00179710, 0x5)
@@ -28,43 +28,43 @@ Font::~Font() {
 }
 
 RVA(0x00179720, 0x87)
-i32 Font::AllocateMemory(i32 count) {
+i32 Font::AllocateMemory(i32 glyphCount) {
     FreeMemory();
 
-    m_count = count;
-    if (count < 1) {
+    m_glyphCount = glyphCount;
+    if (glyphCount < 1) {
         return 0;
     }
 
-    m_surfaces = new u8*[m_count];
-    m_glyphs = new CSize[m_count];
+    m_glyphBitmaps = new u8*[m_glyphCount];
+    m_glyphSizes = new CSize[m_glyphCount];
 
-    for (i32 i = 0; i < m_count; i++) {
-        m_surfaces[i] = NULL;
+    for (i32 i = 0; i < m_glyphCount; i++) {
+        m_glyphBitmaps[i] = NULL;
 
-        CSize g(0, 0);
-        SET_FONT_GLYPH(i, g);
+        CSize glyphSize(0, 0);
+        SET_FONT_GLYPH_SIZE(i, glyphSize);
     }
 
     m_maxHeight = 0;
-    m_ready = true;
+    m_storageAllocated = true;
     return 1;
 }
 
 RVA(0x001797b0, 0x71)
 void Font::FreeMemory() {
-    if (m_ready) {
-        for (i32 i = 0; i < m_count; i++) {
-            if (m_surfaces[i]) {
-                delete[] m_surfaces[i];
-                m_surfaces[i] = NULL;
+    if (m_storageAllocated) {
+        for (i32 i = 0; i < m_glyphCount; i++) {
+            if (m_glyphBitmaps[i]) {
+                delete[] m_glyphBitmaps[i];
+                m_glyphBitmaps[i] = NULL;
             }
         }
-        delete[] m_surfaces;
-        m_surfaces = NULL;
-        SAFE_DELETE_ARRAY(m_glyphs);
-        m_count = 0;
-        m_ready = false;
+        delete[] m_glyphBitmaps;
+        m_glyphBitmaps = NULL;
+        SAFE_DELETE_ARRAY(m_glyphSizes);
+        m_glyphCount = 0;
+        m_storageAllocated = false;
     }
 }
 
@@ -79,21 +79,21 @@ i32 Font::LoadFont(CString szFileName) {
 
     CArchive ar(&file, CArchive::load, 0x1000, NULL);
 
-    ar >> m_count;
-    AllocateMemory(m_count);
+    ar >> m_glyphCount;
+    AllocateMemory(m_glyphCount);
 
-    for (i32 i = 0; i < m_count; i++) {
-        ar.Read(&m_glyphs[i], sizeof(CSize));
-        m_surfaces[i] = new u8[m_glyphs[i].cx * m_glyphs[i].cy];
-        ar.Read(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
+    for (i32 i = 0; i < m_glyphCount; i++) {
+        ar.Read(&m_glyphSizes[i], sizeof(CSize));
+        m_glyphBitmaps[i] = new u8[m_glyphSizes[i].cx * m_glyphSizes[i].cy];
+        ar.Read(m_glyphBitmaps[i], m_glyphSizes[i].cx * m_glyphSizes[i].cy);
     }
 
     ar.Close();
     file.Close();
 
     i32 maxHeight = 0;
-    for (i32 j = 0; j < m_count; j++) {
-        maxHeight = max(maxHeight, m_glyphs[j].cy);
+    for (i32 j = 0; j < m_glyphCount; j++) {
+        maxHeight = max(maxHeight, m_glyphSizes[j].cy);
     }
     m_maxHeight = maxHeight;
 
@@ -111,12 +111,12 @@ i32 Font::SaveFont(CString szFileName) {
 
     CArchive ar(&file, CArchive::store, 0x1000, NULL);
 
-    ar << m_count;
+    ar << m_glyphCount;
 
-    for (i32 i = 0; i < m_count; i++) {
-        CSize g = m_glyphs[i];
-        ar.Write(&g, sizeof(CSize));
-        ar.Write(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
+    for (i32 i = 0; i < m_glyphCount; i++) {
+        CSize glyphSize = m_glyphSizes[i];
+        ar.Write(&glyphSize, sizeof(CSize));
+        ar.Write(m_glyphBitmaps[i], m_glyphSizes[i].cx * m_glyphSizes[i].cy);
     }
 
     ar.Close();
@@ -126,21 +126,21 @@ i32 Font::SaveFont(CString szFileName) {
 }
 
 RVA(0x00179b60, 0x12)
-u8** Font::GetSurface(u8 c) {
-    return &m_surfaces[c];
+u8** Font::GetGlyphBitmap(u8 character) {
+    return &m_glyphBitmaps[character];
 }
 
 RVA(0x00179b80, 0x22)
-CSize& Font::GetGlyph(CSize& out, u8 c) {
-    out = m_glyphs[c];
-    return out;
+CSize& Font::GetGlyphSize(CSize& sizeOut, u8 character) {
+    sizeOut = m_glyphSizes[character];
+    return sizeOut;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179bb0, 0x1e)
-void Font::SetGlyph(u8 c, CSize glyph) {
-    SET_FONT_GLYPH(c, glyph);
+void Font::SetGlyphSize(u8 character, CSize glyphSize) {
+    SET_FONT_GLYPH_SIZE(character, glyphSize);
 }
 
 RVA(0x00179bd0, 0x4)
@@ -152,8 +152,8 @@ RVA(0x00179be0, 0x14)
 FontRenderer::FontRenderer() {
     m_font = NULL;
     m_color = RGB(255, 255, 255);
-    m_clip = 0;
-    m_surface = 0;
+    m_highlightEnabled = 0;
+    m_shadowEnabled = 0;
 }
 
 RVA(0x00179c00, 0x1)
@@ -185,13 +185,13 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
 RVA(0x00179d10, 0x15c)
 void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
-    if (m_clip) {
+    if (m_highlightEnabled) {
         SetColor(RGB(255, 255, 255));
         DrawGlyphRun(text, surf, rc, x, y, z);
         x++;
         y++;
     }
-    if (m_surface) {
+    if (m_shadowEnabled) {
         SetColor(RGB(0, 0, 0));
         x += 2;
         DrawGlyphRun(text, surf, rc, x, y, z);
@@ -261,7 +261,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         while (acc < rc.left) {
             CSize g;
             prev = acc;
-            acc += m_font->GetGlyph(g, text[startChar]).cx;
+            acc += m_font->GetGlyphSize(g, text[startChar]).cx;
             startChar++;
         }
         --startChar;
@@ -279,7 +279,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         if (rc.right >= 0) {
             do {
                 CSize g;
-                acc += m_font->GetGlyph(g, text[j]).cx;
+                acc += m_font->GetGlyphSize(g, text[j]).cx;
                 j++;
             } while (acc <= rc.right);
             endChar = j;
@@ -291,7 +291,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 
     for (i32 ci = startChar; ci < endChar; ci++) {
         CSize g;
-        m = m_font->GetGlyph(g, text[ci]);
+        m = m_font->GetGlyphSize(g, text[ci]);
         i32 row;
         i32 col;
         i32 clippedW;
@@ -300,7 +300,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         } else {
             clippedW = m.cx;
         }
-        u8* glyphBuf = m_font->GetSurface(text[ci])[0];
+        u8* glyphBuf = m_font->GetGlyphBitmap(text[ci])[0];
         if (blend) {
             for (row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
@@ -486,7 +486,7 @@ CSize FontRenderer::MeasureText(CString text) {
     for (; i < text.GetLength(); i++) {
         u8 c = text[i];
 
-        width += m_font->GetGlyph(g, c).cx;
+        width += m_font->GetGlyphSize(g, c).cx;
     }
     ext = CSize(width, m_font->GetMaxHeight());
     return ext;
