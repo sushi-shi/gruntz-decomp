@@ -1072,7 +1072,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 cellTileY = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
-    CGameObject* o = cell->m_object;
+    CGameObject* o = cell->GetSpriteObject();
     if (o->m_screenX != cell->m_lastTilePx.m_x) {
         goto outOfRange;
     }
