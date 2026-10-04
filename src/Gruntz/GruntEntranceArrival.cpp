@@ -570,8 +570,8 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     }
 
     i32 e1x = e1->x;
-    i32 e2x = e2->x;
     i32 px = p->left;
+    i32 e2x = e2->x;
     if ((e1x > px) != (e2x > px)) {
 
         float t = static_cast<float>((px - e1x)) / static_cast<float>((e2x - e1x));
