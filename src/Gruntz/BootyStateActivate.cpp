@@ -2280,7 +2280,7 @@ i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     while (i < 4) {
         GruntzPlayer* p = &g_gameReg->m_players[i];
-        if (p->m_joined != false && p->m_clearedRound == false) {
+        if (p->m_joined != false && p->IsEliminated() == false) {
             return p->m_playerIndex;
         }
         i++;

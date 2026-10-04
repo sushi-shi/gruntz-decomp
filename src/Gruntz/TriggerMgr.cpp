@@ -1834,7 +1834,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 ok = true;
             }
         } else if (player->m_active != false && player->m_doneFlag == false
-                   && player->m_clearedRound == false) {
+                   && player->IsEliminated() == false) {
             if (player->m_humanControlled != false) {
                 if (PlaceObject(
                         playerIndex,

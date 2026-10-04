@@ -56,6 +56,10 @@ public:
         return m_color;
     }
 
+    b32 IsEliminated() const {
+        return m_clearedRound;
+    }
+
     BattlezDifficulty GetDifficulty() const {
         return m_difficulty;
     }

@@ -149,14 +149,14 @@ i32 CInputState::ResetInputState() {
         d->ResetState();
     } else {
         CInputDeviceGroup* group = m_deviceGroup;
-        if (group && group->m_count > 0) {
-            CInputDevBase** p = &group->m_items[0];
+        if (group && group->GetCount() > 0) {
+            CInputDevBase** p = group->GetData();
             i32 i = 0;
             do {
                 (*p)->ResetState();
                 ++i;
                 ++p;
-            } while (i < group->m_count);
+            } while (i < group->GetCount());
         }
     }
     m_pressedButtons = 0;

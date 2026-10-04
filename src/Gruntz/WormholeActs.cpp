@@ -164,7 +164,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (slot->m_joined == false) {
                 return 0;
             }
-            if (slot->m_clearedRound != false) {
+            if (slot->IsEliminated() != false) {
                 return 0;
             }
             if (slot->m_doneFlag == false) {

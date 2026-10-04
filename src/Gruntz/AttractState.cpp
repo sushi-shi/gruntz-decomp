@@ -163,9 +163,9 @@ i32 CAttract::Render() {
         list->m_items[i]->Poll();
     }
 
-    i32 n = g_actorList->m_count;
+    i32 n = g_actorList->GetCount();
     for (i = 0; i < n; i++) {
-        if (g_actorList->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
+        if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
             PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         }

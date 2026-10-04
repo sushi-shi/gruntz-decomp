@@ -68,7 +68,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     GruntzPlayer* pslot = NULL;
     for (i32 k = 0; k < 4; k++) {
         pslot = &g_gameReg->m_players[k];
-        if (pslot->m_joined && !pslot->m_doneFlag && !pslot->m_clearedRound) {
+        if (pslot->m_joined && !pslot->m_doneFlag && !pslot->IsEliminated()) {
             count++;
         }
     }
@@ -127,7 +127,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
                         }
                         GruntzPlayer* slot = &g_gameReg->m_players[i];
-                        if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
+                        if (slot && slot->m_joined && !slot->m_doneFlag && !slot->IsEliminated()) {
                             slot->m_clearedRound = true;
                             CGameObject* out = NULL;
                             if (MapLookupById(
@@ -150,7 +150,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             );
                         }
                         if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag
-                            && !lastSlot->m_clearedRound) {
+                            && !lastSlot->IsEliminated()) {
                             CGameObject* out = NULL;
                             if (MapLookupById(
                                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
@@ -208,7 +208,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 continue;
             }
             GruntzPlayer* slot = &g_gameReg->m_players[i];
-            if (slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
+            if (slot->m_joined && !slot->m_doneFlag && !slot->IsEliminated()) {
                 return 0;
             }
         }
