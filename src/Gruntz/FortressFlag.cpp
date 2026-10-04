@@ -89,7 +89,7 @@ RVA(0x00045d30, 0x220)
 CFortressFlag::CFortressFlag(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
-    i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
+    i32 v = o->m_frameImage->GetAnchorY() + o->m_screenY + 0x186a0;
     o->SetSortKey(v);
     switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
         case WARLORDZ_KING:

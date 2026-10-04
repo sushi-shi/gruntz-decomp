@@ -267,9 +267,9 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
         CImage* headerFrame =
             DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->GetMinIndex());
         if (headerFrame) {
-            drawY += headerFrame->m_anchorY;
+            drawY += headerFrame->GetAnchorY();
             headerFrame->RenderFrame(target, centerX, drawY, 0);
-            drawY += m_headerGap + headerFrame->m_anchorY;
+            drawY += m_headerGap + headerFrame->GetAnchorY();
         }
     }
     POSITION position = m_items.GetHeadPosition();
@@ -450,9 +450,9 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
         CImage* headerFrame =
             DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->GetMinIndex());
         if (headerFrame) {
-            drawY += headerFrame->m_anchorY;
+            drawY += headerFrame->GetAnchorY();
             headerFrame->RenderFrame(target, centerX, drawY, 0);
-            drawY += m_headerGap + headerFrame->m_anchorY;
+            drawY += m_headerGap + headerFrame->GetAnchorY();
         }
     }
     i32 columnX = ((m_columnWidth / 2)) + m_bounds.left + m_columnOffsetX;

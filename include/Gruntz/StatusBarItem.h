@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Globals.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiCommandId.h>
 #include <Gruntz/SerialArchive.h>
@@ -48,6 +49,14 @@ public:
 
     StatusBarTab GetTab() const {
         return m_tab;
+    }
+
+    b32 IsEnabled() const {
+        return m_enabled;
+    }
+
+    b32 ContainsPoint(i32 x, i32 y) const {
+        return ::PtInRect(&m_rect, x, y);
     }
 
     void SetEnabled(i32 on) {

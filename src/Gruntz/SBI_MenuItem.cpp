@@ -101,8 +101,8 @@ i32 CSBI_MenuItem::Render() {
         m_redrawFrames--;
         CImage* f = m_frame;
         if (f) {
-            i32 y = m_rect.top + f->m_anchorY;
-            i32 x = m_rect.left + f->m_anchorX;
+            i32 y = m_rect.top + f->GetAnchorY();
+            i32 x = m_rect.left + f->GetAnchorX();
             f->RenderFrame(g_gameReg->m_world->GetDrawTarget()->m_backPair, x, y, 0);
         }
     }

@@ -160,10 +160,10 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     if (m_frameImage == NULL) {
         return 0;
     }
-    i32 left = m_screenX - m_frameImage->m_anchorX;
-    i32 right = m_screenX + m_frameImage->m_anchorX;
-    i32 top = m_screenY - m_frameImage->m_anchorY;
-    i32 bottom = m_screenY + m_frameImage->m_anchorY;
+    i32 left = m_screenX - m_frameImage->GetAnchorX();
+    i32 right = m_screenX + m_frameImage->GetAnchorX();
+    i32 top = m_screenY - m_frameImage->GetAnchorY();
+    i32 bottom = m_screenY + m_frameImage->GetAnchorY();
     if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
         RECT* r = OwnerMgr()->m_level->m_mainPlane->GetPlaneViewRect();

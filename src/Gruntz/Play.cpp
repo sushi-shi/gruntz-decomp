@@ -1857,7 +1857,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 area = &g_gameReg->m_players[pick];
             }
         }
-        if (area->HasJoinedRound() != false && area->HasDropped() == false && area->IsEliminated() == false) {
+        if (area->HasJoinedRound() != false && area->HasDropped() == false
+            && area->IsEliminated() == false) {
             this->m_focusPlayerIndex = pick;
             this->ResetGoals(area->m_focusX, area->m_focusY);
         }
@@ -3723,9 +3724,9 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    screenRect->left = x - m_cursorImage->m_anchorX;
+    screenRect->left = x - m_cursorImage->GetAnchorX();
     screenRect->right = m_cursorImage->m_width + screenRect->left;
-    screenRect->top = y - m_cursorImage->m_anchorY;
+    screenRect->top = y - m_cursorImage->GetAnchorY();
     screenRect->bottom = m_cursorImage->m_height + screenRect->top;
     tagSIZE mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {

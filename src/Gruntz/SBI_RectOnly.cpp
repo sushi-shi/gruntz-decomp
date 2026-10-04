@@ -279,8 +279,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
-                        entry->m_anchorX + m_barRect.left,
-                        entry->m_anchorY + m_barRect.top,
+                        entry->GetAnchorX() + m_barRect.left,
+                        entry->GetAnchorY() + m_barRect.top,
                         0
                     );
                 }
@@ -334,8 +334,8 @@ RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
     CImage* L = r->m_frameImage;
-    i32 xlo = r->m_screenX - L->m_anchorX;
-    i32 ylo = r->m_screenY - L->m_anchorY;
+    i32 xlo = r->m_screenX - L->GetAnchorX();
+    i32 ylo = r->m_screenY - L->GetAnchorY();
     i32 xhi = L->m_width + xlo;
     i32 yhi = L->m_height + ylo;
     if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
@@ -759,9 +759,9 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (r) {
-            b32 hit = r->m_enabled;
+            b32 hit = r->IsEnabled();
             if (hit) {
-                hit = ::PtInRect(&r->m_rect, x, y);
+                hit = r->ContainsPoint(x, y);
             }
             if (hit) {
                 return r;
@@ -773,9 +773,9 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (r) {
-            b32 hit = r->m_enabled;
+            b32 hit = r->IsEnabled();
             if (hit) {
-                hit = ::PtInRect(&r->m_rect, x, y);
+                hit = r->ContainsPoint(x, y);
             }
             if (hit) {
                 return r;
@@ -786,9 +786,9 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (r) {
-            b32 hit = r->m_enabled;
+            b32 hit = r->IsEnabled();
             if (hit) {
-                hit = ::PtInRect(&r->m_rect, x, y);
+                hit = r->ContainsPoint(x, y);
             }
             if (hit) {
                 return r;
@@ -1617,7 +1617,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
             {
                 CSBI_ImageSet** aptr = m_slotNotify;
-                i32* bptr = &m_slots[0].m_value;
+                CSbiSlot* slot = m_slots;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     CSBI_ImageSet* set;
@@ -1629,7 +1629,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         TAB_GRUNTZ,
                         CRect(bx + 0xe, y - 0x32, bx + 0x39, y),
                         "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
-                        *bptr,
+                        slot->m_value,
                         0
                     );
                     AddTabItem(2, set);
@@ -1644,7 +1644,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     set->GetFrameSet()->SetAllTypes(SHADE_PAL_16);
                     set->GetFrameSet()->SetAllFormats(sel);
                     aptr++;
-                    bptr += 6;
+                    slot++;
                     y += 0x36;
                 }
             }
@@ -2371,9 +2371,9 @@ RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_chatBoxDisabled == false) {
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
+            if (m_hitRects[i] && m_hitRects[i]->IsEnabled()) {
                 CSBI_SideTab* p = m_hitRects[i];
-                b32 hit = p->m_enabled ? ::PtInRect(&p->m_rect, x, y) : false;
+                b32 hit = p->IsEnabled() ? p->ContainsPoint(x, y) : false;
                 if (hit) {
                     return i;
                 }
@@ -2928,19 +2928,17 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 
     CSBI_ImageSet** p = &m_resourceSlotSprites[4];
-    i32* h = &m_resourceSlots[4].m_value;
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
-            p[-4]->Notify(h[-24]);
+            p[-4]->Notify(m_resourceSlots[n].m_value);
         }
         if (p[0]) {
-            p[0]->Notify(h[0]);
+            p[0]->Notify(m_resourceSlots[n + 4].m_value);
         }
         if (p[4]) {
-            p[4]->Notify(h[24]);
+            p[4]->Notify(m_resourceSlots[n + 8].m_value);
         }
         p++;
-        h += 6;
     }
 
     if (m_resourceMachineFramework) {
@@ -4220,7 +4218,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].HasJoinedRound() != false && g_gameReg->m_players[i].HasDropped() == false
+        if (g_gameReg->m_players[i].HasJoinedRound() != false
+            && g_gameReg->m_players[i].HasDropped() == false
             && g_gameReg->m_players[i].IsEliminated() == false) {
             count++;
         }
