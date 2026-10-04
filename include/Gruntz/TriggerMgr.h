@@ -221,12 +221,12 @@ public:
 
     i32 CenterOnGroup(i32 doSelect);
 
-    i32 LoadTileArrivalFx(
+    i32 HandleToolAnimationCue(
         i32 playerIndex,
         i32 unitIndex,
         i32 tileX,
         i32 tileY,
-        PickupType reason,
+        PickupType toolType,
         WwdAniDrawValue cue
     );
 

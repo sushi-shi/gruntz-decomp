@@ -1252,7 +1252,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
                 }
             }
         }
-        m_triggerMgr->LoadTileArrivalFx(
+        m_triggerMgr->HandleToolAnimationCue(
             m_playerIndex,
             m_unitIndex,
             m_toolTargetTile.m_x,
@@ -1275,7 +1275,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
-        m_triggerMgr->LoadTileArrivalFx(
+        m_triggerMgr->HandleToolAnimationCue(
             m_playerIndex,
             m_unitIndex,
             m_toolTargetTile.m_x,

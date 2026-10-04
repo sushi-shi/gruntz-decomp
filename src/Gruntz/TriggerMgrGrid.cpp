@@ -1189,11 +1189,11 @@ outOfRange:
 #define CANCEL_UNIT_ARRIVAL_FX(unit, player, index)                                                \
     {                                                                                              \
         if ((unit)->IsAnimationAct("I")) {                                                         \
-            LoadTileArrivalFx(                                                                     \
+            HandleToolAnimationCue(                                                                \
                 (player),                                                                          \
                 (index),                                                                           \
-                (unit)->ToolTargetTile().m_x,                                                            \
-                (unit)->ToolTargetTile().m_y,                                                            \
+                (unit)->ToolTargetTile().m_x,                                                      \
+                (unit)->ToolTargetTile().m_y,                                                      \
                 (unit)->m_activePickupType,                                                        \
                 WWDDRAW_NO_ANIMATION                                                               \
             );                                                                                     \

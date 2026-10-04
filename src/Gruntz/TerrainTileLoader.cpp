@@ -37,12 +37,12 @@
 #include <Wwd/WwdFile.h>
 
 RVA(0x00075e90, 0x1400)
-i32 CTriggerMgr::LoadTileArrivalFx(
+i32 CTriggerMgr::HandleToolAnimationCue(
     i32 playerIndex,
     i32 unitIndex,
     i32 tileX,
     i32 tileY,
-    PickupType reason,
+    PickupType toolType,
     WwdAniDrawValue cue
 ) {
     CGrunt* unit = UnitAt(playerIndex, unitIndex);
@@ -54,7 +54,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 px = tileX * TILE_SIZE_PX + TILE_HALF_PX;
     i32 py = tileY * TILE_SIZE_PX + TILE_HALF_PX;
 
-    switch (reason) {
+    switch (toolType) {
         case PICKUP_SHOVEL:
             if (cue == WWDDRAW_NO_ANIMATION) {
                 return 1;

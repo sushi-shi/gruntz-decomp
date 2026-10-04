@@ -14,7 +14,7 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
 }
 
 inline void CGrunt::ClearMoveTileFx() {
-    m_triggerMgr->LoadTileArrivalFx(
+    m_triggerMgr->HandleToolAnimationCue(
         GetPlayerIndex(),
         GetUnitIndex(),
         m_toolTargetTile.m_x,
