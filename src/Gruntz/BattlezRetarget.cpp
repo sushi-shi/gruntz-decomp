@@ -60,7 +60,7 @@ i32 CBattlezAiController::RetargetIdleUnit(CGrunt* unit) {
     CBattlezAiController* cfgB = NULL;
     i32 cell = unit->ArrivalCell().m_x;
     if (cell >= 0 && cell < 4) {
-        recA = &m_ctx->GetPlayer(cell);
+        recA = &m_game->GetPlayer(cell);
         cfgB = recA->GetBattlezAiController();
     }
     if (unit->CoordsEmpty()) {
@@ -73,12 +73,12 @@ i32 CBattlezAiController::RetargetIdleUnit(CGrunt* unit) {
                 r++;
             }
             i32 band = r % 4;
-            CBattlezAiController* b = m_ctx->GetPlayer(band).GetBattlezAiController();
+            CBattlezAiController* b = m_game->GetPlayer(band).GetBattlezAiController();
             if (b != NULL) {
                 i32 cnt = b->GetAttackWaypointCount();
                 Coord goal = b->GetBaseTile();
                 if (cnt != 0) {
-                    Coord* pair = b->CoordAt(rand() % cnt);
+                    Coord* pair = b->GetAttackWaypoint(rand() % cnt);
                     goal = *pair;
                 }
                 if (unit->MoveToTile(goal.m_x, goal.m_y, 0, 0x9cf, 0, 0x4020) != 0) {
@@ -89,7 +89,7 @@ i32 CBattlezAiController::RetargetIdleUnit(CGrunt* unit) {
             unit->ResetDwell();
             return 1;
         }
-        CBattlezAiController* recB = m_ctx->GetPlayer(cell).GetBattlezAiController();
+        CBattlezAiController* recB = m_game->GetPlayer(cell).GetBattlezAiController();
         if (recB == NULL) {
             return 1;
         }
@@ -123,7 +123,7 @@ i32 CBattlezAiController::RetargetIdleUnit(CGrunt* unit) {
     i32 cnt2 = cfgB->GetAttackWaypointCount();
     if (cnt2 > 0) {
         for (i32 j = 0; j < cnt2; j++) {
-            Coord* pair = cfgB->CoordAt(j);
+            Coord* pair = cfgB->GetAttackWaypoint(j);
             i32 dy = abs(pair->m_y - py);
             i32 dx = abs(pair->m_x - px);
             if (dx + dy <= 6) {

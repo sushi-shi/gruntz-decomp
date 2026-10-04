@@ -21,7 +21,7 @@ i32 CBattlezAiController::RerouteSwitchSeeker(CGrunt* grunt) {
     i32 targetPlayerIndex = grunt->GetBattlezTargetPlayerIndex();
     i32 targetUnavailable = 0;
     if (targetPlayerIndex != -1) {
-        GruntzPlayer* targetPlayer = &m_ctx->GetPlayer(targetPlayerIndex);
+        GruntzPlayer* targetPlayer = &m_game->GetPlayer(targetPlayerIndex);
         if (targetPlayer->IsEliminated() != false) {
             targetUnavailable = 1;
         } else if (targetPlayer->IsActive() == false) {
@@ -41,11 +41,11 @@ i32 CBattlezAiController::RerouteSwitchSeeker(CGrunt* grunt) {
             if (col == tileX && row == tileY) {
                 continue;
             }
-            if (static_cast<u32>(col) >= static_cast<u32>(m_board->GetWidth())
-                || static_cast<u32>(row) >= static_cast<u32>(m_board->GetHeight())) {
+            if (static_cast<u32>(col) >= static_cast<u32>(m_tileGrid->GetWidth())
+                || static_cast<u32>(row) >= static_cast<u32>(m_tileGrid->GetHeight())) {
                 continue;
             }
-            i32 flags = m_board->CellFlagsAt(col, row);
+            i32 flags = m_tileGrid->CellFlagsAt(col, row);
             if (flags & BRICKZ_BLOCKED_MASK) {
                 continue;
             }

@@ -61,8 +61,8 @@ DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
 inline CGrunt* CBattlezAiController::FindNearbyIdleGrunt(CGrunt* unit) {
-    i32 width = m_board->GetWidth();
-    i32 height = m_board->GetHeight();
+    i32 width = m_tileGrid->GetWidth();
+    i32 height = m_tileGrid->GetHeight();
     Coord searchTile;
     unit->GetScreenTile(&searchTile);
     return FindIdleGruntInBox(
@@ -202,7 +202,7 @@ i32 CBattlezAiController::TrackAssignedEnemy(CGrunt* unit) {
                 return 1;
             }
 
-            CMapMgr* board = m_board;
+            CMapMgr* board = m_tileGrid;
             board->Clip(NULL);
             if (static_cast<u32>(unit->GetDwell()) > DWELL_REPATH_MS && unit->CoordsEmpty()) {
                 i32 flags = unit->GetRouteBlockedMask();
@@ -242,7 +242,7 @@ i32 CBattlezAiController::AdvanceToEnemyBase(CGrunt* unit) {
             targetPlayerIndex++;
         }
         targetPlayerIndex = targetPlayerIndex % 4;
-        GruntzPlayer* slot = &m_ctx->GetPlayer(targetPlayerIndex);
+        GruntzPlayer* slot = &m_game->GetPlayer(targetPlayerIndex);
         if (slot->IsEliminated() != false) {
             return 1;
         }
@@ -252,7 +252,7 @@ i32 CBattlezAiController::AdvanceToEnemyBase(CGrunt* unit) {
         unit->SetBattlezTargetPlayerIndex(targetPlayerIndex);
         UNSET_COORD(unit->m_defenderPx);
     } else {
-        GruntzPlayer* slot = &m_ctx->GetPlayer(targetPlayerIndex);
+        GruntzPlayer* slot = &m_game->GetPlayer(targetPlayerIndex);
         if (slot->IsEliminated() != false || slot->IsActive() == false) {
 
             unit->RecycleCoords();
@@ -266,7 +266,7 @@ i32 CBattlezAiController::AdvanceToEnemyBase(CGrunt* unit) {
         }
     }
     targetPlayerIndex = unit->GetBattlezTargetPlayerIndex();
-    CBattlezAiController* bundle = m_ctx->GetPlayer(targetPlayerIndex).GetBattlezAiController();
+    CBattlezAiController* bundle = m_game->GetPlayer(targetPlayerIndex).GetBattlezAiController();
     Coord marker = bundle->GetBaseTile();
     if (unit->CoordsEmpty()) {
         switch (unit->GetAiState()) {
@@ -350,7 +350,7 @@ i32 CBattlezAiController::AdvanceToEnemyBase(CGrunt* unit) {
                 return 1;
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
-                CMapMgr* board = m_board;
+                CMapMgr* board = m_tileGrid;
                 board->Clip(NULL);
                 i32 flags = unit->GetRoutePassableMask();
                 ADD_BATTLEZ_TRAVERSAL_FLAGS(unit, flags);

@@ -21,7 +21,7 @@ class CPlay;
 class CBattlezAiController {
 public:
     const Coord& GetBaseTile() const {
-        return m_marker;
+        return m_baseTile;
     }
 
     i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty);
@@ -100,11 +100,11 @@ public:
     i32 RerouteSwitchSeeker(CGrunt* grunt);
 
     b32 m_active;
-    CGruntzMgr* m_ctx;
+    CGruntzMgr* m_game;
     CTriggerMgr* m_triggerMgr;
-    CMapMgr* m_board;
+    CMapMgr* m_tileGrid;
     CPlay* m_play;
-    CTileTriggerContainer* m_cellQuery;
+    CTileTriggerContainer* m_tileTriggers;
 
     i32 m_playerIndex;
     // @identity-TODO: reserved members below are initialized, cleared, or streamed
@@ -152,17 +152,17 @@ public:
     i32 m_repathBudget;
     i32 m_inactiveTargetRerouteDelay;
     i32 m_nearbyRouteSearchDelay;
-    Coord m_marker;
+    Coord m_baseTile;
     i32 m_reserved0d8;
 
-    CPtrArray m_candArray;
+    CPtrArray m_spawnTiles;
     CPtrArray m_attackWaypoints;
 
     i32 GetAttackWaypointCount() const {
         return m_attackWaypoints.GetSize();
     }
 
-    Coord* CoordAt(i32 index) {
+    Coord* GetAttackWaypoint(i32 index) {
         return static_cast<Coord*>(m_attackWaypoints.GetAt(index));
     }
     CDWordArray m_reserved104;
