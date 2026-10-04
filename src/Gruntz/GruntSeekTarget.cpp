@@ -41,6 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @early-stop
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     this->m_defenderPx = this->m_lastTilePx;
