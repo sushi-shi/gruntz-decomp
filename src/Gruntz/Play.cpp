@@ -958,7 +958,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     self->m_initialFramePending = true;
     self->m_levelIndex = level;
     {
-        self->m_levelType = LevelAreaForLevel(level);
+        self->m_levelArea = LevelAreaForLevel(level);
     }
 
     g_frameTime = 0;
@@ -1046,10 +1046,10 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         }
 
         self->m_levelIndex = level;
-        self->m_levelType = LevelAreaForLevel(level);
+        self->m_levelArea = LevelAreaForLevel(level);
     }
 
-    sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
+    sprintf(nameBuf, "AREA%i", IDX(self->m_levelArea));
     bank = self->m_resourceArchive->GetDirFromPath(nameBuf);
     self->m_levelResources = bank;
     if (bank == NULL) {
@@ -1057,7 +1057,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
 
     {
-        LevelArea page = self->m_levelType;
+        LevelArea page = self->m_levelArea;
         switch (page) {
             case AREA_ROCKY_ROADZ:
             case AREA_GRUNTZICLEZ:
@@ -1287,7 +1287,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
             goto fail0;
         }
     }
-    if (!self->m_minimap->SetAreaPalette(self->m_levelType)) {
+    if (!self->m_minimap->SetAreaPalette(self->m_levelArea)) {
         goto fail0;
     }
 
@@ -6613,228 +6613,228 @@ i32 CPlay::RandomizePlayerAssignments() {
 
 RVA(0x000d95f0, 0x830)
 i32 CPlay::DrawLevelInfoText() {
-    CString s0;
-    CString s1;
-    CString s2;
-    CString s3;
+    CString areaTitle;
+    CString levelLabel;
+    CString levelTitle;
+    CString loadingText;
 
-    switch (m_levelType) {
+    switch (m_levelArea) {
         case AREA_ROCKY_ROADZ:
-            s0.LoadString(IDS_AREA1_TITLE);
+            areaTitle.LoadString(IDS_AREA1_TITLE);
             break;
         case AREA_GRUNTZICLEZ:
-            s0.LoadString(IDS_AREA2_TITLE);
+            areaTitle.LoadString(IDS_AREA2_TITLE);
             break;
         case AREA_TROUBLE_IN_THE_TROPICZ:
-            s0.LoadString(IDS_AREA3_TITLE);
+            areaTitle.LoadString(IDS_AREA3_TITLE);
             break;
         case AREA_HIGH_ON_SWEETZ:
-            s0.LoadString(IDS_AREA4_TITLE);
+            areaTitle.LoadString(IDS_AREA4_TITLE);
             break;
         case AREA_HIGH_ROLLERZ:
-            s0.LoadString(IDS_AREA5_TITLE);
+            areaTitle.LoadString(IDS_AREA5_TITLE);
             break;
         case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
-            s0.LoadString(IDS_AREA6_TITLE);
+            areaTitle.LoadString(IDS_AREA6_TITLE);
             break;
         case AREA_MINIATURE_MASTERZ:
-            s0.LoadString(IDS_AREA7_TITLE);
+            areaTitle.LoadString(IDS_AREA7_TITLE);
             break;
         case AREA_GRUNTZ_IN_SPACE:
-            s0.LoadString(IDS_AREA8_TITLE);
+            areaTitle.LoadString(IDS_AREA8_TITLE);
             break;
         default:
-            s0 = "";
+            areaTitle = "";
     }
 
-    GameModeId mode = g_gameReg->GetGameMode();
-    if (mode == GAMEMODE_QUESTZ) {
+    GameModeId gameMode = g_gameReg->GetGameMode();
+    if (gameMode == GAMEMODE_QUESTZ) {
         if (g_gameReg->IsCustomLevel() != false) {
-            s1.LoadString(IDS_CUSTOM_QUEST_LEVEL);
+            levelLabel.LoadString(IDS_CUSTOM_QUEST_LEVEL);
         } else {
-            i32 stage = m_levelIndex;
-            if (stage > IDX(QUESTLEVEL_LAST)) {
+            i32 levelIndex = m_levelIndex;
+            if (levelIndex > IDX(QUESTLEVEL_LAST)) {
                 switch (CurrentQuestLevel()) {
                     case QUESTLEVEL_TRAINING_FIRST:
-                        s1.LoadString(IDS_TRAINING_STAGE1);
+                        levelLabel.LoadString(IDS_TRAINING_STAGE1);
                         break;
                     case QUESTLEVEL_TRAINING_STAGE2:
-                        s1.LoadString(IDS_TRAINING_STAGE2);
+                        levelLabel.LoadString(IDS_TRAINING_STAGE2);
                         break;
                     case QUESTLEVEL_TRAINING_STAGE3:
-                        s1.LoadString(IDS_TRAINING_STAGE3);
+                        levelLabel.LoadString(IDS_TRAINING_STAGE3);
                         break;
                     case QUESTLEVEL_TRAINING_LAST:
-                        s1.LoadString(IDS_TRAINING_STAGE4);
+                        levelLabel.LoadString(IDS_TRAINING_STAGE4);
                         break;
                     default:
-                        s1 = "";
+                        levelLabel = "";
                 }
             } else {
-                s1.Format("Stage %d", ((stage - 1) % QUESTLEVEL_PER_AREA) + 1);
+                levelLabel.Format("Stage %d", ((levelIndex - 1) % QUESTLEVEL_PER_AREA) + 1);
             }
             switch (CurrentQuestLevel()) {
                 case QUESTLEVEL_AREA1_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE1);
                     break;
                 case QUESTLEVEL_AREA1_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE2);
                     break;
                 case QUESTLEVEL_AREA1_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE3);
                     break;
                 case QUESTLEVEL_AREA1_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE4);
                     break;
                 case QUESTLEVEL_AREA2_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE1);
                     break;
                 case QUESTLEVEL_AREA2_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE2);
                     break;
                 case QUESTLEVEL_AREA2_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE3);
                     break;
                 case QUESTLEVEL_AREA2_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE4);
                     break;
                 case QUESTLEVEL_AREA3_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE1);
                     break;
                 case QUESTLEVEL_AREA3_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE2);
                     break;
                 case QUESTLEVEL_AREA3_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE3);
                     break;
                 case QUESTLEVEL_AREA3_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE4);
                     break;
                 case QUESTLEVEL_AREA4_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE1);
                     break;
                 case QUESTLEVEL_AREA4_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE2);
                     break;
                 case QUESTLEVEL_AREA4_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE3);
                     break;
                 case QUESTLEVEL_AREA4_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE4);
                     break;
                 case QUESTLEVEL_AREA5_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE1);
                     break;
                 case QUESTLEVEL_AREA5_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE2);
                     break;
                 case QUESTLEVEL_AREA5_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE3);
                     break;
                 case QUESTLEVEL_AREA5_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE4);
                     break;
                 case QUESTLEVEL_AREA6_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE1);
                     break;
                 case QUESTLEVEL_AREA6_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE2);
                     break;
                 case QUESTLEVEL_AREA6_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE3);
                     break;
                 case QUESTLEVEL_AREA6_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE4);
                     break;
                 case QUESTLEVEL_AREA7_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE1);
                     break;
                 case QUESTLEVEL_AREA7_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE2);
                     break;
                 case QUESTLEVEL_AREA7_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE3);
                     break;
                 case QUESTLEVEL_AREA7_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE4);
                     break;
                 case QUESTLEVEL_AREA8_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE1);
                     break;
                 case QUESTLEVEL_AREA8_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE2);
                     break;
                 case QUESTLEVEL_AREA8_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE3);
                     break;
                 case QUESTLEVEL_AREA8_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE4);
                     break;
                 default:
-                    s2.Format("");
+                    levelTitle.Format("");
                     break;
                 case QUESTLEVEL_TRAINING_STAGE1:
-                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE1);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE1);
                     break;
                 case QUESTLEVEL_TRAINING_STAGE2:
-                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE2);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE2);
                     break;
                 case QUESTLEVEL_TRAINING_STAGE3:
-                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE3);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE3);
                     break;
                 case QUESTLEVEL_TRAINING_STAGE4:
-                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE4);
+                    levelTitle.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE4);
             }
             if (g_levelBias100 != false) {
-                s1.LoadString(IDS_SECRET_LEVEL_STAGE);
-                s2.LoadString(IDS_SECRET_LEVEL_TITLE);
+                levelLabel.LoadString(IDS_SECRET_LEVEL_STAGE);
+                levelTitle.LoadString(IDS_SECRET_LEVEL_TITLE);
             }
         }
-    } else if (mode == GAMEMODE_BATTLEZ) {
+    } else if (gameMode == GAMEMODE_BATTLEZ) {
         if (g_gameReg->IsCustomLevel() != false) {
-            s1.LoadString(IDS_CUSTOM_BATTLEZ_LEVEL);
+            levelLabel.LoadString(IDS_CUSTOM_BATTLEZ_LEVEL);
         } else {
-            s1.LoadString(IDS_BATTLEZ_LEVEL);
+            levelLabel.LoadString(IDS_BATTLEZ_LEVEL);
         }
-    } else if (mode == GAMEMODE_MULTIPLAYER) {
+    } else if (gameMode == GAMEMODE_MULTIPLAYER) {
         if (g_gameReg->IsCustomLevel() != false) {
-            s1.LoadString(IDS_CUSTOM_MULTIPLAYER_LEVEL);
+            levelLabel.LoadString(IDS_CUSTOM_MULTIPLAYER_LEVEL);
         } else {
-            s1.LoadString(IDS_MULTIPLAYER_LEVEL);
+            levelLabel.LoadString(IDS_MULTIPLAYER_LEVEL);
         }
     } else {
-        s0.Format("");
-        s2.Format("");
-        s1.Format("");
+        areaTitle.Format("");
+        levelTitle.Format("");
+        levelLabel.Format("");
     }
 
     if (!(g_gameReg)->GetWorldFileName().IsEmpty()) {
-        char buf[128];
-        wsprintfA(buf, (g_gameReg)->GetWorldFileName());
-        if (strchr(buf, '.')) {
-            *strchr(buf, '.') = 0;
+        char worldFileName[128];
+        wsprintfA(worldFileName, (g_gameReg)->GetWorldFileName());
+        if (strchr(worldFileName, '.')) {
+            *strchr(worldFileName, '.') = 0;
         }
-        if (strrchr(buf, '\\') != NULL) {
-            s2 = strrchr(buf, '\\') + 1;
+        if (strrchr(worldFileName, '\\') != NULL) {
+            levelTitle = strrchr(worldFileName, '\\') + 1;
         } else {
-            s2 = buf;
+            levelTitle = worldFileName;
         }
     }
 
-    s3.LoadString(IDS_LOADING);
+    loadingText.LoadString(IDS_LOADING);
 
-    RECT r1;
-    RECT r2;
-    RECT r3;
-    RECT r4;
-    SetRect(&r1, 0, 0, SCREEN_W_PX, 0x38);
-    SetRect(&r2, 0, 0x2b, SCREEN_W_PX, 0x59);
-    SetRect(&r3, 0, 0x176, SCREEN_W_PX, 0x1a2);
-    SetRect(&r4, 0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
-    DrawTextToFrontSurface(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
-    DrawTextToFrontSurface(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
-    DrawTextToFrontSurface(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);
-    DrawTextToFrontSurface(m_world, &s3, &r4, 0x6e, 0, 0, 0, 0, 1);
+    RECT areaTitleRect;
+    RECT levelLabelRect;
+    RECT levelTitleRect;
+    RECT loadingTextRect;
+    SetRect(&areaTitleRect, 0, 0, SCREEN_W_PX, 0x38);
+    SetRect(&levelLabelRect, 0, 0x2b, SCREEN_W_PX, 0x59);
+    SetRect(&levelTitleRect, 0, 0x176, SCREEN_W_PX, 0x1a2);
+    SetRect(&loadingTextRect, 0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
+    DrawTextToFrontSurface(m_world, &areaTitle, &areaTitleRect, 0x78, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &levelLabel, &levelLabelRect, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &levelTitle, &levelTitleRect, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &loadingText, &loadingTextRect, 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 
