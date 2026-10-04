@@ -79,7 +79,7 @@ public:
         return m_netMgr;
     }
 
-    void AppendEditLine(HWND edit, char* str);
+    void AppendEditLine(HWND edit, const char* str);
 
     CNetPlayerNode* LocalPlayer() {
         return m_localPlayer;

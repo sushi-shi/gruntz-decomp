@@ -604,7 +604,7 @@ i32 CMultiStartDlg::OnInitDialog() {
 }
 
 RVA(0x000c2ce0, 0xf3)
-void CMultiStartDlg::AppendChatLine(char* line) {
+void CMultiStartDlg::AppendChatLine(const char* line) {
     CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
     // Keep the cached handle: CEdit helpers reload m_hWnd across message sends.
     HWND edit = item->GetSafeHwnd();
@@ -836,8 +836,10 @@ void CMultiStartDlg::OnChatSend() {
     input->GetWindowTextA(inputText);
     if (!inputText.IsEmpty()) {
         message += inputText;
-        AppendChatLine(const_cast<char*>(static_cast<const char*>(message)));
+        AppendChatLine(static_cast<const char*>(message));
         input->SetWindowTextA("");
+        // Broadcast truncation writes into the CString buffer without updating its length;
+        // this local is destroyed immediately afterward.
         g_multiState
             ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(message)), 0, 0, NULL);
     }

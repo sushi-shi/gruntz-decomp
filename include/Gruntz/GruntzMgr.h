@@ -159,7 +159,7 @@ public:
     i32 ToggleBaseLayer();
     i32 PollUnlessIdle();
     i32 RejectWorldFileCommand();
-    i32 AppendChatMessage(char* msg);
+    i32 AppendChatMessage(const char* msg);
     i32 ShowToggleMessage(char* itemName, i32 on);
 
     i32 IsMoviePathValid();

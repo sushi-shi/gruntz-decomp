@@ -2134,7 +2134,7 @@ i32 CGruntzMgr::IsStandardVideoMode() {
 }
 
 RVA(0x0008f9c0, 0x1d)
-i32 CGruntzMgr::AppendChatMessage(char* msg) {
+i32 CGruntzMgr::AppendChatMessage(const char* msg) {
     CGameText* log = m_chatLog;
     if (log == NULL) {
         return 0;

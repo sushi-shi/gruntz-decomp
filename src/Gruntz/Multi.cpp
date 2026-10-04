@@ -1870,7 +1870,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (g_netMessageEditHwnd != NULL) {
                 AppendEditLine(
                     g_netMessageEditHwnd,
-                    const_cast<char*>(static_cast<const char*>(result))
+                    static_cast<const char*>(result)
                 );
             } else {
                 (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
@@ -2407,7 +2407,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
 }
 
 RVA(0x000bb3e0, 0xe5)
-void CMulti::AppendEditLine(HWND edit, char* str) {
+void CMulti::AppendEditLine(HWND edit, const char* str) {
     if (!edit || !str || !str[0]) {
         return;
     }

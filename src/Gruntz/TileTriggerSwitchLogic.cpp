@@ -33,7 +33,6 @@
 #include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileTriggerSwitchInline.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -373,7 +372,7 @@ i32 CTileTriggerLogic::Tick() {
                             );
                             if (lg->StartTransitionAnimation(
                                     "GAME_REDPYRAMIDZ",
-                                    AsMutableCStringData(anim)
+                                    static_cast<const char*>(anim)
                                 )
                                 == 0) {
                                 lg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -611,7 +610,7 @@ i32 CTileTriggerLogic::Tick() {
     }
 
     if (trans != NULL) {
-        if (trans->StartTransitionAnimation(AsMutableCStringData(key), AsMutableCStringData(anim))
+        if (trans->StartTransitionAnimation(static_cast<const char*>(key), static_cast<const char*>(anim))
             == 0) {
             trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }

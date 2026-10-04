@@ -2357,7 +2357,7 @@ gruntzmgr	??_GCRgn@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d8875af51935	0x8c3d0	100.0
 gruntzmgr	??_GCSplashState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d8875af51935	0x8cfd0	100.0000	
 gruntzmgr	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d8875af51935	0x8c710	100.0000	
 gruntzmgr	?AdvanceComputerPlayerTurns@CGruntzMgr@@QAEHXZ	100.0000	100.0000	7	b08210a25b8a	0x933e0	100.0000	
-gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	3	4909a4f07de8	0x8f9c0	100.0000	
+gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPBD@Z	100.0000	100.0000	3	4909a4f07de8	0x8f9c0	100.0000	
 gruntzmgr	?ApplySavedVideoMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	9c70eabd2816	0x8de70	100.0000	
 gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@W4MovieId@@@Z	100.0000	100.0000	4	e7d3f8639352	0x8ff30	100.0000	
 gruntzmgr	?CaptureWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	7	6e57edd6ef73	0x8f340	100.0000	
@@ -3057,7 +3057,7 @@ multi	??_GCNetMgr@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a91121d9b9bb	0xb5fd0	100.00
 multi	?AdvanceGameFrame@CMulti@@QAEHXZ	97.0244	97.0244	22	ef01ec31b35c	0xb6b40	97.0244	
 multi	?AnnounceOptionsClosed@CMulti@@QAEHXZ	100.0000	100.0000	5	c520613eb38e	0xbb120	100.0000	
 multi	?AnnounceOptionsOpened@CMulti@@QAEHXZ	100.0000	100.0000	5	abb9787a5bea	0xbb0b0	100.0000	
-multi	?AppendEditLine@CMulti@@QAEXPAUHWND__@@PAD@Z	100.0000	100.0000	2	aca28472e1ad	0xbb3e0	100.0000	
+multi	?AppendEditLine@CMulti@@QAEXPAUHWND__@@PBD@Z	100.0000	100.0000	2	aca28472e1ad	0xbb3e0	100.0000	
 multi	?ApplyCmdDelayDefaults@CMulti@@QAEXXZ	100.0000	100.0000	3	23e8f5d0c96e	0xb85a0	100.0000	
 multi	?ApplyGameConfig@CMulti@@QAEHPAUCNetGameConfigPacket@@@Z	100.0000	100.0000	4	f5f487464283	0xbce80	100.0000	
 multi	?ApplyPlayerDrop@CMulti@@QAEXH@Z	100.0000	100.0000	8	555f9edb6e1c	0xba590	100.0000	
@@ -3159,7 +3159,7 @@ multihelpdlg	?GetMessageMap@CMultiHelpDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.000
 multistartdlg	??0CMultiStartDlg@@QAE@PAVCGruntzMgr@@PAVCWnd@@@Z	100.0000	100.0000	5	fff21fd3593f	0xc1750	100.0000	
 multistartdlg	??1CKeyedList@@QAE@XZ	100.0000	100.0000	1	7b927a0d8463	0xc5280	100.0000	
 multistartdlg	??_GCMultiStartDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e06363042fb8	0xc1810	100.0000	
-multistartdlg	?AppendChatLine@CMultiStartDlg@@QAEXPAD@Z	100.0000	100.0000	6	27c348820f79	0xc2ce0	100.0000	
+multistartdlg	?AppendChatLine@CMultiStartDlg@@QAEXPBD@Z	100.0000	100.0000	6	27c348820f79	0xc2ce0	100.0000	
 multistartdlg	?ApplyPlayerTypeSelection@CMultiStartDlg@@QAEXH@Z	97.1875	97.1875	16	092d6b66504f	0xc2ab0	97.1875	
 multistartdlg	?BroadcastPlayerSlotChanges@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	7	d5c8d257ad32	0xc40b0	100.0000	
 multistartdlg	?BuildLatencyOptions@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	5	0e99975439c7	0xc1e60	100.0000	
@@ -4187,7 +4187,7 @@ tilelogicpump	?RegisterActs@CTileTriggerSwitch@@SAXXZ	100.0000	100.0000	2	cba01a
 tilelogicpump	?RegisterActs@CTileTriggerTransition@@SAXXZ	100.0000	100.0000	3	0fe09bfda452	0x10fe70	100.0000	
 tilelogicpump	?RegisterActs@CWarpStonePad@@SAXXZ	100.0000	100.0000	2	856de9954028	0x10da20	100.0000	
 tilelogicpump	?SerializeDispatch@CCheckpointTrigger@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	aede5d4d6908	0x10f9a0	100.0000	
-tilelogicpump	?StartTransitionAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	6	d39a60a86533	0x110070	100.0000	
+tilelogicpump	?StartTransitionAnimation@CTileTriggerTransition@@QAEHPBD0@Z	100.0000	100.0000	6	d39a60a86533	0x110070	100.0000	
 tilelogicpump	?Trigger@CBrickz@@QAEHXZ	100.0000	100.0000	1	18fbb6a917f0	0x10ede0	100.0000	
 tilelogicpump	?TryActivateCheckpoint@CCheckpointTrigger@@QAEHXZ	100.0000	100.0000	30	67a7fd694076	0x10f6a0	100.0000	
 tilelogicpump	?UpdateTransitionAnimation@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	7	41e8dbfb9e56	0x110110	100.0000	

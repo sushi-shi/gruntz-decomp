@@ -68,6 +68,8 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
 
     if (g_gameReg->GetCurrentState()->GetStateId() == GAMESTATE_MULTI) {
         CMulti* multi = static_cast<CMulti*>(g_gameReg->GetCurrentState());
+        // The temporary shares m_inputText storage. Broadcasting can modify that buffer
+        // without CString copy-on-write or updating its cached length.
         char* input = const_cast<char*>(static_cast<const char*>(m_gameText->GetInputText()));
         multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {
@@ -128,7 +130,7 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
                             enabled
                         );
                         g_gameReg->AppendChatMessage(
-                            const_cast<char*>(static_cast<const char*>(text))
+                            static_cast<const char*>(text)
                         );
                     }
                 }
