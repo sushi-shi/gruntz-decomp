@@ -1309,7 +1309,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         ->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, self->m_mgr);
     {
         CString key;
-        g_gameReg->GetTriggerMgr()->m_localWarlord = NULL;
+        g_gameReg->GetTriggerMgr()->SetLocalWarlord(NULL);
         i32 count = self->m_levelIndex;
         i32 i = count - ((count - 1) % 4);
         for (; i < self->m_levelIndex; ++i) {
@@ -1497,7 +1497,7 @@ void CPlay::ClearLevelState() {
     triggerManager->m_collectedWarpStoneFragments.RemoveAll();
     triggerManager->m_levelWarpStoneCollected = false;
     m_mgr->GetTriggerMgr()->m_puddles.RemoveAll();
-    m_mgr->GetTriggerMgr()->m_localWarlord = NULL;
+    m_mgr->GetTriggerMgr()->SetLocalWarlord(NULL);
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
     FreeStartMarkers();
     for (k = 0; k < 4; k++) {
