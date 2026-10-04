@@ -339,7 +339,7 @@ i32 CNetSession::RelayDrainingRecords() {
                                     record,
                                     flags,
                                     sourceIndex,
-                                    recipient->m_player->m_networkPlayerId
+                                    recipient->GetPlayer()->m_networkPlayerId
                                 )) {
                                 count++;
                             }
@@ -457,7 +457,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
 
     i32 status = m_netMgr->SendById(
         m_localPlayer->GetPlayerId(),
-        slot->m_player->m_networkPlayerId,
+        slot->GetPlayer()->m_networkPlayerId,
         0,
         &g_netCmdSendMsg,
         entry->m_payloadLength + offsetof(NetCmdSendMsg, m_payload)
@@ -488,7 +488,7 @@ void CNetSession::ResetLatencies() {
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindSlotByPlayerId(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
-        if (m_slots[i].m_player->m_networkPlayerId == playerId) {
+        if (m_slots[i].GetPlayer()->m_networkPlayerId == playerId) {
             return &m_slots[i];
         }
     }
@@ -522,7 +522,7 @@ void CNetSession::ReconcileDrainingSlots() {
         do {
             if (slot && slot->m_state == NETSLOT_ACTIVE) {
                 slot->ClearSyncState();
-                GruntzPlayer* player = slot->m_player;
+                GruntzPlayer* player = slot->GetPlayer();
                 slot->m_state = NETSLOT_DONE;
                 player->m_doneFlag = true;
             }
@@ -535,7 +535,7 @@ void CNetSession::ReconcileDrainingSlots() {
             if (slot && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() != false
                 && m_sequence > slot->m_drainSequence + 2) {
                 slot->ClearSyncState();
-                GruntzPlayer* player = slot->m_player;
+                GruntzPlayer* player = slot->GetPlayer();
                 slot->m_state = NETSLOT_DONE;
                 player->m_doneFlag = true;
             }
