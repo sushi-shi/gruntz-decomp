@@ -239,8 +239,7 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
-        SoundCue* out = NULL;                                                                      \
-        MapLookup(reg->m_world->SoundRegistry()->m_cues, (key), out);                              \
+        SoundCue* out = reg->m_world->SoundRegistry()->FindCue(key);                               \
         cue = out;                                                                                 \
     } while (0)
 
@@ -1133,7 +1132,7 @@ i32 CGrunt::ApplyCombatHitEffects(
 
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
-            if (registry->m_silentMode == false) {
+            if (registry->IsSilent() == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);

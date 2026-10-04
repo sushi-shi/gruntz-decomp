@@ -27,7 +27,7 @@ inline i32 PlaySoundCueIfElapsed(
 }
 
 static __inline i32 PlayRegistryCueIfElapsed(SoundCueRegistry* soundRegistry, const char* cueKey) {
-    if (!soundRegistry->m_silentMode) {
+    if (!soundRegistry->IsSilent()) {
         SoundCue* cue = soundRegistry->FindCue(cueKey);
         if (cue != NULL) {
             return PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);

@@ -54,6 +54,9 @@ public:
     i32 RenderActionOptionsMenu();
 
     i32 HasWarpStoneFragment(WarpStoneFragment fragment);
+    void AddWarpStoneFragment(WarpStoneFragment fragment) {
+        m_collectedWarpStoneFragments.Add(static_cast<u8>(IDX(fragment)));
+    }
 
     void ClearSelection();
 

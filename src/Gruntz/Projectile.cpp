@@ -898,8 +898,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         goto fail;
     }
     world = gameMgr->m_world;
-    cue = NULL;
-    MapLookup(world->SoundRegistry()->m_cues, key, cue);
+    cue = world->SoundRegistry()->FindCue(key);
     if (cue == NULL) {
         goto fail;
     }

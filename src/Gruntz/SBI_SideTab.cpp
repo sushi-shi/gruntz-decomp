@@ -74,11 +74,11 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
 
     if (onLeft != 0) {
         m_topFrame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", 1);
-        m_drawPosition.m_x = parent->m_barRect.left - (rc.right - rc.left) / 2;
+        m_drawPosition.m_x = parent->GetBarRect()->left - (rc.right - rc.left) / 2;
         m_bottomFrameDy = 1;
     } else {
         m_topFrame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", 1);
-        m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_barRect.right;
+        m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->GetBarRect()->right;
         m_bottomFrameDy = -1;
     }
     m_drawPosition.m_y = colIndex * 0x12 + 0xd1;

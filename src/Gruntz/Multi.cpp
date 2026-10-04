@@ -1631,7 +1631,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
                 ->AddMessage(text, GAME_TEXT_COLORED | GAME_TEXT_SHADOW, IDX(player->GetColor()));
             SoundCueRegistry* registry = m_world->SoundRegistry();
-            if (registry->m_silentMode != false) {
+            if (registry->IsSilent() != false) {
                 break;
             }
             SoundCue* cue = registry->FindCue("GAME_CHAT");

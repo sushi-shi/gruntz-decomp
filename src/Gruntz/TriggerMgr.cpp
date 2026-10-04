@@ -924,7 +924,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     if (play->m_statusBar->StartWarpStoneFly(viewportX, viewportY, fragment) != 0) {
         play->m_statusBar->m_hlBusy = true;
     } else {
-        m_collectedWarpStoneFragments.Add(static_cast<u8>(IDX(fragment)));
+        AddWarpStoneFragment(fragment);
     }
     m_levelWarpStoneCollected = true;
 }

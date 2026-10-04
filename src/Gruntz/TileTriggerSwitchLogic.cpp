@@ -188,7 +188,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 registry = gameMgr->m_world->SoundRegistry();
-                if (registry->m_silentMode == false) {
+                if (registry->IsSilent() == false) {
                     SoundCue* cue = static_cast<SoundCue*>(registry->Lookup("GAME_PYRAMIDMOVE"));
                     if (cue) {
                         cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
@@ -203,7 +203,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 registry = gameMgr->m_world->SoundRegistry();
-                if (registry->m_silentMode == false) {
+                if (registry->IsSilent() == false) {
                     SoundCue* cue =
                         static_cast<SoundCue*>(registry->Lookup("LEVEL_WATERBRIDGEMOVE"));
                     if (cue) {
@@ -1237,7 +1237,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
         } else if (brickEffect == BRICKTILE_GOLD_1) {
             DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)
-                && g_gameReg->World()->SoundRegistry()->m_silentMode == false) {
+                && g_gameReg->World()->SoundRegistry()->IsSilent() == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
                     g_gameReg->World()->SoundRegistry()->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
                 );

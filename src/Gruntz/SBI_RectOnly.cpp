@@ -3858,13 +3858,11 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_barRect.left + targetOffset.m_x;
-    m_targetX = tx;
-    i32 ty = base->m_barRect.top + targetOffset.m_y;
-    m_targetY = ty;
+    m_targetX = base->GetBarRect()->left + targetOffset.m_x;
+    m_targetY = base->GetBarRect()->top + targetOffset.m_y;
 
-    i32 deltaX = tx - srcX;
-    i32 dyv = ty - srcY;
+    i32 deltaX = m_targetX - srcX;
+    i32 dyv = m_targetY - srcY;
     i32 dist2 = SquaredDistance(deltaX, dyv);
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
@@ -3944,9 +3942,8 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     i32 currentY = static_cast<i32>(m_currentY);
     i32 currentX = static_cast<i32>(m_currentX);
     if (currentX == m_targetX && currentY == m_targetY) {
-        i32 fragment = m_fragment;
-        CByteArray* collectedFragments = &g_gameReg->GetTriggerMgr()->m_collectedWarpStoneFragments;
-        collectedFragments->Add(static_cast<BYTE>(fragment));
+        WarpStoneFragment fragment = m_fragment;
+        g_gameReg->GetTriggerMgr()->AddWarpStoneFragment(fragment);
         m_owner->m_hlBusy = false;
         if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);

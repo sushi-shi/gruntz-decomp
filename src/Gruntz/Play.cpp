@@ -1317,7 +1317,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             CTriggerMgr* bm = g_gameReg->GetTriggerMgr();
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
-            bm->m_collectedWarpStoneFragments.Add(static_cast<u8>(v));
+            bm->AddWarpStoneFragment(static_cast<WarpStoneFragment>(v));
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
@@ -2529,7 +2529,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         if (m_dragInhibit1 != false && m_playerCommandPending == false) {
             eventArg = 0;
-            RECT* gr = &m_statusBar->m_barRect;
+            const RECT* gr = m_statusBar->GetBarRect();
             if (::PtInRect(gr, xr, y)) {
 
             } else {
@@ -2561,7 +2561,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         if (m_dragInhibit2 != false && m_playerCommandPending == false) {
             {
-                RECT* gr = &m_statusBar->m_barRect;
+                const RECT* gr = m_statusBar->GetBarRect();
                 if (::PtInRect(gr, xr, y)) {
                     if (m_statusBar->DropFallingItemAt(xr, y, m_cursorFrame)) {
                         m_dragInhibit2 = false;
@@ -2657,7 +2657,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             goto drag_box;
         }
 
-        RECT* gr = &m_statusBar->m_barRect;
+        const RECT* gr = m_statusBar->GetBarRect();
         if (::PtInRect(gr, xr, y)) {
             FlushPendingOps();
             return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
@@ -2915,7 +2915,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    if (::PtInRect(&m_statusBar->m_barRect, x, y)) {
+    if (::PtInRect(m_statusBar->GetBarRect(), x, y)) {
         return 1;
     }
     i32 idx = m_statusBar->HitTest(x, y);
@@ -4132,7 +4132,7 @@ i32 CPlay::ExecuteCommand(
                 NULL
             );
             if (r == -1) {
-                if (m_world->SoundRegistry()->m_silentMode == false) {
+                if (m_world->SoundRegistry()->IsSilent() == false) {
                     SoundCue* cue =
                         static_cast<SoundCue*>(m_world->SoundRegistry()->Lookup("GAME_BADSELECT"));
                     if (cue != NULL) {
