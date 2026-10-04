@@ -841,33 +841,8 @@ RVA(0x0006d300, 0x5db)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     CGameLevel* view = m_world->GetLevel();
-    i32 x = sx;
-    i32 y = sy;
-    if (x < 0) {
-        x = 0;
-    } else {
-        i32 w = view->m_mainPlane->GetPlanePixelWidth();
-        if (x >= w) {
-            x = w - 1;
-        }
-    }
-    if (y < 0) {
-        y = 0;
-    } else {
-        i32 h = view->m_mainPlane->GetPlanePixelHeight();
-        if (y >= h) {
-            y = h - 1;
-        }
-    }
-    CDDrawWorkerHost* scroll = view->m_mainPlane;
-    i32 sh = scroll->m_shiftX;
-    i32 sw = scroll->m_shiftY;
-    i32 tx = x >> sh;
-    i32 ty = y >> sw;
-    i32 subX = x - (tx << sh);
-    i32 subY = y - (ty << sw);
-    i32 attr = scroll->m_tileHandles[scroll->m_tileRowOffsets[ty] + tx];
-    TileCollisionKind kind = view->CollisionAtHandle(attr, subX, subY);
+    TileCollisionKind kind;
+    PROBE_TILE(view, sx, sy, kind);
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
