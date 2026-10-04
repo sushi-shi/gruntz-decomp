@@ -979,7 +979,7 @@ CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flag
 
 RVA(0x00165a90, 0xf4)
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, const char* key, i32 flags) {
     if (src->GetType() != IMGTAG_XCP) {
         return NULL;
     }
@@ -997,11 +997,9 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
         return NULL;
     }
 
-    // byte-evidenced: the caller passes the palette name in the integer key slot.
-    const char* keyArg = reinterpret_cast<const char*>(key);
     char buf[0x50];
-    if (keyArg != NULL) {
-        strcpy(buf, keyArg);
+    if (key != NULL) {
+        strcpy(buf, key);
     } else {
         strcpy(buf, src->GetName());
     }

@@ -18,9 +18,9 @@ extern DWORD g_sfRouterId;
 extern DWORD g_sfVer;
 extern u16 g_sfDeviceCount;
 extern HMODULE g_sfDll;
-struct SFMANL101TAG;
-typedef struct SFMANL101TAG SFMANL101API;
-extern SFMANL101API* g_sfDevice;
+struct SFMANL100TAG;
+typedef struct SFMANL100TAG SFMANL100API;
+extern SFMANL100API* g_sfDevice;
 extern b32 g_sfReady;
 extern u8 g_sfDeviceRatings[];
 #endif // GRUNTZ_GRUNTZ_SFSELECTDEVICE_H

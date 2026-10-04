@@ -8,6 +8,7 @@ Start with the root [README](../README.md) for setup and the build loop.
 - [Match tracking](match-status.md), [permuter](permuter.md), and the small [compiler-pattern reference](patterns/INDEX.md).
 - [Data attribution](data-attribution.md), [linked-image comparison](image-diff.md), [cleanliness](cleanliness-metrics.md), and [source markers](comment-markers.md).
 - [Const-cast contracts](const-casts/README.md): every remaining cast, the declarations that require it, provenance, and GitHub comparisons.
+- [Reinterpret-cast contracts](reinterpret-casts/README.md): pointer, record, callback and SDK boundaries, including repaired sites.
 - [clangd](clangd.md) and [runtime DLLs](runtime-dlls.md).
 
 ## Source of truth and storage

@@ -156,12 +156,7 @@ private:
 
 template<class T> class zSymTab : public zPTree {
 public:
-    zSymTab(cleanup_behaviour cleanup = ACTIVE)
-        : zPTree(
-              // PROVEN: original zSymTab erases its typed teardown callback at this ABI seam.
-              reinterpret_cast<dtorf_t>(dtf),
-              cleanup
-          ) {}
+    zSymTab(cleanup_behaviour cleanup = ACTIVE) : zPTree(dtf, cleanup) {}
 
     T* insert(const char* key, T* value) {
         return static_cast<T*>(zPTree::insert(key, value));
@@ -179,16 +174,25 @@ public:
         void(__cdecl* fn)(const char* key, T* value, void* supplementary),
         void* supplementary = NULL
     ) {
-        zPTree::_trav(
-            // PROVEN: original zSymTab erases its typed traversal callback at this ABI seam.
-            reinterpret_cast<stvf_t>(fn),
-            supplementary,
-            NULL
-        );
+        TraversalContext context;
+        context.function = fn;
+        context.supplementary = supplementary;
+        zPTree::_trav(TraverseTypedValue, &context, NULL);
     }
 
 private:
-    static void dtf(T* p) {
+    struct TraversalContext {
+        void(__cdecl* function)(const char*, T*, void*);
+        void* supplementary;
+    };
+
+    static void __cdecl TraverseTypedValue(const char* key, void* value, void* opaque) {
+        TraversalContext* context = static_cast<TraversalContext*>(opaque);
+        context->function(key, static_cast<T*>(value), context->supplementary);
+    }
+
+    static void dtf(void* value) {
+        T* p = static_cast<T*>(value);
         p->T::~T();
     }
 

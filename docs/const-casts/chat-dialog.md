@@ -1,8 +1,22 @@
 # Lobby chat: CString mutation before destruction
 
-## Site and verdict
+## Current repair
 
-[CMultiStartDlg::OnChatSend](../../src/Gruntz/MultiStartDlg.cpp#L827) builds two mutable CString locals, then sends one through a writable pointer:
+`OnChatSend` now uses the mutable CString API:
+
+```cpp
+g_multiState->BroadcastChatLine(message.GetBuffer(0), 0, 0, NULL);
+message.ReleaseBuffer();
+```
+
+This removes the const cast, detaches storage if necessary, and reconciles
+length after truncation. Appending and clearing the input control still occur
+before broadcast. These additional buffer-management operations intentionally
+differ from retail. The following is the removed access and its provenance.
+
+## Removed site and its defect
+
+[CMultiStartDlg::OnChatSend](../../src/Gruntz/MultiStartDlg.cpp#L827) previously built two mutable CString locals, then sent one through a cast writable pointer:
 
 ```cpp
 CString message, inputText;
@@ -18,7 +32,7 @@ if (!inputText.IsEmpty()) {
 }
 ```
 
-The remaining cast permits real in-place modification of CString storage without updating its metadata. This is a CString contract violation, **not a demonstrated write to a const-declared object**. Appending normally leaves `message` uniquely owned, and this caller destroys it immediately after broadcasting. There is no later length-dependent use of this local in the observed path. That limits the practical effect here; it does not convert a read-only CString borrow into the supported mutable interface.
+The removed cast permitted real in-place modification of CString storage without updating its metadata. This is a CString contract violation, **not a demonstrated write to a const-declared object**. Appending normally leaves `message` uniquely owned, and this caller destroys it immediately after broadcasting. There is no later length-dependent use of this local in the observed path. That limits the practical effect here; it does not convert a read-only CString borrow into the supported mutable interface.
 
 ## SDK types and retail writes
 
@@ -45,7 +59,7 @@ The append and broadcast calls have different contracts. `AppendChatLine` only r
 
 Microsoft's [WordPad registry-formatting code, pinned at 9e1d447555](https://github.com/microsoft/VCSamples/blob/9e1d4475555b76a17a3568369867f1d7b6cc6126/VC2010Samples/MFC/ole/wordpad/wordpad.cpp#L811-L819), uses `GetBuffer` as the output argument to `FormatMessage`, then passes the returned length to `ReleaseBuffer`. The [file-dialog use in the same source](https://github.com/microsoft/VCSamples/blob/9e1d4475555b76a17a3568369867f1d7b6cc6126/VC2010Samples/MFC/ole/wordpad/wordpad.cpp#L581-L584) also brackets an external writer with the two methods. These are real Microsoft application examples of the mutation protocol, not evidence that Gruntz originally used it.
 
-A repair for this local could call the broadcaster with `message.GetBuffer(0)` and then call `message.ReleaseBuffer()`. A separate mutable copy would also avoid casting the read-only borrow. Both change the operations observed in retail. Merely declaring the broadcaster's argument const would conceal real writes. The current decompilation preserves the confirmed access and documents the seam; no claim of general safety is implied.
+The implemented repair calls the broadcaster with `message.GetBuffer(0)` and then calls `message.ReleaseBuffer()`. A separate mutable copy would also avoid casting the read-only borrow. Both change the operations observed in retail. Merely declaring the broadcaster's argument const would conceal real writes. The repair replaces that unsafe access; the retail instructions remain the evidence for what was changed.
 
 ## Separate buffer overflow
 

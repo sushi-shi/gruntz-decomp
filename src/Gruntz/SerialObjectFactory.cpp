@@ -335,7 +335,7 @@ i32 __cdecl GameSerializationCallback(
             return 0;
     }
 
-    // API-forced: the serializer callback carries its payload as an integer.
+    // byte-evidenced: the reconstructed serializer family uses an i32 payload slot.
     return g_gameReg->SerializeGameState(archive, mode, typeId, reinterpret_cast<i32>(payload))
            != 0;
 }

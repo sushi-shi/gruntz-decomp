@@ -67,9 +67,9 @@ u16 g_sfDeviceCount = 0;
 DATA(0x0024e0a8)
 HMODULE g_sfDll = NULL;
 DATA(0x0024e0ac)
-SfManagerFactory* g_sfManagerFactory = NULL;
+SFMANAGER* g_sfManagerFactory = NULL;
 DATA(0x0024e0b0)
-SFMANL101API* g_sfDevice = NULL;
+SFMANL100API* g_sfDevice = NULL;
 DATA(0x0024e0b8)
 b32 g_sfReady = false;
 DATA(0x0024e0c0)
@@ -82,20 +82,22 @@ i32 SFManager_SelectBestDevice() {
         return 0;
     }
 
-    // API-forced: GetProcAddress returns FARPROC.
-    SfManagerFactory* fn =
-        reinterpret_cast<SfManagerFactory*>(GetProcAddress(g_sfDll, "SFManager"));
-    g_sfManagerFactory = fn;
-    if (fn == NULL) {
+    // API-forced: SFManager is an exported data table, not an exported function.
+    SFMANAGER* manager = reinterpret_cast<SFMANAGER*>(GetProcAddress(g_sfDll, "SFManager"));
+    g_sfManagerFactory = manager;
+    if (manager == NULL) {
         FreeLibrary(g_sfDll);
         return 0;
     }
-    g_sfManagerResult = (*fn)(0x10000, &g_sfDevice);
+    DWORD interfaceAddress;
+    g_sfManagerResult = manager->SF_QueryInterface(ID_SFMANL100API, &interfaceAddress);
     if (g_sfManagerResult != 0) {
         FreeLibrary(g_sfDll);
         return 0;
     }
 
+    // API-forced: the VC5 SoundFont SDK returns the interface address in a DWORD.
+    g_sfDevice = reinterpret_cast<SFMANL100API*>(interfaceAddress);
     g_sfDevice->SF_GetNumDevs(&g_sfDeviceCount);
     if (g_sfDeviceCount == 0) {
         return 0;

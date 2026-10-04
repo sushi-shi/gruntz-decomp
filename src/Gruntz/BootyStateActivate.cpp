@@ -229,22 +229,18 @@ i32 CBootyState::LoadGameAssetNamespaces(
         CString desc;
         i32 i = 0;
 
-        // byte-evidenced: retail compares the row cursor as a signed integer.
-        i32 last = reinterpret_cast<i32>(
-            g_bootyCheatMessages[24].m_description + sizeof(BootyCheatMessage)
-        );
-        char* p = g_bootyCheatMessages[0].m_description;
+        BootyCheatMessage* row = g_bootyCheatMessages;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
             grp.Format("Cheat%i", id);
             text = *g_buteMgr.GetString(grp, "Text", &empty);
             desc = *g_buteMgr.GetString(grp, "Desc", &empty);
-            strcpy(p - 0x20, text);
-            strcpy(p, desc);
+            strcpy(row->m_encodedCode, text);
+            strcpy(row->m_description, desc);
             i++;
-            p += 0xa0;
-        } while (reinterpret_cast<i32>(p) < last); // byte-evidenced: signed cursor compare
+            row++;
+        } while (row != g_bootyCheatMessages + 25);
         g_bootyCheatMessagesLoaded = true;
     }
 
@@ -1968,8 +1964,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(
         }
         w++;
         flagPos++;
-        // byte-evidenced: retail compares the table cursor as a signed integer.
-    } while (reinterpret_cast<i32>(flagPos) < reinterpret_cast<i32>(g_bootyTabPos));
+    } while (flagPos != g_bootyFlagPos + 4);
     return 1;
 }
 

@@ -145,13 +145,11 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         }
 
         // Byte-forced view of packed WWD storage.
-        hdr = reinterpret_cast<WwdHeader*>(InflateMainBlock(source, buf, capacity));
-        if (hdr == NULL) {
+        block = reinterpret_cast<char*>(InflateMainBlock(source, buf, capacity));
+        if (block == NULL) {
             delete[] buf;
             return 0;
         }
-        // Byte-forced view of packed WWD storage.
-        block = reinterpret_cast<char*>(hdr);
         ehAlloc = buf;
     }
 
@@ -391,17 +389,7 @@ CLevelPlane* CGameLevel::ReadObjectPlane(
 ) {
     CLevelPlane* plane = new CLevelPlane(GetWorld(), m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry(
-            w,
-            h,
-            tileW,
-            tileH,
-            depthX,
-            depthY,
-            &m_viewportRect,
-            name
-        )
-        == 0) {
+    if (plane->InitGeometry(w, h, tileW, tileH, depthX, depthY, &m_viewportRect, name) == 0) {
         if (plane) {
             delete plane;
         }

@@ -26,7 +26,8 @@ public:
     virtual CDDrawPaletteResource* CreatePaletteFromRgb(u8* data, const char* key, i32 flags);
     virtual CDDrawPaletteResource* LoadPaletteFromFile(char* path, const char* key, i32 flags);
 
-    virtual CDDrawPaletteResource* LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags);
+    virtual CDDrawPaletteResource*
+    LoadPaletteFromTrailingData(CRezItm* src, const char* key, i32 flags);
     virtual ~CDDrawPaletteRegistry() OVERRIDE;
 
     CMapStringToOb m_palettesByName;

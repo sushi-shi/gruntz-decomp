@@ -1,8 +1,25 @@
 # Chat input: a writable pointer borrowed through CString's const conversion
 
-## Site and verdict
+## Current repair
 
-[CChatBox::HandleTextInputKey](../../src/Gruntz/ChatBoxOwner.cpp#L63) contains:
+The send path now keeps a named CString copy alive, acquires its writable
+buffer, broadcasts, and releases the buffer:
+
+```cpp
+CString input = m_gameText->GetInputText();
+multi->BroadcastChatLine(input.GetBuffer(0), 1, 1, NULL);
+input.ReleaseBuffer();
+```
+
+`GetBuffer` detaches shared storage; broadcasting modifies the local copy and
+`ReleaseBuffer` reconciles its length. The input owner's member is no longer
+silently truncated through a const borrow. This deliberately repairs retail's
+mutation behavior and changes emitted operations. The cast below has been
+removed; its history remains evidence for the decision.
+
+## Removed site and its defect
+
+[CChatBox::HandleTextInputKey](../../src/Gruntz/ChatBoxOwner.cpp#L63) previously contained:
 
 ```cpp
 char* input = const_cast<char*>(static_cast<const char*>(m_gameText->GetInputText()));
@@ -55,6 +72,6 @@ The `const` pointer comes from **real SDK CString conversion**, not an invented 
 
 Microsoft's [WordPad sample, pinned at 9e1d447555](https://github.com/microsoft/VCSamples/blob/9e1d4475555b76a17a3568369867f1d7b6cc6126/VC2010Samples/MFC/ole/wordpad/wordpad.cpp#L581-L584), obtains writable CString storage for a file dialog and releases it after the dialog returns. This is an actual API-use analogue, **not original Gruntz source evidence**.
 
-An intentional repair could keep a named CString copy alive, acquire its writable buffer, broadcast, then release the buffer. Acquiring a shared copy's buffer detaches it: the member would then remain unchanged, unlike retail. Mutating the owner's buffer and releasing it would instead update the member's metadata, also unlike retail. A separately owned character copy is another explicit policy choice. These are behavior changes requiring a decision about ownership, not interchangeable cast removals.
+The current repair keeps a named CString copy alive, acquires its writable buffer, broadcasts, then releases it. Acquiring a shared copy's buffer detaches it: the member remains unchanged, unlike retail. Mutating the owner's buffer and releasing it would instead update the member's metadata, also unlike retail. A separately owned character copy is another explicit policy choice. These are behavior changes requiring a decision about ownership, not interchangeable cast removals.
 
 The independent, confirmed 128-byte chat-edit overflow is documented in [chat-dialog](chat-dialog.md#separate-buffer-overflow). It must not be conflated with const-object undefined behavior at this cast.
