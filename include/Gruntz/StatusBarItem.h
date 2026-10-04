@@ -59,6 +59,10 @@ public:
         return m_enabled;
     }
 
+    void SetBounds(const RECT& rect) {
+        m_rect = rect;
+    }
+
     b32 ContainsPoint(i32 x, i32 y) const {
         return ::PtInRect(&m_rect, x, y);
     }

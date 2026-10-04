@@ -3162,7 +3162,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 m_deliveryItemRect.right + x,
                 m_deliveryItemRect.bottom + y
             );
-            w->m_rect = rc;
+            w->SetBounds(rc);
         }
         if (refreshFlag) {
             RefreshResourceImages();
@@ -3191,7 +3191,7 @@ i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
         rc.top = t + y;
         rc.bottom = y + b;
         rc.right = x + rr;
-        n->m_rect = rc;
+        n->SetBounds(rc);
     }
     RefreshResourceImages();
     return 1;
@@ -3234,7 +3234,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 i32 sx = m_barRect.left;
                 rc.left = m_grinderItemRect.left + sx;
                 rc.right = m_grinderItemRect.right + sx;
-                w->m_rect = rc;
+                w->SetBounds(rc);
             }
             clock->Start(delay);
         }
@@ -3449,7 +3449,7 @@ i32 CStatusBarMgr::PrepareNextResource() {
             m_deliveryItemRect.right + x,
             m_deliveryItemRect.bottom + y
         );
-        m_deliveryItemDisplay->m_rect = rc;
+        m_deliveryItemDisplay->SetBounds(rc);
     }
     RefreshResourceImages();
     i32 c = m_pendingResourceDeliveries;
