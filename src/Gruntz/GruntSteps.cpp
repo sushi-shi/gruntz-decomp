@@ -804,7 +804,7 @@ idleReseed:
 applyTail:
 
     if (m_wingzEnabled != false) {
-        LoadWingzGruntSprites(false);
+        SetWingzEnabled(false);
     }
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)

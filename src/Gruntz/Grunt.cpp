@@ -1367,7 +1367,7 @@ commitMovement:
         if (m_wingzEnabled != false) {
             goto movementStarted;
         }
-        LoadWingzGruntSprites(true);
+        SetWingzEnabled(true);
         return 1;
     }
     if (usingSpring) {
@@ -1751,7 +1751,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             return 1;
         }
         m_wingzTime = 0x64;
-        LoadWingzGruntSprites(m_wingzEnabled);
+        SetWingzEnabled(m_wingzEnabled);
         return 1;
     }
     if (defer == 0) {
@@ -1767,7 +1767,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
                     return 1;
                 }
                 m_wingzTime = 0x64;
-                LoadWingzGruntSprites(m_wingzEnabled);
+                SetWingzEnabled(m_wingzEnabled);
                 return 1;
             }
         }

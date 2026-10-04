@@ -1828,11 +1828,11 @@ void CGrunt::StepBehavior(char*) {
         if (onWingzTile != 0) {
             if (flags & 0xd02) {
                 if (m_wingzEnabled == false) {
-                    LoadWingzGruntSprites(true);
+                    SetWingzEnabled(true);
                     return;
                 }
             } else if (m_wingzEnabled != false) {
-                LoadWingzGruntSprites(false);
+                SetWingzEnabled(false);
                 return;
             }
         } else if (onMoveTile != 0) {
@@ -2098,7 +2098,7 @@ afterArrival:
         if (m_wingzTiming.Remaining() == 0) {
             ConsiderArrival(1);
             m_wingzTime = 0;
-            LoadWingzGruntSprites(false);
+            SetWingzEnabled(false);
             BuildGruntLoseItemAnimation();
         }
     }

@@ -391,7 +391,7 @@ public:
 
     i32 SetupTubeAnim(b32 isWater);
 
-    i32 LoadWingzGruntSprites(b32 enable);
+    i32 SetWingzEnabled(b32 enable);
 
     i32 CastSpell(i32 spellOverride);
 
