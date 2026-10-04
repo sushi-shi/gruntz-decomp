@@ -1714,7 +1714,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         if (gruntX == x && gruntY == y) {
                             break;
                         }
-                        grunt->m_health = HEALTH_FULL;
+                        grunt->SetHealth(HEALTH_FULL);
                         grunt->CreateHealthSprite();
                         ArmGruntCombatTimeout(grunt);
                         CreateLightFx(

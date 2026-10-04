@@ -131,7 +131,7 @@ i32 CSBI_SideTab::BuildHandle() {
         }
     }
     if (m_sampleMode == STATUS_SAMPLE_HEALTH) {
-        val = HealthGlyphIndex(unit->m_health);
+        val = HealthGlyphIndex(unit->GetHealth());
     }
     if (m_sampledValue == val) {
         return 1;

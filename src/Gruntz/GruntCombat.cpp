@@ -1128,8 +1128,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
                    srcPlayerIndex,
                    IDX(enemy->GetMoveIcon())
                ) != 0) {
-            i32 h = enemy->m_health + 0x19;
-            enemy->m_health = min(h, HEALTH_FULL);
+            i32 h = enemy->GetHealth() + 0x19;
+            enemy->SetHealth(min(h, HEALTH_FULL));
 
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
@@ -1157,9 +1157,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (fromProjectile == 0) {
             CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (enemy != NULL && enemy->IsEntranceCommitted() != false) {
-                i32 nh = enemy->m_health - hit * 3;
+                i32 nh = enemy->GetHealth() - hit * 3;
                 nh = max(0, nh);
-                enemy->m_health = nh;
+                enemy->SetHealth(nh);
                 if (nh <= 0) {
                     m_triggerMgr->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_NORMAL, -1);
                 }

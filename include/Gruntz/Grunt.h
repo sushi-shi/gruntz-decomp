@@ -200,6 +200,12 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
+    i32 GetHealth() const {
+        return m_health;
+    }
+    void SetHealth(i32 health) {
+        m_health = health;
+    }
     b32 IsUnregisteredFromBoard() const {
         return m_cellRemovalNotified;
     }

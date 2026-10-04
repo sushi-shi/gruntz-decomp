@@ -142,7 +142,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         timerVal = -1;
     } else {
 
-        statusVal = HealthGlyphIndex(unit->m_health);
+        statusVal = HealthGlyphIndex(unit->GetHealth());
 
         PickupType level = unit->GetActivePickupType();
         abilityVal = -1;
