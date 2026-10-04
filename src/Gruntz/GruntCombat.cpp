@@ -881,16 +881,16 @@ i32 CGrunt::HandleCombatContact(
             case AI_DUMBCHASER:
             case AI_DEFENDER:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 break;
             case AI_POSTGUARD:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 break;
             case AI_HITANDRUNNER:
             case AI_OBJECTGUARD:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 break;
             case AI_BATTLEZ_PATH:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);

@@ -319,7 +319,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_arrivalRerollTiming.Clear();
     m_unusedBattleCell.Set(-1, -1);
     m_arrivalNotified = false;
-    m_defenderState = AISTATE_SEEK;
+    m_aiState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
     {
         CWwdSpriteObject* h = m_object;

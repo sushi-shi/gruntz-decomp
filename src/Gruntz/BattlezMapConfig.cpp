@@ -343,8 +343,7 @@ i32 CBattlezMapConfig::StepBoard() {
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 s = TM_UNITS_PER_PLAYER; s != 0; s--) {
         CGrunt* u = *units;
-        if (u != NULL && u->GetDefenderState() == AISTATE_RETURN
-            && u->GetDefenderQueuePosition() < mn) {
+        if (u != NULL && u->GetAiState() == AISTATE_RETURN && u->GetDefenderQueuePosition() < mn) {
             mn = u->GetDefenderQueuePosition();
         }
         units++;
@@ -352,7 +351,7 @@ i32 CBattlezMapConfig::StepBoard() {
     if (mn != 0 && mn != BATTLEZ_QUEUE_POSITION_UNSET) {
         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
             CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, k);
-            if (u != NULL && u->GetDefenderState() == AISTATE_RETURN) {
+            if (u != NULL && u->GetAiState() == AISTATE_RETURN) {
                 u->SetDefenderQueuePosition(u->GetDefenderQueuePosition() - mn);
             }
         }
@@ -365,8 +364,7 @@ i32 CBattlezMapConfig::StepBoard() {
         CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, r);
         forcedUnit = u;
         forced = 0;
-        if (u != NULL && u->GetDefenderState() == AISTATE_RETURN
-            && u->GetDefenderQueuePosition() == 0) {
+        if (u != NULL && u->GetAiState() == AISTATE_RETURN && u->GetDefenderQueuePosition() == 0) {
             forced = 1;
         }
         if (!forced && rand() % 10 != 0) {
@@ -429,7 +427,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (eq) {
                     continue;
                 }
-                if (unit->GetDefenderState() != AISTATE_RETURN) {
+                if (unit->GetAiState() != AISTATE_RETURN) {
                     continue;
                 }
                 if (unit->GetDefenderQueuePosition() != 0) {
@@ -438,9 +436,9 @@ i32 CBattlezMapConfig::StepBoard() {
 
                 PickupType mode = unit->GetDefenderPickupType();
                 if (PathCrossesMarkedTile(unit) != 0) {
-                    unit->SetDefenderState(AISTATE_RETREAT);
+                    unit->SetAiState(AISTATE_RETREAT);
                 } else {
-                    unit->SetDefenderState(AISTATE_SEEK);
+                    unit->SetAiState(AISTATE_SEEK);
                 }
                 unit->BeginPickupAnimation(unit->GetDefenderPickupType(), 1, 0, 0, 1);
 
@@ -461,7 +459,7 @@ i32 CBattlezMapConfig::StepBoard() {
 
                 for (i32 c = 0; c < TM_UNITS_PER_PLAYER; c++) {
                     CGrunt* mate = m_triggerMgr->UnitAt(m_playerIndex, c);
-                    if (mate != NULL && mate->GetDefenderState() == AISTATE_RETURN) {
+                    if (mate != NULL && mate->GetAiState() == AISTATE_RETURN) {
                         i32 q = unit->GetDefenderQueuePosition() - 1;
                         if (q < 0) {
                             q = 0;
@@ -586,7 +584,7 @@ candidateFound:
         unit->SetBattlezTask(BZTASK_UNASSIGNED);
     }
     unit->m_aiType = AI_BATTLEZ_PATH;
-    unit->SetDefenderState(AISTATE_SEEK);
+    unit->SetAiState(AISTATE_SEEK);
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_unusedBattleCell);
     UNSET_COORD(unit->m_defenderPx);
@@ -657,7 +655,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->GetEquippedToolType();
                                 if (st2 == PICKUP_BRICK && unit->m_aiType == AI_DEFENDER
-                                    && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
+                                    && unit->m_aiState == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->BeginPickupAnimation(PICKUP_NONE, 1, 0, 0, 1);
                                 }
                             }
@@ -681,7 +679,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                                 unit->SetRoutePassableMask(0);
-                                unit->m_defenderState = AISTATE_SEEK;
+                                unit->m_aiState = AISTATE_SEEK;
                             }
                         }
                         {
@@ -693,7 +691,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                                 unit->SetRoutePassableMask(0);
-                                unit->m_defenderState = AISTATE_SEEK;
+                                unit->m_aiState = AISTATE_SEEK;
                             }
                         }
                         {
@@ -719,17 +717,17 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                                 unit->SetRoutePassableMask(0);
-                                unit->m_defenderState = AISTATE_SEEK;
+                                unit->m_aiState = AISTATE_SEEK;
                             }
                         }
                         if (unit->CoordsEmpty()) {
-                            if (unit->m_defenderState == AISTATE_RETREAT) {
-                                unit->m_defenderState = AISTATE_SEEK;
+                            if (unit->m_aiState == AISTATE_RETREAT) {
+                                unit->m_aiState = AISTATE_SEEK;
                             }
                         }
-                        if (unit->m_defenderState == AISTATE_RETREAT) {
+                        if (unit->m_aiState == AISTATE_RETREAT) {
                             if (PathCrossesMarkedTile(unit) == 0) {
-                                unit->m_defenderState = AISTATE_SEEK;
+                                unit->m_aiState = AISTATE_SEEK;
                             }
                         }
                         {
@@ -905,9 +903,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (PathToNearbyUnit(unit) != 0) {
                             return 1;
                         }
-                        if (unit->CoordsEmpty() && unit->m_defenderState == AISTATE_COOLDOWN) {
+                        if (unit->CoordsEmpty() && unit->m_aiState == AISTATE_COOLDOWN) {
                             UNSET_COORD(unit->m_unusedBattleCell);
-                            unit->m_defenderState = AISTATE_SEEK;
+                            unit->m_aiState = AISTATE_SEEK;
                         }
                         {
                             char nd;
@@ -1297,7 +1295,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             CTileTriggerSwitchLogic* rec =
                 m_cellQuery->FindSwitchLogic(CellKey(rx, ry), TRIGID_ANY);
             if (rec->GetType() == TRIGID_SWITCH_2) {
-                unit->SetDefenderState(AISTATE_SEEK);
+                unit->SetAiState(AISTATE_SEEK);
                 unit->RecycleCoords();
                 unit->SetBattlezTask(BZTASK_SEEK_SWITCH);
                 unit->ResetDwell();
@@ -1332,8 +1330,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         if ((currentCell.m_flags & IDX(CELL_FLAG_HIDDEN_POWERUP))
-            && unit->GetDefenderState() == AISTATE_RETURN) {
-            unit->SetDefenderState(AISTATE_SEEK);
+            && unit->GetAiState() == AISTATE_RETURN) {
+            unit->SetAiState(AISTATE_SEEK);
         }
         i32 pathHeadFlags = pathHeadCell.m_flags;
         if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && prim == PICKUP_BRICK
@@ -1344,12 +1342,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 cx * 0x20 + 0x10,
                 cy * 0x20 + 0x10
             );
-            unit->SetDefenderState(AISTATE_SEEK);
+            unit->SetAiState(AISTATE_SEEK);
             unit->RecycleCoords();
             return 0;
         }
         if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && PathCrossesMarkedTile(unit) == 0
-            && unit->GetDefenderState() == AISTATE_BATTLEZ_FINAL_ROUTE) {
+            && unit->GetAiState() == AISTATE_BATTLEZ_FINAL_ROUTE) {
             POSITION head = unit->CoordHead();
             if (head != NULL) {
                 POSITION n = head;
@@ -1401,7 +1399,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if ((currentCellFlags & 0x200) || (currentCellFlags & 0x8)) {
                 goto returnZero;
             }
-            if (wingzOrToobGate && unit->GetDefenderState() != AISTATE_RETURN) {
+            if (wingzOrToobGate && unit->GetAiState() != AISTATE_RETURN) {
                 if (rand() % 5) {
                     EnterDefenderMode(unit, 0x12);
                 } else {
@@ -1409,7 +1407,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 }
             }
             if (wingzGate) {
-                if (unit->GetDefenderState() == AISTATE_RETURN) {
+                if (unit->GetAiState() == AISTATE_RETURN) {
                     goto returnZero;
                 }
                 EnterDefenderMode(unit, 0x16);
@@ -1420,7 +1418,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         if ((pathHeadFlags & 0x20) && prim != PICKUP_GAUNTLETZ && prim != PICKUP_TIMEBOMB
             && prim != PICKUP_BOMB) {
-            if (unit->GetDefenderState() == AISTATE_RETURN) {
+            if (unit->GetAiState() == AISTATE_RETURN) {
                 goto returnZero;
             }
             EnterDefenderMode(unit, 5);
@@ -1432,7 +1430,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 if (prim == PICKUP_SHOVEL) {
                     goto returnZero;
                 }
-                if (unit->GetDefenderState() == AISTATE_RETURN) {
+                if (unit->GetAiState() == AISTATE_RETURN) {
                     goto returnZero;
                 }
                 EnterDefenderMode(unit, 0xd);
@@ -1954,17 +1952,17 @@ i32 CBattlezMapConfig::AcceptAlways(CGrunt*) {
 
 RVA(0x0002c0a0, 0x78)
 i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
-    if (unit->GetDefenderState() == AISTATE_RETURN) {
+    if (unit->GetAiState() == AISTATE_RETURN) {
         return 1;
     }
     m_claimTimer = 0;
-    unit->SetDefenderState(AISTATE_RETURN);
+    unit->SetAiState(AISTATE_RETURN);
     unit->SetDefenderPickupType(static_cast<PickupType>(value));
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     i32 count = 0;
     for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
         CGrunt* p = units[k];
-        if (p != NULL && unit != p && p->GetDefenderState() == AISTATE_RETURN) {
+        if (p != NULL && unit != p && p->GetAiState() == AISTATE_RETURN) {
             count++;
         }
     }
@@ -2102,7 +2100,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     i32 maskFlags = ownFlags & BRICKZ_CELL_UNOCCUPIED_MASK;
     PickupType type = EQUIPPED_TOOL_TERNARY_LE(g);
 
-    if ((dest.m_flags & 0x400) && g->GetDefenderState() == AISTATE_RETURN
+    if ((dest.m_flags & 0x400) && g->GetAiState() == AISTATE_RETURN
         && g->GetEquippedToolType() != PICKUP_GRAVITYBOOTZ) {
         if (ownFlags & 0x4000) {
             {
@@ -2190,7 +2188,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 key = CellKey(keyHi, tp.m_y);
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
         if (r->GetType() == TRIGID_SWITCH_2) {
-            g->SetDefenderState(AISTATE_SEEK);
+            g->SetAiState(AISTATE_SEEK);
             g->RecycleCoords();
             g->SetBattlezTask(BZTASK_SEEK_SWITCH);
             g->ResetDwell();
@@ -2739,8 +2737,8 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             Coord bc;
             best->GetScreenTile(&bc);
             if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) != 0) {
-                if (unit->GetDefenderState() != AISTATE_RETURN) {
-                    unit->SetDefenderState(AISTATE_SEEK);
+                if (unit->GetAiState() != AISTATE_RETURN) {
+                    unit->SetAiState(AISTATE_SEEK);
                     unit->SetRoutePassableMask(0);
                 }
                 if (unit->m_blockedVoicePending != false) {
@@ -2802,7 +2800,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         }
 
         if (found != false) {
-            if (unit->GetDefenderState() == AISTATE_RETURN) {
+            if (unit->GetAiState() == AISTATE_RETURN) {
                 return 1;
             }
         }
@@ -2810,7 +2808,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
             if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
 
                 unit->RecycleCoords();
-                unit->SetDefenderState(AISTATE_SEEK);
+                unit->SetAiState(AISTATE_SEEK);
                 return 1;
             }
         }
@@ -2848,8 +2846,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
                     && !cand->IsAnimationAct("J") && !cand->IsAnimationAct("C")
                     && !cand->IsAnimationAct("R") && cand != unit
-                    && cand->GetDefenderState() != AISTATE_RETURN
-                    && cand->GetDefenderState() != AISTATE_RETREAT) {
+                    && cand->GetAiState() != AISTATE_RETURN
+                    && cand->GetAiState() != AISTATE_RETREAT) {
                     i32 dx = abs(cand->GetScreenTileX() - unit->GetScreenTileX());
                     i32 dy = abs(cand->GetScreenTileY() - unit->GetScreenTileY());
                     if (SquaredDistance(dx, dy) <= 0x190) {
@@ -2886,8 +2884,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                                 while (pp != NULL) {
                                     cand->AddTailCoord(static_cast<Coord*>(list.GetNext(pp)));
                                 }
-                                unit->SetDefenderState(AISTATE_SEEK);
-                                cand->SetDefenderState(AISTATE_RETREAT);
+                                unit->SetAiState(AISTATE_SEEK);
+                                cand->SetAiState(AISTATE_RETREAT);
                             }
                             return 1;
                         }
@@ -3339,7 +3337,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         u->m_arrivalCell.m_x = targetPlayer;
         u->SetBattlezTask(BZTASK_ASSIGNED_TARGET);
         u->m_arrivalCell.m_y = targetUnit;
-        u->SetDefenderState(AISTATE_ATTACK);
+        u->SetAiState(AISTATE_ATTACK);
         u->SetRouteBlockedMask(0xd87);
         u->SetRoutePassableMask(0);
     }
@@ -3385,7 +3383,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     UNSET_COORD(unit->m_arrivalCell);
     unit->SetTargetTeam(-1);
     UNSET_COORD(unit->m_unusedBattleCell);
-    unit->SetDefenderState(AISTATE_SEEK);
+    unit->SetAiState(AISTATE_SEEK);
     UNSET_COORD(unit->m_defenderPx);
     unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
@@ -3502,7 +3500,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
                     (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
-                unit->SetDefenderState(AISTATE_RETREAT);
+                unit->SetAiState(AISTATE_RETREAT);
                 return 1;
             }
         }

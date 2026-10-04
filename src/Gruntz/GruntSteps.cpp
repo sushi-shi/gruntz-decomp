@@ -821,7 +821,7 @@ applyTail:
         SetEntrancePos(1, 1);
         this->RecycleCoords();
         if (m_aiType == AI_BATTLEZ_PATH) {
-            m_defenderState = AISTATE_SEEK;
+            m_aiState = AISTATE_SEEK;
             m_routePassableMask = 0;
         }
         if (spawnWormhole != false) {
@@ -1052,7 +1052,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_startingItemId, sizeof(m_startingItemId));
     ar->Write(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
     ar->Write(&m_aiType, sizeof(m_aiType));
-    ar->Write(&m_defenderState, sizeof(m_defenderState));
+    ar->Write(&m_aiState, sizeof(m_aiState));
     ar->Write(&m_battleState, sizeof(m_battleState));
     ar->Write(&m_defenderRadius, sizeof(m_defenderRadius));
     ar->Write(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));

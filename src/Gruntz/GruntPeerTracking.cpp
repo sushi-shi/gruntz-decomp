@@ -43,7 +43,7 @@ i32 CGrunt::StepToyerBehavior() {
     m_defenderPx = m_lastTilePx;
     if (m_vehiclePickupType == PICKUP_NONE) {
         m_aiType = AI_POSTGUARD;
-        m_defenderState = AISTATE_SEEK;
+        m_aiState = AISTATE_SEEK;
         m_dwell = 0;
         return 1;
     }

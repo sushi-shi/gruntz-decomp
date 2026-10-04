@@ -55,7 +55,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
                 break;                                                                             \
         }                                                                                          \
         (grunt)->m_aiType = AI_DEFENDER;                                                           \
-        (grunt)->m_defenderState = AISTATE_SEEK;                                                   \
+        (grunt)->m_aiState = AISTATE_SEEK;                                                         \
         UNSET_COORD((grunt)->m_arrivalCell);                                                       \
         (grunt)->m_arrivalActive = false;                                                          \
         (grunt)->m_arrivalFlags |= 0x18040402;                                                     \

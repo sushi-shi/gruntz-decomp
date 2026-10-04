@@ -40,7 +40,7 @@
         COMMIT_GRUNT_NEIGHBOR(target);                                                             \
         m_neighborScanEnabled = false;                                                             \
         RecycleCoords();                                                                           \
-        m_defenderState = AISTATE_RETREAT;                                                         \
+        m_aiState = AISTATE_RETREAT;                                                               \
     } while (0)
 
 #define COPY_LAST_TILE_TO_DEFENDER                                                                 \

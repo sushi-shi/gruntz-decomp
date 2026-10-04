@@ -49,18 +49,18 @@ i32 CGrunt::StepTimeBomberBehavior() {
     }
     m_defenderPx = LastTilePx();
 
-    if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
+    if (m_aiState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
         MIRROR_GRUNT_ACROSS_ARRIVAL();
         m_dwell = 0;
-        m_defenderState = AISTATE_COOLDOWN;
+        m_aiState = AISTATE_COOLDOWN;
     }
-    if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
+    if (m_aiState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
         MIRROR_GRUNT_ACROSS_ARRIVAL();
-        m_defenderState = AISTATE_SEEK;
+        m_aiState = AISTATE_SEEK;
         return 1;
     }
 
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_SEEK:
             goto state0;
         case AISTATE_ATTACK:
@@ -69,7 +69,7 @@ i32 CGrunt::StepTimeBomberBehavior() {
             if (m_dwell <= static_cast<u32>(DWELL_COOLDOWN_MS)) {
                 return 1;
             }
-            m_defenderState = AISTATE_SEEK;
+            m_aiState = AISTATE_SEEK;
             return 1;
     }
     goto common;
@@ -118,7 +118,7 @@ state2: {
             i32 flag = pl->CellFlagsAt(px, py);
             if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
                 if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
-                    m_defenderState = AISTATE_COOLDOWN;
+                    m_aiState = AISTATE_COOLDOWN;
                     m_dwell = 0;
                     CMapMgr* hit = g_gameReg->GetTileGrid();
                     hit->Clip(NULL);
@@ -130,7 +130,7 @@ state2: {
     }
     CMapMgr* spent = g_gameReg->GetTileGrid();
     spent->Clip(NULL);
-    m_defenderState = AISTATE_SEEK;
+    m_aiState = AISTATE_SEEK;
     goto common;
 }
 
@@ -147,7 +147,7 @@ state0: {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;
         m_arrivalCell.Set(hit->m_screenX >> TILE_SHIFT_PX, hit->m_screenY >> TILE_SHIFT_PX);
-        m_defenderState = AISTATE_ATTACK;
+        m_aiState = AISTATE_ATTACK;
         goto common;
     }
     if (m_dwell <= static_cast<u32>(DWELL_REPATH_MS)) {
@@ -187,7 +187,7 @@ s0_reset:
 }
 
 common: {
-    GruntAiState st = m_defenderState;
+    GruntAiState st = m_aiState;
     if (st != AISTATE_COOLDOWN && st != AISTATE_PHASE_MIRROR_THEN_COOLDOWN && CoordCount() >= 2) {
         POSITION head = CoordHead();
         i32 bx = static_cast<Coord*>(m_coordList.GetAt(head))->m_x;
@@ -206,7 +206,7 @@ common: {
                 (by << TILE_SHIFT_PX) + TILE_HALF_PX
             );
             m_arrivalCell.Set(bx, by);
-            m_defenderState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
+            m_aiState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
             return 1;
         }
     }
@@ -219,7 +219,7 @@ common: {
     }
     m_arrivalCell = *head;
     this->RecycleCoords();
-    m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
+    m_aiState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;
 }
 }

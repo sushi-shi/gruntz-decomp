@@ -287,12 +287,12 @@ public:
         m_targetTeam = team;
     }
 
-    GruntAiState GetDefenderState() const {
-        return m_defenderState;
+    GruntAiState GetAiState() const {
+        return m_aiState;
     }
 
-    void SetDefenderState(GruntAiState state) {
-        m_defenderState = state;
+    void SetAiState(GruntAiState state) {
+        m_aiState = state;
     }
 
     PickupType GetDefenderPickupType() const {
@@ -473,7 +473,7 @@ public:
     RECT m_vehicleContactRect;
     RECT m_vehicleContactExclusionRect;
     EnemyAiType m_aiType;
-    GruntAiState m_defenderState;
+    GruntAiState m_aiState;
     BattlezTask m_battleState;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;

@@ -26,7 +26,7 @@
 
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
-    GruntAiState state = defender->GetDefenderState();
+    GruntAiState state = defender->GetAiState();
     if (state == AISTATE_RETURN) {
         return 1;
     }
@@ -76,7 +76,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 Coord targetTile;
                 target->GetScreenTile(&targetTile);
                 if (defender->TileSwitch(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
-                    defender->SetDefenderState(AISTATE_ATTACK);
+                    defender->SetAiState(AISTATE_ATTACK);
                     defender->m_arrivalCell.Set(target->GetPlayerIndex(), target->GetUnitIndex());
                     defender->m_dwell = 0;
                 }
@@ -104,7 +104,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                     && BattlezActDiffersFromIGLPJCR(defender)) {
                     HandleUnitContact(defender, target);
                 }
-                defender->SetDefenderState(AISTATE_SEEK);
+                defender->SetAiState(AISTATE_SEEK);
                 goto checkIdleWander;
             }
 
@@ -124,7 +124,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 }
                 UNSET_COORD(defender->m_arrivalCell);
                 defender->m_dwell = 0;
-                defender->SetDefenderState(AISTATE_SEEK);
+                defender->SetAiState(AISTATE_SEEK);
                 defender->RecycleCoords();
                 defender->m_dwell = 0;
                 goto checkIdleWander;

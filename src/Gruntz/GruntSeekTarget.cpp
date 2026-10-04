@@ -80,7 +80,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
                 this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
-                this->m_defenderState = AISTATE_COOLDOWN;
+                this->m_aiState = AISTATE_COOLDOWN;
                 if (this->CoordsEmpty()) {
                     return 1;
                 }
@@ -168,7 +168,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         }
     } else {
         if (this->CoordsEmpty()) {
-            if (this->m_defenderState != AISTATE_SEEK) {
+            if (this->m_aiState != AISTATE_SEEK) {
                 return 1;
             }
             i32 best = INT_MAX;
@@ -221,7 +221,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             this->m_dwell = 0;
             return 1;
         }
-        if (this->m_defenderState != AISTATE_SEEK) {
+        if (this->m_aiState != AISTATE_SEEK) {
             return 1;
         }
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
