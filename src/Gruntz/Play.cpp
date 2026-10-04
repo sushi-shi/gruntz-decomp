@@ -3695,7 +3695,6 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d0b30, 0x200)
 i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     i32 x = m_cursorX + m_cursorOffset.m_x;

@@ -3464,7 +3464,7 @@ play	?RestoreCursorSaveUnder@CPlay@@QAEHXZ	100.0000	100.0000	9	5f7e584fb51f	0xd1
 play	?RestoreDisplay@CPlay@@UAEHXZ	99.4928	99.4928	10	ba40bb4deac5	0xcba10	99.4928	
 play	?ResumeGame@CPlay@@UAEHXZ	100.0000	100.0000	3	c55cd0968853	0xcef00	100.0000	
 play	?SavePlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	8	037080256c98	0xd79d0	100.0000	
-play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	99.9755	99.9755	14	259556054204	0xd0b30	100.0000	
+play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755	14	259556054204	0xd0b30	100.0000	
 play	?ScanBuildTiles@CPlay@@QAEHXZ	99.5915	99.5915	45	8c8ac5350fcc	0xd53d0	99.5915	
 play	?ScanShuffleQuads@CPlay@@QAEHXZ	100.0000	99.8477	10	a12635a43754	0xd9290	100.0000	
 play	?SerializeDispatch@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	17	85431c8afae1	0xd7520	100.0000	
