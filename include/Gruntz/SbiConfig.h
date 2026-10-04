@@ -7,6 +7,4 @@
 #include <Gruntz/GameRegistry.h>
 #include <Image/ImageSet.h>
 
-struct CSbiSurfacePool {};
-
 #endif // GRUNTZ_SBICONFIG_H

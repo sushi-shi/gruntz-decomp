@@ -687,6 +687,10 @@ public:
         return !m_arrivalRerollTiming.Expired();
     }
 
+    b32 IsAttackWindupActive() const {
+        return m_attackWindupActive;
+    }
+
     b32 IsAttackQueued() const {
         return m_attackQueued;
     }
@@ -694,6 +698,8 @@ public:
     b32 IsCombatTimeoutExpired() const {
         return m_combatTiming.Expired();
     }
+
+    void ArmCombatTimeout();
 
     void StartHudRetireTimer();
 

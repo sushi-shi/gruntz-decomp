@@ -155,7 +155,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_inCombat,
                 grunt->IsAttackQueued(),
                 grunt->m_arrivalAction,
-                grunt->m_attackWindupActive,
+                grunt->IsAttackWindupActive(),
                 grunt->m_neighborScanEnabled,
                 rnd
             );

@@ -246,6 +246,9 @@ public:
     i32 UpdateFrame(i32 deltaMs);
 
     void BeginLevelFinish(FinishLevelReason reason);
+    void StartFinishDelay(u32 durationMs) {
+        m_finishDelayTiming.Start(durationMs);
+    }
 
     i32 ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles);
 

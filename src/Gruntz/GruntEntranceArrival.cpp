@@ -167,7 +167,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     CreateHealthSprite();
 
-    ArmGruntCombatTimeout(this);
+    ArmCombatTimeout();
 
     PLAY_GRUNT_CUE_IN_VIEW(1);
 
@@ -1030,7 +1030,7 @@ restoreTool:
 
 tail:
     CreateHealthSprite();
-    ArmGruntCombatTimeout(this);
+    ArmCombatTimeout();
     if (GRUNT_NOT_AT_SAVED_SCREEN_POS(this)) {
         ConsiderArrival(1);
     }

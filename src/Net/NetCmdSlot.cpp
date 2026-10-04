@@ -159,7 +159,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         if (slot == NULL) {
             return 0;
         }
-        i32 ackPlayerIndex = slot->GetPlayer()->m_playerIndex;
+        i32 ackPlayerIndex = slot->GetPlayer()->GetPlayerIndex();
         if (opcode & 2) {
             m_drainAckFlags[ackPlayerIndex & 0xff] = 1;
             if (sequence > m_drainSequence) {
