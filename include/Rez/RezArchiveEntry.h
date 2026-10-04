@@ -75,7 +75,7 @@ private:
 
     void InitRezItm(
         CRezDir* directory,
-        const char* name,
+        REZNAME name,
         REZID resourceId,
         CRezTyp* type,
         REZDESC comment,

@@ -323,7 +323,7 @@ i32 CAreaMgr::LoadObjectImageResources(CGameWorld* surfaceMgr, CRezDir* src) {
             }
             surfaceMgr->GetImageRegistry()->LoadImageSetsFromTree(
                 resourceTree,
-                const_cast<char*>(static_cast<LPCTSTR>(resourceEntry->GetName())),
+                static_cast<LPCTSTR>(resourceEntry->GetName()),
                 "_"
             );
             TRACE("%s\n", static_cast<LPCTSTR>(resourceEntry->GetName()));
@@ -400,7 +400,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CGameWorld* surfaceMgr, CRezDir* src) {
             }
             surfaceMgr->SoundRegistry()->LoadFromTree(
                 resourceTree,
-                const_cast<char*>(static_cast<LPCTSTR>(resourceEntry->GetName())),
+                static_cast<LPCTSTR>(resourceEntry->GetName()),
                 "_"
             );
             TRACE("%s\n", static_cast<LPCTSTR>(resourceEntry->GetName()));
@@ -462,7 +462,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CGameWorld* surfaceMgr, CRezDir* src) {
             }
             surfaceMgr->GetAnimationRegistry()->LoadFromTree(
                 resourceTree,
-                const_cast<char*>(static_cast<LPCTSTR>(resourceEntry->GetName())),
+                static_cast<LPCTSTR>(resourceEntry->GetName()),
                 "_"
             );
             TRACE("%s\n", static_cast<LPCTSTR>(resourceEntry->GetName()));

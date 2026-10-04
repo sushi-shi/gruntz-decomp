@@ -707,7 +707,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 || m_curState->GetStateId() == GAMESTATE_ATTRACT) {
                 while (ShowCursor(true) < 0) {
                 }
-                LaunchWebBrowser(const_cast<char*>("http://www.gruntzgoo.com/"));
+                LaunchWebBrowser("http://www.gruntzgoo.com/");
             }
             return 1;
         case CMD_MULTI_JOIN:

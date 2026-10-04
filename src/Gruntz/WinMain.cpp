@@ -52,7 +52,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         UINT uLen;
         VerQueryValueA(
             pInfo,
-            const_cast<LPSTR>("\\StringFileInfo\\040904B0\\FileVersion"),
+            "\\StringFileInfo\\040904B0\\FileVersion",
             PtrOut(&pValue),
             &uLen
         );

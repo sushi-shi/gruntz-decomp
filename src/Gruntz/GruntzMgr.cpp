@@ -501,7 +501,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SAFE_DELETE(m_resourceArchive);
     m_resourceArchive = new CRezMgr;
     bool parseFailed = ResourceArchive()->Open(
-                           const_cast<char*>(static_cast<const char*>(GetRezPath())),
+                           static_cast<const char*>(GetRezPath()),
                            true,
                            false
                        )
@@ -510,12 +510,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
         return 0;
     }
-    if (!ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.VRZ"), false)) {
+    if (!ResourceArchive()->OpenAdditional("GRUNTZ.VRZ", false)) {
         ReportError(IDX(IDS_LOAD_VOICE_RESOURCE_FILE), 0x460);
         return 0;
     }
-    ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.ZZZ"), true);
-    ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.XXX"), true);
+    ResourceArchive()->OpenAdditional("GRUNTZ.ZZZ", true);
+    ResourceArchive()->OpenAdditional("GRUNTZ.XXX", true);
     ConfigureSurfaceColorKey(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
@@ -1312,7 +1312,7 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
     i32 hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(
-            const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"),
+            "c:\\proj\\incs\\ddrawmgr.h",
             0x135,
             hr
         );
@@ -2134,7 +2134,7 @@ i32 CGruntzMgr::IsStandardVideoMode() {
 }
 
 RVA(0x0008f9c0, 0x1d)
-i32 CGruntzMgr::AppendChatMessage(char* msg) {
+i32 CGruntzMgr::AppendChatMessage(const char* msg) {
     CGameText* log = m_chatLog;
     if (log == NULL) {
         return 0;
@@ -2639,7 +2639,7 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
             monolithHeight,
             -0x19,
             -0x19,
-            const_cast<char*>("MONOLITH")
+            "MONOLITH"
         );
         if (spr == NULL) {
             return 0;
@@ -2770,11 +2770,11 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     switch (fmt->m_drawType) {
                         case SHADE_DST_BY_SRC:
                             set->SetAllShadeModes(SHADE_COPY);
-                            AppendChatMessage(const_cast<char*>("Back from the dead?"));
+                            AppendChatMessage("Back from the dead?");
                             break;
                         default:
                             set->SetAllShadeModes(SHADE_DST_BY_SRC);
-                            AppendChatMessage(const_cast<char*>("You're scaring me..."));
+                            AppendChatMessage("You're scaring me...");
                             break;
                     }
                     PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");
@@ -2803,10 +2803,10 @@ void CGruntzMgr::CheatEclipseToggle() {
                     if (st != SHADE_DST_BY_LEVEL) {
                         set->SetAllShadeModes(SHADE_DST_BY_LEVEL);
                         set->SetAllLightLevels(GetRandom(255));
-                        AppendChatMessage(const_cast<char*>("Me and my..."));
+                        AppendChatMessage("Me and my...");
                     } else {
                         set->SetAllShadeModes(SHADE_COPY);
-                        AppendChatMessage(const_cast<char*>("Where did the sun go?"));
+                        AppendChatMessage("Where did the sun go?");
                     }
                     PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");
                 }
@@ -3010,7 +3010,7 @@ i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
     m_resourceArchive = new CRezMgr;
 
     bool parseFailed = m_resourceArchive->Open(
-                           const_cast<char*>(static_cast<const char*>(GetRezPath())),
+                           static_cast<const char*>(GetRezPath()),
                            true,
                            false
                        )

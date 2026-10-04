@@ -399,7 +399,7 @@ CLevelPlane* CGameLevel::ReadObjectPlane(
             depthX,
             depthY,
             &m_viewportRect,
-            const_cast<char*>(name)
+            name
         )
         == 0) {
         if (plane) {

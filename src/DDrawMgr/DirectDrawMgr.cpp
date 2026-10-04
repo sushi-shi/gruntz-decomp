@@ -1081,7 +1081,7 @@ IDirectDrawSurface* CDDrawDeviceManager::GetGDISurface() {
     i32 hr = m_device->GetGDISurface(&surf);
     if (hr != 0) {
         DDrawLogLine(
-            const_cast<char*>("CDirectDrawMgr::GetGDISurface() - Cannot get the GDI surface!\r\n")
+            "CDirectDrawMgr::GetGDISurface() - Cannot get the GDI surface!\r\n"
         );
         return NULL;
     }

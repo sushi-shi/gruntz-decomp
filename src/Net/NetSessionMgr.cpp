@@ -163,7 +163,7 @@ void CNetSession::BuildGruntzCrcInfo() {
             info += szLine;
         }
     }
-    m_owner->ShowNetworkMessage(const_cast<char*>(static_cast<const char*>(info)), 0);
+    m_owner->ShowNetworkMessage(static_cast<const char*>(info), 0);
 }
 
 RVA(0x000bf530, 0x3b)

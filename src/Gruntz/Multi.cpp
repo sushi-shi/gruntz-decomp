@@ -878,13 +878,13 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 {
                     store->Set(
                         "Player Name",
-                        const_cast<char*>(static_cast<const char*>(PlayerName()))
+                        static_cast<const char*>(PlayerName())
                     );
                 }
                 {
                     store->Set(
                         "Game Name",
-                        const_cast<char*>(static_cast<const char*>(GameName()))
+                        static_cast<const char*>(GameName())
                     );
                 }
             }
@@ -898,7 +898,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 }
                 store->Set(
                     "Player Name",
-                    const_cast<char*>(static_cast<const char*>(PlayerName()))
+                    static_cast<const char*>(PlayerName())
                 );
             }
         }
@@ -988,7 +988,7 @@ ret_false:
 }
 
 RVA(0x000b7e30, 0x63)
-void CMulti::ShowNetworkMessage(char* message, i32 code) {
+void CMulti::ShowNetworkMessage(const char* message, i32 code) {
     char formattedMessage[512];
     if (message && *message && Mgr()) {
         if (code > 0) {
@@ -1260,7 +1260,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
         return NULL;
     }
 
-    CNetPlayerNode* node = Network()->CreatePlayer(const_cast<char*>("Host"), "", NULL);
+    CNetPlayerNode* node = Network()->CreatePlayer("Host", "", NULL);
     m_localPlayer = node;
     if (node == NULL) {
         ReportNetError(0);
@@ -1870,7 +1870,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (g_netMessageEditHwnd != NULL) {
                 AppendEditLine(
                     g_netMessageEditHwnd,
-                    const_cast<char*>(static_cast<const char*>(result))
+                    static_cast<const char*>(result)
                 );
             } else {
                 (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
@@ -1954,7 +1954,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
-        ->AddMessage(const_cast<char*>(static_cast<const char*>(line)), GAME_TEXT_SHADOW, 0x11);
+        ->AddMessage(static_cast<const char*>(line), GAME_TEXT_SHADOW, 0x11);
 
     if (player != NULL) {
         Network()->RemovePlayer(player);
@@ -2407,7 +2407,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
 }
 
 RVA(0x000bb3e0, 0xe5)
-void CMulti::AppendEditLine(HWND edit, char* str) {
+void CMulti::AppendEditLine(HWND edit, const char* str) {
     if (!edit || !str || !str[0]) {
         return;
     }
@@ -2908,11 +2908,9 @@ i32 CMulti::SetupTcpIpConfig() {
     hostPlayer->m_name = PlayerName();
     hostPlayer->m_color = TINT_ORANGE;
 
-    m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(hostPlayer->GetName())),
-        "",
-        NULL
-    ));
+    m_localPlayer = static_cast<CNetPlayerNode*>(
+        Network()->CreatePlayer(static_cast<const char*>(hostPlayer->GetName()), "", NULL)
+    );
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -2931,11 +2929,9 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(PlayerName())),
-            "",
-            NULL
-        ));
+        m_localPlayer = static_cast<CNetPlayerNode*>(
+            Network()->CreatePlayer(static_cast<const char*>(PlayerName()), "", NULL)
+        );
     }
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
@@ -2988,11 +2984,7 @@ i32 CMulti::CreateHostPlayer(
     m_resendInterval = resend;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_localPlayer = Network()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(PlayerName())),
-        "",
-        NULL
-    );
+    m_localPlayer = Network()->CreatePlayer(static_cast<const char*>(PlayerName()), "", NULL);
     if (m_localPlayer == NULL) {
         ReportNetError(0);
         return 0;

@@ -126,7 +126,7 @@ i32 CPreviewState::RestorePreviewGraphics() {
     while (ShowCursor(false) >= 0) {
     }
     i32 result = LoadTitlePage(
-        const_cast<char*>(static_cast<const char*>(m_currentPreviewName)),
+        static_cast<const char*>(m_currentPreviewName),
         0,
         0,
         0,
@@ -147,7 +147,7 @@ i32 CPreviewState::RedrawPreview() {
     while (ShowCursor(false) >= 0) {
     }
     i32 result = LoadTitlePage(
-        const_cast<char*>(static_cast<const char*>(m_currentPreviewName)),
+        static_cast<const char*>(m_currentPreviewName),
         0,
         0,
         0,
@@ -190,7 +190,7 @@ void CPreviewState::ShowNextPreviewScreen() {
     StateResources()->GetRezFromPath(resourceKey, IMGTAG_XCP);
     b32 failed = false;
     if (LoadTitlePage(
-            const_cast<char*>(static_cast<const char*>(m_currentPreviewName)),
+            static_cast<const char*>(m_currentPreviewName),
             0,
             0,
             0,

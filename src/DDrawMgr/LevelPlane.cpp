@@ -162,7 +162,7 @@ i32 CLevelPlane::InitGeometry(
     i32 movementXPercent,
     i32 movementYPercent,
     LevelCoordRect* viewportRect,
-    char* planeName
+    const char* planeName
 ) {
     m_tileColumns = tileColumns;
     m_tileRows = tileRows;

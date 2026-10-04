@@ -504,7 +504,7 @@ void CTileTriggerTransition::RegisterActs() {
 }
 
 RVA(0x00110070, 0x71)
-i32 CTileTriggerTransition::StartTransitionAnimation(char* imageSetName, char* animationName) {
+i32 CTileTriggerTransition::StartTransitionAnimation(const char* imageSetName, const char* animationName) {
     if (SwitchAnimationByName(animationName, 0) == 0) {
         return 0;
     }

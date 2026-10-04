@@ -451,7 +451,7 @@ public:
     CNetPlayerNode*
     AddPlayer(DPID playerId, const char* shortName, const char* longName, DWORD flags);
 
-    CNetPlayerNode* CreatePlayer(char* shortName, const char* longName, HANDLE eventHandle);
+    CNetPlayerNode* CreatePlayer(const char* shortName, const char* longName, HANDLE eventHandle);
     void PopulatePlayerList(HWND hList);
 
     i32 InitializeFromProvider(CNetProviderNode* provider, GUID appGuid);

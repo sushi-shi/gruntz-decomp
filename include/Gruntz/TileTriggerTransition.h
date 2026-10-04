@@ -28,7 +28,7 @@ public:
     }
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
-    i32 StartTransitionAnimation(char* imageSetName, char* animationName);
+    i32 StartTransitionAnimation(const char* imageSetName, const char* animationName);
     i32 UpdateTransitionAnimation();
 };
 
