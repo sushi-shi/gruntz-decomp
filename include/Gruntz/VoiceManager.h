@@ -44,6 +44,10 @@ public:
     struct CRezItm* SelectVoiceVariant(i32 voiceGroup);
     BOOL BuildVoiceGroups();
 
+    CResourceNameList* GetVoiceGroup(i32 index) const {
+        return static_cast<CResourceNameList*>(m_voiceGroups.GetAt(index));
+    }
+
     BOOL
     PlayGruntVoiceCue(class CGrunt* grunt, i32 cueId, i32 variantIndex, i32 priority, i32 percent);
 

@@ -45,7 +45,7 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
 RVA(0x0011ae30, 0x95)
 void CVoiceManager::Clear() {
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
-        CResourceNameList* group = static_cast<CResourceNameList*>(m_voiceGroups[i]);
+        CResourceNameList* group = GetVoiceGroup(i);
 
         delete group;
     }
@@ -501,7 +501,7 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     if (voiceGroup >= m_voiceGroups.GetSize()) {
         return NULL;
     }
-    CResourceNameList* group = static_cast<CResourceNameList*>(m_voiceGroups[voiceGroup]);
+    CResourceNameList* group = GetVoiceGroup(voiceGroup);
     if (group == NULL) {
         return NULL;
     }
@@ -686,7 +686,7 @@ RVA(0x0011c7f0, 0x2b)
 void CVoiceManager::ResetVoiceSelections() {
     PauseAllVoices();
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
-        CResourceNameList* group = static_cast<CResourceNameList*>(m_voiceGroups[i]);
+        CResourceNameList* group = GetVoiceGroup(i);
         if (group != NULL) {
             group->SetLastPicked(-1);
         }
