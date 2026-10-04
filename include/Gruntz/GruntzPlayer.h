@@ -64,6 +64,14 @@ public:
         return m_networkPlayerId;
     }
 
+    i32 GetWarlordObjectId() const {
+        return m_warlordObjectId;
+    }
+
+    void SetWarlordObjectId(i32 objectId) {
+        m_warlordObjectId = objectId;
+    }
+
     ColorTint GetColor() const {
         return m_color;
     }

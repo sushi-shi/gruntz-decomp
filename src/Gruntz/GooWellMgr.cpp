@@ -132,7 +132,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             slot->SetEliminated(true);
                             CGameObject* out = NULL;
                             if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
-                                    slot->m_warlordObjectId,
+                                    slot->GetWarlordObjectId(),
                                     out
                                 )
                                 && out) {
@@ -153,7 +153,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             && !lastSlot->IsEliminated()) {
                             CGameObject* out = NULL;
                             if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
-                                    lastSlot->m_warlordObjectId,
+                                    lastSlot->GetWarlordObjectId(),
                                     out
                                 )
                                 && out) {

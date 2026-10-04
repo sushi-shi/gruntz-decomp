@@ -433,7 +433,7 @@ i32 CWarlord::BuildFortSplashParticles() {
 
         GruntzPlayer* slot = &g_gameReg->GetPlayer(m_object->GetSmarts());
         if (slot != NULL) {
-            slot->m_warlordObjectId = 0;
+            slot->SetWarlordObjectId(0);
         }
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
