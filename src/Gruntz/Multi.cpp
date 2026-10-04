@@ -476,7 +476,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
         if (e->GetBattlezConfig()->LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
             return 0;
         }
-        if (e->m_humanControlled && e->IsActive()) {
+        if (e->IsHumanControlled() && e->IsActive()) {
             e->GetBattlezConfig()->Clear();
         }
     }
@@ -1939,7 +1939,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     if (slot->IsActive() == false) {
         return 0;
     }
-    if (slot->m_humanControlled == false) {
+    if (slot->IsHumanControlled() == false) {
         return 0;
     }
 
@@ -2043,7 +2043,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
             packet.m_rows[i].m_active = static_cast<u8>(v);
             v = player->GetColor();
             packet.m_rows[i].m_color = static_cast<u8>(v);
-            v = player->m_humanControlled;
+            v = player->IsHumanControlled();
             packet.m_rows[i].m_humanControlled = static_cast<u8>(v);
             v = IDX(player->GetDifficulty());
             packet.m_rows[i].m_difficulty = static_cast<u8>(v);
@@ -2269,7 +2269,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
 
     i32 v = player->GetColor();
     packet.m_color = static_cast<u8>(v);
-    v = player->m_humanControlled;
+    v = player->IsHumanControlled();
     packet.m_humanControlled = static_cast<u8>(v);
     v = IDX(player->GetDifficulty());
     packet.m_difficulty = static_cast<u8>(v);
@@ -2444,7 +2444,7 @@ i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
 
     CNetPlayerNode* player = Network()->GetPlayerNodeData(slot->m_networkPlayerId);
 
-    b32 humanControlled = slot->m_humanControlled;
+    b32 humanControlled = slot->IsHumanControlled();
     if (player == NULL) {
         if (humanControlled != false) {
             return 0;
@@ -2661,7 +2661,7 @@ i32 CMulti::Poll(i32 token) {
         for (i32 i = 0; i < 4; i++) {
             GruntzPlayer* player = &g_gameReg->m_players[i];
             if (player->m_networkPlayerId != m_localPlayerId && player->IsActive() != false
-                && player->m_humanControlled != false) {
+                && player->IsHumanControlled() != false) {
                 if (m_levelChecksumReceived[i] == 0) {
                     allAcked = 0;
                 } else if (!(m_levelChecksums[i] == token && token != 0)) {
@@ -2718,7 +2718,7 @@ i32 CMulti::CreateSession() {
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* player = &NetGameMgr()->m_players[i];
         NetSlotState state = NETSLOT_INACTIVE;
-        if (player->IsActive() != false && player->m_humanControlled != false) {
+        if (player->IsActive() != false && player->IsHumanControlled() != false) {
 
             state = NETSLOT_LOCAL;
             if (player->m_networkPlayerId != m_localPlayerId) {
@@ -3166,7 +3166,7 @@ u32 CMulti::GetMaxAckLatency() {
 
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
-            if (mgr->m_players[i].m_humanControlled && mgr->m_players[i].IsActive()) {
+            if (mgr->m_players[i].IsHumanControlled() && mgr->m_players[i].IsActive()) {
                 max = max(mgr->m_players[i].m_latency.m_avg, max);
             }
         }

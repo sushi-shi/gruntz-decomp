@@ -710,7 +710,7 @@ i32 CGrunt::ResolveEntranceArrival() {
         GameModeId mode = g->GetGameMode();
         if (mode != GAMEMODE_QUESTZ) {
             GruntzPlayer* slot = &g->m_players[m_playerIndex];
-            if (slot != NULL && slot->m_humanControlled != false) {
+            if (slot != NULL && slot->IsHumanControlled() != false) {
                 if (m_tileClaimed == false && m_arrivalNotified == false
                     && mode == GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
                     && m_arrived == false) {

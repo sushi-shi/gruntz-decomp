@@ -1811,7 +1811,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         i32 radius = 0;
 
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-            if (player->m_humanControlled == false) {
+            if (player->IsHumanControlled() == false) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
@@ -1835,7 +1835,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             }
         } else if (player->IsActive() != false && player->HasDropped() == false
                    && player->IsEliminated() == false) {
-            if (player->m_humanControlled != false) {
+            if (player->IsHumanControlled() != false) {
                 if (PlaceObject(
                         playerIndex,
                         (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
