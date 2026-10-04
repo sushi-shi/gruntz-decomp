@@ -325,6 +325,7 @@ void CBattlezMapConfig::FreeArrays() {
     m_reserved13c = 0;
 }
 
+// @early-stop
 RVA(0x00025d90, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
     if (m_active == false) {
