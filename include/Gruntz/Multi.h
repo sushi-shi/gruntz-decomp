@@ -140,7 +140,7 @@ public:
     void BroadcastValueMessage(NetMsgId id, u32 value, i32 flag);
 
     i32 DropLobbyPlayer(i32 slotIndex);
-    i32 Poll(i32 token);
+    i32 ExchangeLevelChecksums(i32 checksum);
     i32 ResolveLocalPlayer();
     void ReportMaxAckLatency();
     i32 VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* localPlayer);
@@ -232,8 +232,8 @@ public:
     b32 m_customLevelVerificationPending;
     b32 m_allPlayersReady;
     b32 m_removedByHost;
-    b32 m_levelVerifyResult;
-    b32 m_verifyDone;
+    b32 m_levelChecksumsMatch;
+    b32 m_levelVerificationComplete;
     i32 m_levelChecksumReceived[4];
     i32 m_levelChecksums[4];
     b32 m_pollAbort;
