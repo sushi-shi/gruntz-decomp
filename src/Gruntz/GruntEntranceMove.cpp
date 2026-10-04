@@ -542,11 +542,11 @@ i32 CGrunt::UpdateScrollUseAnimation() {
         SetImageFrameByName(buf, frame);
 
         m_toyBreakStarted = true;
-        i32 v = m_moveVariant;
-        if (v != 0) {
-            CastSpell(v);
+        i32 activeSpell = m_activeSpell;
+        if (activeSpell != 0) {
+            CastSpell(activeSpell);
         } else {
-            CastSpell(m_moveKind);
+            CastSpell(m_scrollSpell);
         }
         return 0;
     }

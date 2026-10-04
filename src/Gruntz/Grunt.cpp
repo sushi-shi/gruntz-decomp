@@ -1630,9 +1630,9 @@ i32 CGrunt::Place(
     m_toyTileIndex = 0;
     m_pendingPickupType = PICKUP_INVALID;
     m_coordRetryCount = 0;
-    m_moveKind = 0;
-    m_moveVariantOverride = 0;
-    m_moveVariant = 0;
+    m_scrollSpell = 0;
+    m_wandSpellOverride = 0;
+    m_activeSpell = 0;
     m_helpCueId = 0;
     m_aiType = aiType;
     m_brickPickupType = PICKUP_BROWNBRICK;
@@ -2143,7 +2143,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_SCROLL: {
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
-            m_moveVariant = variant;
+            m_activeSpell = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
             if (IsAnimationAct("D")) {

@@ -1204,7 +1204,7 @@ RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     Coord destination;
     CGrunt* hit;
-    i32 moveKind;
+    i32 scrollSpell;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->IsEntranceCommitted() == false || cell->m_entranceActive != false) {
         return 0;
@@ -1245,11 +1245,11 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         }
 
         PickupType kind = cell->GetCarriedToyType();
-        i32 moveKind = 0;
+        i32 scrollSpell = 0;
         if (kind == PICKUP_SCROLL) {
-            moveKind = cell->m_moveKind;
+            scrollSpell = cell->m_scrollSpell;
         }
-        if (LoadToyBoxIcon(destination.m_x, destination.m_y, playerIndex, kind, moveKind) == 0) {
+        if (LoadToyBoxIcon(destination.m_x, destination.m_y, playerIndex, kind, scrollSpell) == 0) {
             return 0;
         }
 
@@ -1274,9 +1274,9 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return 0;
     }
 
-    moveKind = 0;
+    scrollSpell = 0;
     if (cell->GetCarriedToyType() == PICKUP_SCROLL) {
-        moveKind = cell->m_moveKind;
+        scrollSpell = cell->m_scrollSpell;
     }
     cell->FaceTowardPixel(destination.m_x, destination.m_y);
     cell->m_attackQueued = false;
@@ -1285,7 +1285,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
-    if (hit->LoadGruntTypeTable(cell->GetCarriedToyType(), 1, moveKind, 0) != 0) {
+    if (hit->LoadGruntTypeTable(cell->GetCarriedToyType(), 1, scrollSpell, 0) != 0) {
         cell->SetCarriedToy(PICKUP_NONE);
 
         if (hit->GetPlayerIndex() != playerIndex) {

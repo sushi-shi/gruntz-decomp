@@ -586,10 +586,10 @@ public:
     b32 m_deathAnimStarted;
     b32 m_cellRemovalNotified;
     i32 m_killerPlayerIndex;
-    i32 m_moveVariantOverride;
+    i32 m_wandSpellOverride;
     i32 m_powerupDuration;
-    i32 m_moveKind;
-    i32 m_moveVariant;
+    i32 m_scrollSpell;
+    i32 m_activeSpell;
     i32 m_coordRetryCount;
     u32 m_toyTileIndex;
     i32 m_warpstoneAnchorIndex;

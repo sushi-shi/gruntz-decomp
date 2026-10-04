@@ -161,9 +161,9 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
     ar->Read(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
     ar->Read(&m_routePassableMask, sizeof(m_routePassableMask));
-    ar->Read(&m_moveVariantOverride, sizeof(m_moveVariantOverride));
-    ar->Read(&m_moveKind, sizeof(m_moveKind));
-    ar->Read(&m_moveVariant, sizeof(m_moveVariant));
+    ar->Read(&m_wandSpellOverride, sizeof(m_wandSpellOverride));
+    ar->Read(&m_scrollSpell, sizeof(m_scrollSpell));
+    ar->Read(&m_activeSpell, sizeof(m_activeSpell));
     ar->Read(&m_coordRetryCount, sizeof(m_coordRetryCount));
     ar->Read(&m_toyTileIndex, sizeof(m_toyTileIndex));
     ar->Read(&m_blockedVoicePending, sizeof(m_blockedVoicePending));
