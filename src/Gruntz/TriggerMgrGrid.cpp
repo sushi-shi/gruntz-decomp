@@ -80,7 +80,7 @@ void CTriggerMgr::Cleanup() {
 
 // @early-stop
 RVA(0x0006b6d0, 0x434)
-i32 CTriggerMgr::PlaceObject(
+i32 CTriggerMgr::SpawnGrunt(
     i32 playerIndex,
     i32 x,
     i32 y,
@@ -88,7 +88,7 @@ i32 CTriggerMgr::PlaceObject(
     GruntEntranceMode mode,
     i32 kindDefault,
     i32 typeKind,
-    i32 vehicleKind,
+    i32 carriedToyType,
     i32 aiType,
     i32 defenderRadiusMinusOne,
     i32 defenderQueuePosition,
@@ -209,7 +209,7 @@ i32 CTriggerMgr::PlaceObject(
                     break;
                 case BZUNIT_SHOVEL_MOUNTED:
                     kindId = IDX(PICKUP_SHOVEL);
-                    vehicleKind = IDX(PICKUP_SCROLL);
+                    carriedToyType = IDX(PICKUP_SCROLL);
                     break;
                 default:
                     kindId = kindDefault;
@@ -234,7 +234,7 @@ i32 CTriggerMgr::PlaceObject(
                     unitIndex,
                     static_cast<PickupType>(kindId),
                     static_cast<PickupType>(typeKind),
-                    vehicleKind,
+                    carriedToyType,
                     static_cast<EnemyAiType>(aiType),
                     defenderRadiusMinusOne,
                     defenderQueuePosition,

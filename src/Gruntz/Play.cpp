@@ -4128,7 +4128,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_PLACE_GRUNT: {
             u32 currentPlayer = static_cast<u32>(g_curPlayer);
 
-            i32 r = mgr->GetTriggerMgr()->PlaceObject(
+            i32 r = mgr->GetTriggerMgr()->SpawnGrunt(
                 static_cast<u8>(playerIndex),
                 static_cast<u16>(targetXOrPlayerIndex),
                 static_cast<u16>(targetYOrUnitIndex),
@@ -4513,7 +4513,7 @@ b32 CPlay::PlaceStartGruntz() {
             LogicRecordDispatchFn dispatch = record->GetDispatch();
             if (dispatch == DispatchGruntStartingPointLogic) {
                 DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
-                i32 idx = m_mgr->GetTriggerMgr()->PlaceObject(
+                i32 idx = m_mgr->GetTriggerMgr()->SpawnGrunt(
                     obj->GetSmarts(),
                     x,
                     y,
@@ -5279,7 +5279,7 @@ i32 CPlay::AddLevelGruntz() {
         i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
         i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
 
-        if (m_mgr->GetTriggerMgr()->PlaceObject(
+        if (m_mgr->GetTriggerMgr()->SpawnGrunt(
                 g->GetSmarts(),
                 x,
                 y,

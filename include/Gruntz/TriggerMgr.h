@@ -121,7 +121,7 @@ public:
         m_baseList.RemoveAt(position);
     }
 
-    i32 PlaceObject(
+    i32 SpawnGrunt(
         i32 playerIndex,
         i32 x,
         i32 y,
@@ -129,7 +129,7 @@ public:
         GruntEntranceMode mode,
         i32 kindDefault,
         i32 typeKind,
-        i32 vehicleKind,
+        i32 carriedToyType,
         i32 aiType,
         i32 defenderRadiusMinusOne,
         i32 defenderQueuePosition,
@@ -194,7 +194,7 @@ public:
 
     i32 HandleActionOptionsPointer(i32 x, i32 y);
 
-    i32 SpawnGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
+    i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
 
     void ResetSpawnState();
 
@@ -215,7 +215,7 @@ public:
 
     void LoadFinishLevelSprite(FinishLevelReason state);
 
-    i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
+    i32 ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles);
 
     CGrunt* FindNearestEnemy(CGrunt* g);
 

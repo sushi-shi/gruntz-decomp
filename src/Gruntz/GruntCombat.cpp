@@ -362,7 +362,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
                 8,
                 true
             );
-            return m_triggerMgr->LoadGruntResurrectTuning(
+            return m_triggerMgr->ResurrectGruntsInArea(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetInt("Spellz", s_ressurectionRadius, 8)
@@ -1122,7 +1122,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (attackerGruntKind == GRUNT_CONVERSION) {
         CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
         if (enemy != NULL
-            && m_triggerMgr->SpawnGrunt(
+            && m_triggerMgr->ConvertGrunt(
                    this->m_playerIndex,
                    this->m_unitIndex,
                    srcPlayerIndex,

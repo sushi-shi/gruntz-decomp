@@ -1785,64 +1785,69 @@ void CTriggerMgr::StopPendingFx() {
 
 // @early-stop
 RVA(0x0007be60, 0x21e)
-i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
-    i32 hx = cx >> TILE_SHIFT_PX;
-    i32 hy = cy >> TILE_SHIFT_PX;
-    CRect rect(hx - r, hy - r, hx + r, hy + r);
+i32 CTriggerMgr::ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles) {
+    i32 centerTileX = centerX >> TILE_SHIFT_PX;
+    i32 centerTileY = centerY >> TILE_SHIFT_PX;
+    CRect rect(
+        centerTileX - radiusTiles,
+        centerTileY - radiusTiles,
+        centerTileX + radiusTiles,
+        centerTileY + radiusTiles
+    );
 
     POSITION pos = GetPuddleHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;
-        CGruntPuddle* g = GetNextPuddle(pos);
-        if (g->IsPending() != false) {
+        CGruntPuddle* puddle = GetNextPuddle(pos);
+        if (puddle->IsPending() != false) {
             continue;
         }
-        i32 tx = g->GetTileX();
-        i32 ty = g->GetTileY();
-        CPoint pt(tx, ty);
+        i32 tileX = puddle->GetTileX();
+        i32 tileY = puddle->GetTileY();
+        CPoint pt(tileX, tileY);
         if (!rect.PtInRect(pt)) {
             continue;
         }
 
-        i32 playerIndex = g->GetPlayerIndex();
+        i32 playerIndex = puddle->GetPlayerIndex();
         GruntzPlayer* player = &g_gameReg->GetPlayer(playerIndex);
         i32 aiType = 0;
-        b32 ok = false;
-        i32 radius = 0;
+        b32 resurrected = false;
+        i32 aiRadius = 0;
 
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             if (player->IsHumanControlled() == false) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
-                radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
+                aiRadius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
-            if (PlaceObject(
+            if (SpawnGrunt(
                     playerIndex,
-                    (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                    (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                     0x186a0,
                     GRUNT_ENTRANCE_RESURRECT,
-                    g->GetMoveIcon(),
+                    puddle->GetMoveIcon(),
                     0,
                     0,
                     aiType,
-                    radius,
+                    aiRadius,
                     0,
                     0,
                     NULL
                 )
                 != -1) {
-                ok = true;
+                resurrected = true;
             }
         } else if (player->IsActive() != false && player->HasDropped() == false
                    && player->IsEliminated() == false) {
             if (player->IsHumanControlled() != false) {
-                if (PlaceObject(
+                if (SpawnGrunt(
                         playerIndex,
-                        (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                        (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                         0x186a0,
                         GRUNT_ENTRANCE_RESURRECT,
-                        g->GetMoveIcon(),
+                        puddle->GetMoveIcon(),
                         0,
                         0,
                         0,
@@ -1852,21 +1857,21 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                         NULL
                     )
                     != -1) {
-                    ok = true;
+                    resurrected = true;
                 }
-            } else if (player->GetBattlezConfig()->TrySeedSpawnAt(tx, ty) != 0) {
-                ok = true;
+            } else if (player->GetBattlezConfig()->TrySeedSpawnAt(tileX, tileY) != 0) {
+                resurrected = true;
             }
         }
 
-        if (ok) {
-            g->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+        if (resurrected) {
+            puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
             RemovePuddleAt(cur);
             CreateLightFx(
                 g_gameReg->World()->ChildGroup(),
-                (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                 SORTKEY_OVERLAY,
                 "GAME_LIGHTING_FLASH",
                 "GAME_FLASH",
@@ -1880,13 +1885,13 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
 // @early-stop
 RVA(0x0007c110, 0x166)
-i32 CTriggerMgr::SpawnGrunt(
+i32 CTriggerMgr::ConvertGrunt(
     i32 srcPlayerIndex,
     i32 srcUnitIndex,
     i32 dstPlayerIndex,
     i32 moveIcon
 ) {
-    CGrunt* src = UnitAt(srcPlayerIndex, srcUnitIndex);
+    CGrunt* sourceGrunt = UnitAt(srcPlayerIndex, srcUnitIndex);
     i32 freeUnitIndex = 0;
     i32 dstBaseIndex = dstPlayerIndex * TM_UNITS_PER_PLAYER;
     if (m_units[dstBaseIndex] != NULL) {
@@ -1902,28 +1907,29 @@ i32 CTriggerMgr::SpawnGrunt(
     if (freeUnitIndex >= TM_UNITS_PER_PLAYER) {
         return 0;
     }
-    CGameObject* o = src->m_object;
-    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(o, sx, sy)
-    PickupType k = EQUIPPED_TOOL_TERNARY_GT(src);
-    PickupType vis = src->GetCarriedToyType();
+    CGameObject* sourceObject = sourceGrunt->m_object;
+    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(sourceObject, spawnX, spawnY)
+    PickupType toolType = EQUIPPED_TOOL_TERNARY_GT(sourceGrunt);
+    PickupType carriedToyType = sourceGrunt->GetCarriedToyType();
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
-    CDDrawChildGroup* fac = m_world->ChildGroup();
+    CDDrawChildGroup* spriteGroup = m_world->ChildGroup();
     CWwdSpriteObject* sprite =
-        fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+        spriteGroup
+            ->CreateSprite(0, spawnX, spawnY, 0x186a0, "Grunt", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (sprite == NULL) {
         return 0;
     }
     sprite->GetLogicRecord()->Dispatch(sprite);
 
-    CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->UserLogic());
+    CGrunt* convertedGrunt = static_cast<CGrunt*>(sprite->GetLogicRecord()->UserLogic());
 
-    if (logic->Place(
+    if (convertedGrunt->Place(
             this,
             dstPlayerIndex,
             freeUnitIndex,
             static_cast<PickupType>(moveIcon),
-            k,
-            vis,
+            toolType,
+            carriedToyType,
             AI_NONE,
             0,
             0,
@@ -1932,10 +1938,10 @@ i32 CTriggerMgr::SpawnGrunt(
             GRUNT_ENTRANCE_NONE
         )
         == 0) {
-        logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+        convertedGrunt->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
-    m_units[dstBaseIndex + freeUnitIndex] = logic;
+    m_units[dstBaseIndex + freeUnitIndex] = convertedGrunt;
     m_unitCountByPlayer[dstPlayerIndex] += 1;
     m_unitExited[dstBaseIndex + freeUnitIndex] = 0;
     return 1;
