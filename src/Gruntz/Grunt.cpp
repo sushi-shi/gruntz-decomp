@@ -1624,7 +1624,7 @@ i32 CGrunt::Place(
     m_defenderPx.Set(-1, -1);
     m_powerupDuration = 0;
     m_blockedVoicePending = true;
-    m_struckCount = 0;
+    m_selectionClickCount = 0;
     m_toyTileIndex = 0;
     m_pendingPickupType = PICKUP_INVALID;
     m_coordRetryCount = 0;

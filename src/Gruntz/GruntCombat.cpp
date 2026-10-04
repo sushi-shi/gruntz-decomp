@@ -808,32 +808,32 @@ i32 CGrunt::PathScan() {
 }
 
 RVA(0x000588f0, 0x1ea)
-void CGrunt::OnStruck(b32 wasHit) {
-    m_struckTiming.Start(0xfa0);
-    i32 c = ++m_struckCount;
+void CGrunt::PlaySelectionVoice(b32 isOwnedByLocalPlayer) {
+    m_selectionClickResetTimer.Start(0xfa0);
+    i32 clickCount = ++m_selectionClickCount;
 
-    if (wasHit == false) {
+    if (isOwnedByLocalPlayer == false) {
         if (m_powerupType == GRUNT_GHOST) {
             return;
         }
-        if (c < 5) {
+        if (clickCount < 5) {
             PLAY_VOICE_IN_VIEW(0x370);
             return;
         }
         PLAY_VOICE_IN_VIEW(0x371);
-        m_struckCount = 0;
+        m_selectionClickCount = 0;
         return;
     }
 
-    if (c < 5) {
+    if (clickCount < 5) {
         PLAY_VOICE_IN_VIEW(0x320);
         return;
     }
-    if (c < 0xa) {
+    if (clickCount < 0xa) {
         PLAY_VOICE_IN_VIEW(0x321);
         return;
     }
-    m_struckCount = 0;
+    m_selectionClickCount = 0;
     PLAY_VOICE_IN_VIEW(0x322);
 }
 
@@ -1712,8 +1712,8 @@ static inline void ExpireBattlezCombatState(CGrunt* grunt) {
 
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
-    if (m_struckTiming.Expired()) {
-        m_struckCount = 0;
+    if (m_selectionClickResetTimer.Expired()) {
+        m_selectionClickCount = 0;
     }
     m_dwell += g_frameDelta;
 

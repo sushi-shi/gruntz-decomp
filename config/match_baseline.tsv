@@ -2056,7 +2056,7 @@ gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	12	fc43e08a2
 gruntcombat	?FireActivation@CGrunt@@UAEXH@Z	100.0000	100.0000	4	a551b1c6a238	0x5bcd0	100.0000	
 gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	97.4074	97.4074	22	2e15e05f6fd2	0x59230	99.1168	
 gruntcombat	?Lookup@SoundCueRegistry@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	2d2eb61ed13a	0x5b7e0	100.0000	
-gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	100.0000	100.0000	10	4dba3c3e4480	0x588f0	100.0000	
+gruntcombat	?PlaySelectionVoice@CGrunt@@QAEXH@Z	100.0000	100.0000	10	4dba3c3e4480	0x588f0	100.0000	
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	79.1767	79.1767	24	2e5d9270a272	0x57db0	90.5849	
 gruntcombat	?ReapplyLoopSoundParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	51a437cd4a39	0x57d10	100.0000	
 gruntcombat	?RegisterGruntActions@@YAXXZ	100.0000	100.0000	11	24d955af8006	0x5be30	100.0000	

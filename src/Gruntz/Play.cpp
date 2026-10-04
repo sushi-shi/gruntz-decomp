@@ -2730,10 +2730,10 @@ drag_box: {
             if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
                 goto ret1;
             }
-            picked->OnStruck(true);
+            picked->PlaySelectionVoice(true);
             return 1;
         }
-        picked->OnStruck(false);
+        picked->PlaySelectionVoice(false);
         return 1;
     }
     m_selectionAnchorX = xr;

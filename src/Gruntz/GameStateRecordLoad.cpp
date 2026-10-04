@@ -38,8 +38,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
-    m_struckCount = 0;
-    m_struckTiming.Clear();
+    m_selectionClickCount = 0;
+    m_selectionClickResetTimer.Clear();
 
     SERIALREF(m_selectedSprite);
     SERIALREF(m_toySprite);

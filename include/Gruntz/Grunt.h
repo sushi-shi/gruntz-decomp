@@ -489,9 +489,9 @@ public:
     b32 m_entranceArmed;
 
     class CTriggerMgr* m_triggerMgr;
-    i32 m_struckCount;
+    i32 m_selectionClickCount;
 
-    ClockInterval m_struckTiming;
+    ClockInterval m_selectionClickResetTimer;
     ClockInterval m_holdTiming;
     Coord m_arrivalTargetPx;
 
@@ -719,7 +719,7 @@ public:
 
     void FaceTowardPixel(i32 x, i32 y);
     void SetFacing(i32 unused, GruntDirectionCell facing);
-    void OnStruck(b32 wasHit);
+    void PlaySelectionVoice(b32 isOwnedByLocalPlayer);
     i32 StepPostGuardBehavior();
     i32 UpdateBombRunAnimation();
 
