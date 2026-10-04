@@ -41,8 +41,8 @@ A `const_cast` does not itself modify an object. Writing to an object originally
 defined as const is undefined behavior; removing a const view of a mutable object
 is a different case. If retail passes read-only storage as a write destination,
 record the unsafe path rather than silently substituting writable storage. Such
-a substitution is a behavior repair requiring separate authorization, not a
-source-neutral cleanup. Static evidence alone does not establish whether that
+a substitution changes behavior and must be identified as a bug fix rather than
+source recovery. Static evidence alone does not establish whether that
 path is reached or how a failing archive backend handles it.
 
 ## Header statics and COMMONs
