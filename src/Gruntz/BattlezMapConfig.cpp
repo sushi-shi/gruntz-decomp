@@ -1555,7 +1555,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 Coord* nt = unit->GetTailCoord();
                 Coord entrance;
                 SET_TILE_CENTER_PIXEL_PAIR(entrance.m_x, entrance.m_y, nt->m_x, nt->m_y)
-                unit->m_entrancePx = entrance;
+                unit->SetEntrancePx(entrance);
                 return 1;
             }
         }
@@ -2617,7 +2617,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         }
         unit->MoveToTile(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != false) {
-            unit->m_entrancePx = saved;
+            unit->SetEntrancePx(saved);
         }
     }
 
@@ -3113,7 +3113,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
                     Coord* tail = unit->GetTailCoord();
                     i32 tailX = tail->m_x;
                     i32 tailY = tail->m_y;
-                    unit->m_entrancePx.Set(
+                    unit->SetEntrancePx(
                         (tailX << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (tailY << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
@@ -3487,7 +3487,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
                 unit->AppendCoords(list);
                 Coord* tail = unit->GetTailCoord();
-                unit->m_entrancePx.Set(
+                unit->SetEntrancePx(
                     (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );

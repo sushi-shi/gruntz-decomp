@@ -269,6 +269,12 @@ public:
     Coord EntrancePx() {
         return m_entrancePx;
     }
+    void SetEntrancePx(const Coord& pixels) {
+        m_entrancePx = pixels;
+    }
+    void SetEntrancePx(i32 pixelX, i32 pixelY) {
+        m_entrancePx.Set(pixelX, pixelY);
+    }
 
     PickupType GetColorIndex() const {
         return m_colorIndex;
