@@ -4226,7 +4226,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
         if (g_gameReg->m_players[i].m_joined != false && g_gameReg->m_players[i].m_doneFlag == false
-            && g_gameReg->m_players[i].m_clearedRound == false) {
+            && g_gameReg->m_players[i].IsEliminated() == false) {
             count++;
         }
     }

@@ -259,7 +259,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         }
         band = band % 4;
         GruntzPlayer* slot = &m_ctx->m_players[band];
-        if (slot->m_clearedRound != false) {
+        if (slot->IsEliminated() != false) {
             return 1;
         }
         if (slot->m_active == false) {
@@ -269,7 +269,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         UNSET_COORD(unit->m_defenderPx);
     } else {
         GruntzPlayer* slot = &m_ctx->m_players[band];
-        if (slot->m_clearedRound != false || slot->m_active == false) {
+        if (slot->IsEliminated() != false || slot->m_active == false) {
 
             unit->RecycleCoords();
             UNSET_COORD(unit->m_arrivalCell);
