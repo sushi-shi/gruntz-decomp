@@ -1311,7 +1311,6 @@ i32 CBrickStack::BreakTopBrick(CGrunt* grunt) {
     return newCode == BRICKTILE_CLEARED;
 }
 
-// @early-stop
 RVA(0x00113420, 0x358)
 i32 CBrickStack::AddTopBrick(PickupType toolId, PlayerSlot playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {
@@ -1458,10 +1457,9 @@ i32 CBrickStack::AddTopBrick(PickupType toolId, PlayerSlot playerSlot) {
     i32* flags = m_revealedToPlayer;
     memset(flags, 0, sizeof(m_revealedToPlayer));
     if (playerSlot == PLAYER_SLOT_ALL) {
-        flags[0] = 1;
-        flags[1] = 1;
-        flags[2] = 1;
-        flags[3] = 1;
+        for (i32 player = 0; player < 4; player++) {
+            flags[player] = 1;
+        }
     } else {
         m_revealedToPlayer[IDX(playerSlot)] = 1;
     }
