@@ -13,7 +13,7 @@ public:
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) OVERRIDE;
 
     virtual void ReleaseResources() OVERRIDE;
-    virtual GameStateId Update() OVERRIDE;
+    virtual GameStateId GetStateId() OVERRIDE;
     virtual i32 Render() OVERRIDE;
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 LoadLevelWorld(i32) OVERRIDE;

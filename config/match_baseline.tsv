@@ -510,8 +510,8 @@ attractstate	?RestoreDisplay@CAttract@@UAEHXZ	100.0000	100.0000	3	170efb8fb895	0
 attractstate	?RestoreDisplay@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c4f0	100.0000	
 attractstate	?ResumeGame@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c6f0	100.0000	
 attractstate	?UnusedStateAction@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c6b0	100.0000	
-attractstate	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8cd40	100.0000	
-attractstate	?Update@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c4b0	100.0000	
+attractstate	?GetStateId@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8cd40	100.0000	
+attractstate	?GetStateId@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c4b0	100.0000	
 battlezdlgcolors	??0CBattlezDlgColors@@QAE@PAVCGruntzMgr@@HHPAVCWnd@@@Z	100.0000	100.0000	2	660709c50817	0x17930	100.0000	
 battlezdlgcolors	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	8a57267b8126	0x18030	100.0000	
 battlezdlgcolors	??_GCBattlezDlgColors@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a33260ab9b76	0x17980	100.0000	
@@ -650,8 +650,8 @@ bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	100.0000	100.0000	8	d0c36174ae0a	0x1c9d0	100.0000	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	12	67c4ec97f559	0x18f00	100.0000	
 bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	98.0597	98.0597	8	66c12d2f9ca2	0x196c0	98.0597	
-bootystateactivate	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d3f0	100.0000	
-bootystateactivate	?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d4c0	100.0000	
+bootystateactivate	?GetStateId@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d3f0	100.0000	
+bootystateactivate	?GetStateId@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d4c0	100.0000	
 bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	98.6175	98.6175	40	fca4eeee89b8	0x1b690	98.6175	
 brickz	?FindPathWithEndpointOverrides@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	90.2761	90.2761	9	6356f8a0f989	0x81e10	90.2761	
 brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	100.0000	100.0000	2	e366236958cb	0x82250	100.0000	
@@ -822,7 +822,7 @@ creditsstate	?RestoreDisplay@CCreditsState@@UAEHXZ	100.0000	100.0000	2	64fbd566d
 creditsstate	?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z	100.0000	100.0000	1	cpp:d628819a671d	0x39fa0	100.0000	
 creditsstate	?SetupTitle@CCreditsState@@QAEHXZ	99.8254	99.8254	11	ad0437fee2ed	0x39a60	99.8254	
 creditsstate	?StepVideo@CCreditsState@@QAEHXZ	100.0000	100.0000	10	f8731a32b8e9	0x39c60	100.0000	
-creditsstate	?Update@CCreditsState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d590	100.0000	
+creditsstate	?GetStateId@CCreditsState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d590	100.0000	
 cremusnode	??0CResolveNode@@QAE@XZ	100.0000	100.0000	1	0919a30dbb9e	0x1549d0	100.0000	
 cremusnode	??1CResolveNode@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x154a50	100.0000	
 cremusnode	??_GCResolveNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7080d67c2b03	0x154a30	100.0000	
@@ -2496,9 +2496,9 @@ gruntzmgr	?TryNextResolution@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	29180cad4102
 gruntzmgr	?TryPreviousResolution@CGruntzMgr@@QAEHXZ	100.0000	100.0000	8	b647d8085d62	0x8e2b0	100.0000	
 gruntzmgr	?UnusedPlayQuery@CMulti@@UAEHXZ	100.0000	100.0000	1	34aee77b66bb	0x8d200	100.0000	
 gruntzmgr	?UnusedPlayQuery@CPlay@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c930	100.0000	
-gruntzmgr	?Update@CMenuState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:84d1bc2f78e0	0x8ce10	100.0000	
-gruntzmgr	?Update@CMulti@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	b425a862c0d0	0x8d1e0	100.0000	
-gruntzmgr	?Update@CPlay@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c910	100.0000	
+gruntzmgr	?GetStateId@CMenuState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:84d1bc2f78e0	0x8ce10	100.0000	
+gruntzmgr	?GetStateId@CMulti@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	b425a862c0d0	0x8d1e0	100.0000	
+gruntzmgr	?GetStateId@CPlay@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c910	100.0000	
 gruntzmgr	?WarpCheat@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	0efa70d52bb6	0x8eaf0	100.0000	
 gruntzmgr	?WarpDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	ccc5ff2bb31f	0x8e4e0	100.0000	
 gruntzmgr	?XorLiveObjectFlags@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	11	fade50966be8	0x8dc20	100.0000	
@@ -2620,9 +2620,9 @@ helpstate	?OnLButtonDown@CHelpState@@UAEHHHH@Z	100.0000	100.0000	2	9cd75933746c	
 helpstate	?ReleaseResources@CHelpState@@UAEXXZ	100.0000	100.0000	1	f85bd4a65d97	0x95120	100.0000	
 helpstate	?Render@CHelpState@@UAEHXZ	100.0000	100.0000	17	ce41cf53dc41	0x951f0	100.0000	
 helpstate	?RestoreDisplay@CHelpState@@UAEHXZ	100.0000	100.0000	3	5d6d394618cb	0x953a0	100.0000	
-helpstate	?Update@CDemo@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	e46f1bf96ca2	0x8d080	100.0000	
-helpstate	?Update@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c6b2c3	0x8cee0	100.0000	
-helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000	
+helpstate	?GetStateId@CDemo@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	e46f1bf96ca2	0x8d080	100.0000	
+helpstate	?GetStateId@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c6b2c3	0x8cee0	100.0000	
+helpstate	?GetStateId@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000	
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	97.9091	97.9091	11	b818c7af5a6c	0x146fe0	97.9091	
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	100.0000	100.0000	4	eda648012bf1	0x1461b0	100.0000	
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	4	b9d5b85e1f17	0x145f60	79.4671	

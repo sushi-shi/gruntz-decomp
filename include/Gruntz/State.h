@@ -37,7 +37,7 @@ public:
         return m_ready;
     }
     RVA(0x0008c4b0, 0x6)
-    virtual GameStateId Update() {
+    virtual GameStateId GetStateId() {
         return GAMESTATE_BASE;
     }
     RVA(0x0008c4d0, 0x6)

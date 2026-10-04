@@ -76,7 +76,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             OpenBattlezSetup();
             // fall through to default
         default:
-            if (m_curState->Update() == GAMESTATE_PLAY) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY) {
                 CGameObject* _dr;
                 SoundCue* _cueMiniature;
                 SoundCue* _cueSpace;
@@ -526,19 +526,20 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_NO_OP80_8:
             return 1;
         case CMD_MULTI_CONNECT:
-            if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
+            if (m_curState && m_curState->GetStateId() == GAMESTATE_MULTI) {
                 static_cast<CMulti*>(m_curState)->Connect(lParam);
             }
             return 1;
         case CMD_LOAD_GAME_DIALOG:
-            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY
+                || m_curState->GetStateId() == GAMESTATE_MENU) {
                 if (!g_cdPromptResult) {
                     RunLoadGameDialog();
                 }
             }
             return 1;
         case CMD_QUICK_SAVE_PROMPT:
-            if (m_curState->Update() == GAMESTATE_PLAY) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState();
                 if (_g->CanQuickSave()) {
                     LoadSaveMessageSprite();
@@ -546,7 +547,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_QUICK_SAVE:
-            if (m_curState->Update() == GAMESTATE_PLAY) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState();
                 if (_g->CanQuickSave()) {
                     Quicksave();
@@ -554,7 +555,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_QUICK_LOAD:
-            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY
+                || m_curState->GetStateId() == GAMESTATE_MENU) {
                 if (!g_cdPromptResult) {
                     Quickload();
                 }
@@ -707,8 +709,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_DEBUG_WARP_LEVEL132:
             WARP(0x84, 0x479);
         case CMD_WEB_SITE:
-            if (m_curState->Update() == GAMESTATE_MENU
-                || m_curState->Update() == GAMESTATE_ATTRACT) {
+            if (m_curState->GetStateId() == GAMESTATE_MENU
+                || m_curState->GetStateId() == GAMESTATE_ATTRACT) {
                 while (ShowCursor(true) < 0) {
                 }
                 LaunchWebBrowser(const_cast<char*>("http://www.gruntzgoo.com/"));
@@ -779,7 +781,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_PAUSE_TOGGLE: {
-            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY
+                || m_curState->GetStateId() == GAMESTATE_MULTI) {
                 CPlay* ps = static_cast<CPlay*>(m_curState);
                 if (ps->m_waitingForStart) {
                     return 1;
@@ -800,7 +803,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         }
         case CMD_FINISH_LEVEL: {
-            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY
+                || m_curState->GetStateId() == GAMESTATE_MULTI) {
                 FinishLevel(ToggleFrameGate(), false);
             }
             return 1;
@@ -842,7 +846,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_PREV_LEVEL:
-            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
+            if (m_curState->GetStateId() == GAMESTATE_PLAY
+                || m_curState->GetStateId() == GAMESTATE_MULTI) {
                 GoToPrevLevel();
                 return 1;
             }
@@ -857,14 +862,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             DelayedQuit();
             return 1;
         case CMD_SHOW_BOOTY_STATE: {
-            if (m_curState->Update() == GAMESTATE_HELP
-                || m_curState->Update() == GAMESTATE_BOOTY_OVER_CURRENT
-                || m_curState->Update() == GAMESTATE_RESERVED_0F
-                || m_curState->Update() == GAMESTATE_SPLASH
-                || m_curState->Update() == GAMESTATE_CREDITS
-                || m_curState->Update() == GAMESTATE_BOOTY
-                || m_curState->Update() == GAMESTATE_MULTIBOOTY
-                || m_curState->Update() == GAMESTATE_MULTI) {
+            if (m_curState->GetStateId() == GAMESTATE_HELP
+                || m_curState->GetStateId() == GAMESTATE_BOOTY_OVER_CURRENT
+                || m_curState->GetStateId() == GAMESTATE_RESERVED_0F
+                || m_curState->GetStateId() == GAMESTATE_SPLASH
+                || m_curState->GetStateId() == GAMESTATE_CREDITS
+                || m_curState->GetStateId() == GAMESTATE_BOOTY
+                || m_curState->GetStateId() == GAMESTATE_MULTIBOOTY
+                || m_curState->GetStateId() == GAMESTATE_MULTI) {
                 return 1;
             }
             if (!TransitionState(GAMESTATE_HELP, 1, true, 0)) {
@@ -873,7 +878,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         }
         case CMD_CONFIG_SETTINGS: {
-            GameStateId st = m_curState->Update();
+            GameStateId st = m_curState->GetStateId();
             CMenuState* mus;
             if (st == GAMESTATE_MENU) {
                 mus = static_cast<CMenuState*>(m_curState);
@@ -896,8 +901,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             b32 enabled = m_musicEnabled;
             b32 isPlayState = CheckPlayState();
             if (!isPlayState) {
-                if (m_curState->Update() != GAMESTATE_CREDITS_OVER_CURRENT
-                    && m_curState->Update() != GAMESTATE_MENU) {
+                if (m_curState->GetStateId() != GAMESTATE_CREDITS_OVER_CURRENT
+                    && m_curState->GetStateId() != GAMESTATE_MENU) {
                     return 1;
                 }
             }

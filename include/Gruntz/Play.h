@@ -74,7 +74,7 @@ public:
     virtual ~CPlay() OVERRIDE;
 
     RVA(0x0008c910, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_PLAY;
     }
     virtual i32 Render() OVERRIDE;

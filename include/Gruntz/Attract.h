@@ -21,7 +21,7 @@ public:
     virtual void ReleaseResources() OVERRIDE;
 
     RVA(0x0008cd40, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_ATTRACT;
     }
     virtual i32 Render() OVERRIDE;

@@ -947,7 +947,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
     TRACE("TransitionState %d\n", stateId);
     GameStateId previousState = GAMESTATE_NONE;
     if (m_curState != NULL) {
-        previousState = m_curState->Update();
+        previousState = m_curState->GetStateId();
         i32 savedSub = m_curState->m_levelIndex;
         m_curState->LeaveState(stateId);
         if (keepCurrent != false) {
@@ -1065,7 +1065,7 @@ CDemo::~CDemo() {
 }
 
 RVA(0x0008d1e0, 0x6)
-GameStateId CMulti::Update() {
+GameStateId CMulti::GetStateId() {
     return GAMESTATE_MULTI;
 }
 
@@ -1095,8 +1095,8 @@ i32 CGruntzMgr::SwitchToNextState() {
     }
     GameStateId oldId = GAMESTATE_NONE;
     if (m_curState) {
-        oldId = m_curState->Update();
-        m_curState->LeaveState(next->Update());
+        oldId = m_curState->GetStateId();
+        m_curState->LeaveState(next->GetStateId());
         if (m_curState) {
             delete m_curState;
         }
@@ -1115,19 +1115,19 @@ i32 CGruntzMgr::SwitchToNextState() {
 RVA(0x0008d780, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused) {
     b32 inPlay = false;
-    if (m_curState->Update() == GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY) {
         inPlay = true;
     }
-    if (m_curState->Update() == GAMESTATE_MULTI) {
+    if (m_curState->GetStateId() == GAMESTATE_MULTI) {
         inPlay = true;
     }
     if (inPlay && forceTransition == false) {
         CState* st = m_curState;
-        m_curState->LeaveState(m_curState->Update());
+        m_curState->LeaveState(m_curState->GetStateId());
         if (static_cast<CPlay*>(st)->LoadByMode(areaArg, unused) == 0) {
             return 0;
         }
-        m_curState->EnterState(m_curState->Update());
+        m_curState->EnterState(m_curState->GetStateId());
         return 1;
     }
     return TransitionState(GAMESTATE_PLAY, areaArg, false, 0);
@@ -1135,7 +1135,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unuse
 
 RVA(0x0008d850, 0x83)
 i32 CGruntzMgr::GoToNextLevel() {
-    if (m_curState->Update() != GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY) {
         return 0;
     }
     m_strWorldFile.Empty();
@@ -1145,9 +1145,9 @@ i32 CGruntzMgr::GoToNextLevel() {
         next = IDX(QUESTLEVEL_FIRST);
     }
     if (next <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || next >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
-        st->LeaveState(st->Update());
+        st->LeaveState(st->GetStateId());
         if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
-            st->EnterState(st->Update());
+            st->EnterState(st->GetStateId());
             return 1;
         }
     }
@@ -1157,7 +1157,7 @@ i32 CGruntzMgr::GoToNextLevel() {
 
 RVA(0x0008d910, 0x82)
 i32 CGruntzMgr::GoToPrevLevel() {
-    if (m_curState->Update() != GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY) {
         return 0;
     }
     m_strWorldFile.Empty();
@@ -1167,9 +1167,9 @@ i32 CGruntzMgr::GoToPrevLevel() {
         prev = IDX(QUESTLEVEL_TRAINING_LAST);
     }
     if (prev <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || prev >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
-        st->LeaveState(st->Update());
+        st->LeaveState(st->GetStateId());
         if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
-            st->EnterState(st->Update());
+            st->EnterState(st->GetStateId());
             return 1;
         }
     }
@@ -1354,7 +1354,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     if (m_world == NULL) {
         return 0;
     }
-    if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY || m_curState->GetStateId() == GAMESTATE_MULTI) {
         if (m_world->GetLevel() != NULL) {
             CDDrawWorkerHost* f = m_world->GetLevel()->m_mainPlane;
             if (f != NULL) {
@@ -1394,7 +1394,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     while (ShowCursor(false) >= 0) {
     }
     SET_SIZE_COMPONENTS(m_modeSize, w, h);
-    if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY || m_curState->GetStateId() == GAMESTATE_MULTI) {
         if (saveMode) {
             SET_SIZE_COMPONENTS(m_savedModeSize, w, h);
         }
@@ -1425,7 +1425,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
 
 RVA(0x0008e1d0, 0xa5)
 i32 CGruntzMgr::TryNextResolution() {
-    if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY && m_curState->GetStateId() != GAMESTATE_MULTI) {
         return 1;
     }
     DisplayResolution resolution;
@@ -1448,7 +1448,7 @@ i32 CGruntzMgr::TryNextResolution() {
 
 RVA(0x0008e2b0, 0xb1)
 i32 CGruntzMgr::TryPreviousResolution() {
-    if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY && m_curState->GetStateId() != GAMESTATE_MULTI) {
         return 1;
     }
     DisplayResolution resolution;
@@ -1490,7 +1490,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
 RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
-    if (m_curState->Update() == GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY) {
         r = RunModalDialog("DEBUG_POSITION", WarpDialogProc, true);
         if (r == 1) {
             HWND hwnd = m_gameWnd->GetHwnd();
@@ -1589,7 +1589,7 @@ BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
-    if (m_curState->Update() == GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY) {
         RunModalDialog("DEBUG_SETSKILL", SetSkillLevelDialogProc, true);
     }
     return 0;
@@ -1617,7 +1617,7 @@ BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM
 
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
-    if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
+    if (m_curState && m_curState->GetStateId() == GAMESTATE_MULTI) {
 
         i32 activePlayers = 0;
         CNetCmdSlot* slot = static_cast<CMulti*>(m_curState)->Session()->m_slots;
@@ -1682,7 +1682,7 @@ i32 CGruntzMgr::WarpCheat() {
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
     i32 wy = m_settings->Get(key, -1);
     if (wx != -1 && wy != -1) {
-        if (m_curState->Update() != GAMESTATE_PLAY) {
+        if (m_curState->GetStateId() != GAMESTATE_PLAY) {
             i32 last = m_settings->Get("Last Warp Level", -1);
             if (last != -1) {
                 if (!PassClickToPlayState(last, false, 1)) {
@@ -1705,10 +1705,10 @@ i32 CGruntzMgr::CheckPlayState() {
     if (m_curState == NULL) {
         return 0;
     }
-    if (m_curState->Update() == GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY) {
         return 1;
     }
-    return m_curState->Update() == GAMESTATE_MULTI;
+    return m_curState->GetStateId() == GAMESTATE_MULTI;
 }
 
 RVA(0x0008eca0, 0x164)
@@ -1925,7 +1925,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f2f0, 0x1b)
 i32 CGruntzMgr::PollUnlessIdle() {
-    if (m_curState->Update() != GAMESTATE_MENU) {
+    if (m_curState->GetStateId() != GAMESTATE_MENU) {
         CheckPlayState();
     }
     return 0;
@@ -1941,7 +1941,7 @@ i32 CGruntzMgr::RejectWorldFileCommand() {
 
 RVA(0x0008f340, 0xf6)
 i32 CGruntzMgr::CaptureWorldFile() {
-    GameStateId st = m_curState->Update();
+    GameStateId st = m_curState->GetStateId();
     if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY
         && st != GAMESTATE_DEMO) {
         return 0;
@@ -1961,7 +1961,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f480, 0x49)
 i32 CGruntzMgr::ClearWorldFile() {
-    GameStateId mode = m_curState->Update();
+    GameStateId mode = m_curState->GetStateId();
     if (mode == GAMESTATE_MENU || mode == GAMESTATE_ATTRACT || mode == GAMESTATE_PLAY) {
         m_strWorldFile.Empty();
         PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEW_GAME), 0);
@@ -2010,7 +2010,7 @@ void CGruntzMgr::DelayedQuit() {
 
 RVA(0x0008f620, 0x51)
 void CGruntzMgr::RefreshGameClock() {
-    if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
+    if (m_curState && m_curState->GetStateId() == GAMESTATE_MULTI) {
         return;
     }
 
@@ -2040,7 +2040,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
             return;
         }
         if (CheckPlayState() == 0
-            && (m_curState == NULL || m_curState->Update() != GAMESTATE_CREDITS)) {
+            && (m_curState == NULL || m_curState->GetStateId() != GAMESTATE_CREDITS)) {
             return;
         }
         m_midi->ResumeCurrent(1);
@@ -2323,7 +2323,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
         m_triggerMgr->DestroyAllAnims();
     }
     if (m_world) {
-        if (notify && m_curState && m_curState->Update() != GAMESTATE_MENU) {
+        if (notify && m_curState && m_curState->GetStateId() != GAMESTATE_MENU) {
             m_curState->Present(0x32);
         } else {
             notify = false;
@@ -2371,7 +2371,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
         m_triggerMgr->DestroyAllAnims();
     }
     if (m_world) {
-        if (notify && m_curState && m_curState->Update() != GAMESTATE_MENU) {
+        if (notify && m_curState && m_curState->GetStateId() != GAMESTATE_MENU) {
             m_curState->Present(0x32);
         } else {
             notify = false;
@@ -2603,7 +2603,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     if (m_curState == NULL) {
         return 0;
     }
-    if (m_curState->Update() != GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY) {
         return 0;
     }
     if (m_world == NULL) {
@@ -2671,7 +2671,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_curState == NULL) {
         return 0;
     }
-    if (m_curState->Update() != GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY) {
         return 0;
     }
     if (m_world == NULL) {
@@ -2751,7 +2751,7 @@ i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
-    if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
+    if (m_curState && m_curState->GetStateId() == GAMESTATE_PLAY && m_world) {
 
         CDDrawWorker* set;
         {
@@ -2783,7 +2783,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
-    if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
+    if (m_curState && m_curState->GetStateId() == GAMESTATE_PLAY && m_world) {
 
         CDDrawWorker* set;
         {
@@ -3054,7 +3054,7 @@ i32 CGruntzMgr::ResetWorldState() {
     if (st == NULL) {
         return 1;
     }
-    GameStateId stateId = st->Update();
+    GameStateId stateId = st->GetStateId();
     if (stateId != GAMESTATE_MENU && stateId != GAMESTATE_ATTRACT) {
         return 1;
     }
@@ -3284,7 +3284,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_saveGame == NULL) {
         return 0;
     }
-    if (m_curState->Update() != GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() != GAMESTATE_PLAY) {
         return 0;
     }
     if (CheatMgr()->HasUsedCheats() != false) {
@@ -3357,12 +3357,12 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
 
 RVA(0x00092900, 0x6e)
 CState* CGruntzMgr::FindStateById(GameStateId id) {
-    if (m_curState && m_curState->Update() == id) {
+    if (m_curState && m_curState->GetStateId() == id) {
         return m_curState;
     }
     for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
         CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
-        if (s && s->Update() == id) {
+        if (s && s->GetStateId() == id) {
             return s;
         }
     }
@@ -3388,7 +3388,7 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
 RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
-    if (m_curState->Update() == GAMESTATE_PLAY) {
+    if (m_curState->GetStateId() == GAMESTATE_PLAY) {
         ran = RunModalDialog("DEBUG_GRUNTTYPE", DebugGruntTypeDialogProc, true);
     }
     return ran != 0;
@@ -3539,7 +3539,7 @@ void CGruntzMgr::DeactivateAllPlayers() {
 RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::OpenBattlezSetup() {
     CBattlezDlg dlg(this, NULL);
-    GameStateId st = m_curState->Update();
+    GameStateId st = m_curState->GetStateId();
     if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY
         && st != GAMESTATE_DEMO) {
         return 0;

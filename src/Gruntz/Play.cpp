@@ -951,7 +951,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    b32 modeFlag = Update() == GAMESTATE_MULTI;
+    b32 modeFlag = GetStateId() == GAMESTATE_MULTI;
     CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : NULL;
     self->m_initialFramePending = true;
     self->m_levelIndex = level;
@@ -3324,7 +3324,7 @@ i32 CPlay::DrawStateMessage() {
     }
 
     i32 index = 3;
-    if (Update() == GAMESTATE_DEMO) {
+    if (GetStateId() == GAMESTATE_DEMO) {
         index = 4;
     }
     CImage* frame = set->GetAt(index);

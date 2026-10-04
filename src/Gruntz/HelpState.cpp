@@ -31,7 +31,7 @@ DATA(0x002111b0)
 char g_titleBuf[] = "HELP";
 
 RVA(0x0008cee0, 0x6)
-GameStateId CHelpState::Update() {
+GameStateId CHelpState::GetStateId() {
     return GAMESTATE_HELP;
 }
 
@@ -41,7 +41,7 @@ CHelpState::~CHelpState() {
 }
 
 RVA(0x0008cfb0, 0x6)
-GameStateId CSplashState::Update() {
+GameStateId CSplashState::GetStateId() {
     return GAMESTATE_SPLASH;
 }
 
@@ -51,7 +51,7 @@ CSplashState::~CSplashState() {
 }
 
 RVA(0x0008d080, 0x6)
-GameStateId CDemo::Update() {
+GameStateId CDemo::GetStateId() {
     return GAMESTATE_DEMO;
 }
 

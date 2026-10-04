@@ -49,7 +49,7 @@ public:
 
     virtual ~CMenuState() OVERRIDE;
     RVA(0x0008ce10, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_MENU;
     }
     virtual i32 Render() OVERRIDE;
@@ -91,7 +91,7 @@ public:
     virtual ~CCreditsState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
     RVA(0x0008d590, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_CREDITS;
     }
     virtual i32 Render() OVERRIDE;
@@ -161,7 +161,7 @@ public:
     virtual ~CBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
     RVA(0x0008d3f0, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_BOOTY;
     }
     virtual i32 Render() OVERRIDE;
@@ -246,7 +246,7 @@ public:
     virtual ~CMultiBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
     RVA(0x0008d4c0, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_MULTIBOOTY;
     }
     virtual i32 Render() OVERRIDE;

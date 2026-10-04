@@ -43,7 +43,7 @@ i32 CGruntzMgr::PerFrameTick() {
 
     CGameMgrBase::PerFrameTick();
 
-    GameStateId r = m_curState->Update();
+    GameStateId r = m_curState->GetStateId();
     if (r != GAMESTATE_MULTI) {
         u32 dt = g_gameAppFrameDeltaMs;
         g_lastNow = g_gameAppNowMs;
