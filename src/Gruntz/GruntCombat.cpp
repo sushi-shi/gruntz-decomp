@@ -555,7 +555,7 @@ i32 CGrunt::TryDropToolAtCurrentTile() {
     if ((cellFlags & BRICKZ_BLOCKED_MASK) || (cellFlags & IDX(CELL_FLAG_SPECIAL))) {
         return 0;
     }
-    m_triggerMgr->SpawnPowerupIcon(toolType, centerX, centerY, 0, 1, 0);
+    m_triggerMgr->SpawnPickup(toolType, centerX, centerY, 0, 1, 0);
     return 1;
 }
 

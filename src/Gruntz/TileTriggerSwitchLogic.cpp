@@ -757,7 +757,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(cx, cy, m_tileX, m_tileY)
     g_gameReg->GetTriggerMgr()
-        ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
+        ->SpawnPickup(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
         CGameObject* txt = g_gameReg->World()->ChildGroup()->CreateSprite(
@@ -822,7 +822,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     CGruntzMgr* reg = g_gameReg;
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     reg->GetTriggerMgr()
-        ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
+        ->SpawnPickup(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
         CGruntzMgr* registry = g_gameReg;
         CGameObject* rec =

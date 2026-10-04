@@ -4335,7 +4335,7 @@ triggermgr	?SelectUnitsInRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	16	
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	6	fcf8a17d0382	0x7a5e0	100.0000	
 triggermgr	?SetRandomGruntColors@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	8	32cede408613	0x7c2e0	100.0000	
 triggermgr	?SpawnExplosion@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	8	270c077f7dfa	0x7b330	100.0000	
-triggermgr	?SpawnPowerupIcon@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	20	96aab9c1ed9e	0x7c620	100.0000	
+triggermgr	?SpawnPickup@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	20	96aab9c1ed9e	0x7c620	100.0000	
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	15	4a47ac68c8ca	0x7a180	100.0000	
 triggermgr	?SpawnToyBox@CTriggerMgr@@QAEHHHHW4PickupType@@H@Z	100.0000	100.0000	15	42bb4fbcd5c3	0x7a3f0	100.0000	
 triggermgr	?StartPlayerDefeatSequence@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	14	2428ca69b027	0x7a510	100.0000	

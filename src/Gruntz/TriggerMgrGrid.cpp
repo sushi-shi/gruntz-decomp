@@ -1173,7 +1173,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 if ((flags & 0x40939) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
                     return 0;
                 }
-                SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
+                SpawnPickup(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
                 cell->FaceTowardPixel(bx, by);
                 if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
                     RESET_GRUNT_COMBAT_STATE(cell)

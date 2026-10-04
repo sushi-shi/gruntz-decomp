@@ -965,7 +965,7 @@ i32 CTriggerMgr::DropBattlezWarpStone(i32 x, i32 y, i32 anchorIndex) {
     i32 ty = y >> TILE_SHIFT_PX;
     i32 tile = grid->CellFlagsAt(tx, ty);
     if ((tile & 0x40939) == 0 && (tile & IDX(CELL_FLAG_SPECIAL)) == 0) {
-        this->SpawnPowerupIcon(
+        this->SpawnPickup(
             PICKUP_WARPSTONE,
             (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
             (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -978,7 +978,7 @@ i32 CTriggerMgr::DropBattlezWarpStone(i32 x, i32 y, i32 anchorIndex) {
         i32 idx = anchorIndex - 1;
         CPlay::Anchor* rec = (idx < 0 || idx >= 4) ? NULL : &world->m_anchors[idx];
         if (rec != NULL) {
-            this->SpawnPowerupIcon(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
+            this->SpawnPickup(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
         }
     }
     return 1;
@@ -2035,208 +2035,208 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
 }
 
 RVA(0x0007c620, 0x500)
-i32 CTriggerMgr::SpawnPowerupIcon(
-    PickupType type,
+i32 CTriggerMgr::SpawnPickup(
+    PickupType pickupType,
     i32 x,
     i32 y,
     i32 faceDirection,
     i32 warpstoneVariant,
     i32 damage
 ) {
-    if (type == PICKUP_NONE) {
+    if (pickupType == PICKUP_NONE) {
         return 0;
     }
 
-    CString name;
-    switch (type) {
+    CString imageSetName;
+    switch (pickupType) {
         case PICKUP_BOMB:
-            name = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
             break;
         case PICKUP_BOOMERANG:
-            name = "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ";
             break;
         case PICKUP_BRICK:
-            name = "GAME_INGAMEICONZ_TOOLZ_BRICKZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_BRICKZ";
             break;
         case PICKUP_CLUB:
-            name = "GAME_INGAMEICONZ_TOOLZ_CLUBZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_CLUBZ";
             break;
         case PICKUP_GAUNTLETZ:
-            name = "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ";
             break;
         case PICKUP_GLOVEZ:
-            name = "GAME_INGAMEICONZ_TOOLZ_GLOVEZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_GLOVEZ";
             break;
         case PICKUP_GOOBER:
-            name = "GAME_INGAMEICONZ_TOOLZ_GOOBERZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_GOOBERZ";
             break;
         case PICKUP_GRAVITYBOOTZ:
-            name = "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ";
             break;
         case PICKUP_GUNHAT:
-            name = "GAME_INGAMEICONZ_TOOLZ_GUNHATZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_GUNHATZ";
             break;
         case PICKUP_NERFGUN:
-            name = "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ";
             break;
         case PICKUP_ROCK:
-            name = "GAME_INGAMEICONZ_TOOLZ_ROCKZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_ROCKZ";
             break;
         case PICKUP_SHIELD:
-            name = "GAME_INGAMEICONZ_TOOLZ_SHIELDZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_SHIELDZ";
             break;
         case PICKUP_SHOVEL:
-            name = "GAME_INGAMEICONZ_TOOLZ_SHOVELZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_SHOVELZ";
             break;
         case PICKUP_SPRING:
-            name = "GAME_INGAMEICONZ_TOOLZ_SPRINGZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_SPRINGZ";
             break;
         case PICKUP_SPY:
-            name = "GAME_INGAMEICONZ_TOOLZ_SPYZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_SPYZ";
             break;
         case PICKUP_SWORD:
-            name = "GAME_INGAMEICONZ_TOOLZ_SWORDZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_SWORDZ";
             break;
         case PICKUP_TIMEBOMB:
-            name = "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ";
             break;
         case PICKUP_TOOB:
-            name = "GAME_INGAMEICONZ_TOOLZ_TOOBZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_TOOBZ";
             break;
         case PICKUP_WAND:
-            name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
         case PICKUP_WARPSTONE:
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
 
-                CState* st = g_gameReg->m_curState;
-                CString lvl;
-                lvl.Format("Level%i", st->m_levelIndex);
-                name.Format(
+                CState* state = g_gameReg->m_curState;
+                CString levelKey;
+                levelKey.Format("Level%i", state->m_levelIndex);
+                imageSetName.Format(
                     "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
-                    g_buteMgr.GetInt("WarpStone", static_cast<const char*>(lvl))
+                    g_buteMgr.GetInt("WarpStone", static_cast<const char*>(levelKey))
                 );
             } else {
-                name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpstoneVariant);
+                imageSetName.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpstoneVariant);
             }
             break;
         case PICKUP_WELDER:
-            name = "GAME_INGAMEICONZ_TOOLZ_WELDERZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_WELDERZ";
             break;
         case PICKUP_WINGZ:
-            name = "GAME_INGAMEICONZ_TOOLZ_WINGZ";
+            imageSetName = "GAME_INGAMEICONZ_TOOLZ_WINGZ";
             break;
         case PICKUP_BABYWALKER:
-            name = "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ";
             break;
         case PICKUP_BEACHBALL:
-            name = "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ";
             break;
         case PICKUP_BIGWHEEL:
-            name = "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ";
             break;
         case PICKUP_GOKART:
-            name = "GAME_INGAMEICONZ_TOYZ_GOKARTZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_GOKARTZ";
             break;
         case PICKUP_JACKINTHEBOX:
-            name = "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ";
             break;
         case PICKUP_JUMPROPE:
-            name = "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ";
             break;
         case PICKUP_POGOSTICK:
-            name = "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ";
             break;
         case PICKUP_SCROLL:
-            name = "GAME_INGAMEICONZ_TOYZ_SCROLLZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_SCROLLZ";
             break;
         case PICKUP_SQUEAKTOY:
-            name = "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ";
             break;
         case PICKUP_YOYO:
-            name = "GAME_INGAMEICONZ_TOYZ_YOYOZ";
+            imageSetName = "GAME_INGAMEICONZ_TOYZ_YOYOZ";
             break;
         case PICKUP_MEGAPHONE:
-            name = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
             break;
         case PICKUP_HEALTH1:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
             break;
         case PICKUP_HEALTH2:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
             break;
         case PICKUP_HEALTH3:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
             break;
         case PICKUP_CONVERSION:
-            name = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
             break;
         case PICKUP_DEATHTOUCH:
-            name = "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH";
             break;
         case PICKUP_GHOST:
-            name = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
             break;
         case PICKUP_INVULNERABILITY:
-            name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
             break;
         case PICKUP_REACTIVEARMOR:
-            name = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
             break;
         case PICKUP_ROIDZ:
-            name = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
             break;
         case PICKUP_SUPERSPEED:
-            name = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
             break;
         case PICKUP_W:
-            name = "GAME_INGAMEICONZ_SECRETW";
+            imageSetName = "GAME_INGAMEICONZ_SECRETW";
             break;
         case PICKUP_A:
-            name = "GAME_INGAMEICONZ_SECRETA";
+            imageSetName = "GAME_INGAMEICONZ_SECRETA";
             break;
         case PICKUP_R:
-            name = "GAME_INGAMEICONZ_SECRETR";
+            imageSetName = "GAME_INGAMEICONZ_SECRETR";
             break;
         case PICKUP_P:
-            name = "GAME_INGAMEICONZ_SECRETP";
+            imageSetName = "GAME_INGAMEICONZ_SECRETP";
             break;
         case PICKUP_STOPWATCH:
-            name = "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH";
             break;
         case PICKUP_COIN:
-            name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
+            imageSetName = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
         case PICKUP_COVEREDTIMEBOMB: {
-            CGameObject* tb =
+            CGameObject* timeBomb =
                 g_gameReg->World()
                     ->ChildGroup()
                     ->CreateSprite(0, x, y, 0xf, "TimeBomb", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
-            if (tb) {
-                tb->SetDamage(g_buteMgr.GetDword("Powerupz", "CoveredTimeBombTime", 0x7d0));
+            if (timeBomb) {
+                timeBomb->SetDamage(g_buteMgr.GetDword("Powerupz", "CoveredTimeBombTime", 0x7d0));
             }
-            return tb != NULL;
+            return timeBomb != NULL;
         }
         default:
             return 0;
     }
 
-    CWwdSpriteObject* spr =
+    CWwdSpriteObject* pickup =
         g_gameReg->World()
             ->ChildGroup()
             ->CreateSprite(0, x, y, 0x17318, "InGameIcon", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
-    if (!spr) {
+    if (!pickup) {
         return 0;
     }
-    spr->SetImageSetByName(name);
-    spr->SetDamage(damage);
-    spr->SetScore(0);
-    spr->SetPoints(0);
-    spr->SetSmarts(0);
-    spr->SetPowerup(0);
-    spr->SetHealth(0);
-    spr->m_direction = 0;
-    spr->m_faceDirection = faceDirection;
+    pickup->SetImageSetByName(imageSetName);
+    pickup->SetDamage(damage);
+    pickup->SetScore(0);
+    pickup->SetPoints(0);
+    pickup->SetSmarts(0);
+    pickup->SetPowerup(0);
+    pickup->SetHealth(0);
+    pickup->m_direction = 0;
+    pickup->m_faceDirection = faceDirection;
     return 1;
 }
 
