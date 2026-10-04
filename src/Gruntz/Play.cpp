@@ -423,7 +423,7 @@ i32 CPlay::Render() {
         return 1;
     }
 
-    if (m_inGame != false) {
+    if (m_waitingForStart != false) {
 
         RestoreCursorSaveUnder();
         LoadScrollSpeedOptions();
@@ -600,7 +600,7 @@ i32 CPlay::Render() {
         DrawDebugStats();
         m_mgr->m_triggerMgr->RenderActionOptionsMenu();
 
-        if (m_winLoseBanner != false && m_statusBar->m_levelOverlayActive == false
+        if (m_levelTimeExpired != false && m_statusBar->m_levelOverlayActive == false
             && m_statusBar->m_quitConfirmationActive == false) {
 
             if (m_messageBlinkTimer.Expired()) {
@@ -661,7 +661,7 @@ i32 CPlay::Render() {
             stream->TickVolumeRamps(t);
             stream->TickStreams(t);
         }
-        if (m_paused != false) {
+        if (m_helpMessageActive != false) {
 
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
@@ -1397,7 +1397,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER
             && gameReg->IsLoadingSaveGame() == false) {
             CString scr;
-            self->m_inGame = true;
+            self->m_waitingForStart = true;
             self->m_hudSuppressed = false;
             RECT rect;
             SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
@@ -1410,9 +1410,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         self->m_scrollEdgeLock = 0;
         self->m_levelOverlayOpen = false;
-        self->m_paused = false;
+        self->m_helpMessageActive = false;
         self->m_playerCommandPending = false;
-        self->m_winLoseBanner = false;
+        self->m_levelTimeExpired = false;
         self->m_messageBlinkTimer.Start(0x1f4);
         self->m_messageBlinkVisible = true;
         self->m_messageText = "";
@@ -1633,18 +1633,18 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
         m_renderDisabled = false;
         m_hudSuppressed = true;
         EnterMode(GAMESTATE_PLAY);
-        m_inGame = true;
+        m_waitingForStart = true;
         return 1;
     }
-    if (m_inGame != false) {
+    if (m_waitingForStart != false) {
 
-        if (ResetPlayState() == 0) {
+        if (StartLevelPlay() == 0) {
             m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x456);
         }
         return 1;
     }
-    if (m_paused != false) {
-        m_paused = false;
+    if (m_helpMessageActive != false) {
+        m_helpMessageActive = false;
         PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
@@ -1688,10 +1688,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_renderDisabled != false) {
         return 1;
     }
-    if (this->m_inGame != false) {
+    if (this->m_waitingForStart != false) {
         return 1;
     }
-    if (this->m_paused != false) {
+    if (this->m_helpMessageActive != false) {
         return 1;
     }
     if (this->m_mgr->GetFrameGate() != false) {
@@ -2494,18 +2494,18 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         m_hudSuppressed = true;
         m_renderDisabled = false;
         EnterMode(GAMESTATE_PLAY);
-        m_inGame = true;
+        m_waitingForStart = true;
         return 1;
     }
-    if (m_inGame != false) {
-        if (ResetPlayState()) {
+    if (m_waitingForStart != false) {
+        if (StartLevelPlay()) {
             goto ret1;
         }
         m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x457);
         return 1;
     }
-    if (m_paused != false) {
-        m_paused = false;
+    if (m_helpMessageActive != false) {
+        m_helpMessageActive = false;
         PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
@@ -2889,18 +2889,18 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         m_hudSuppressed = true;
         m_renderDisabled = false;
         EnterMode(GAMESTATE_PLAY);
-        m_inGame = true;
+        m_waitingForStart = true;
         return 1;
     }
-    if (m_inGame != false) {
-        if (ResetPlayState()) {
+    if (m_waitingForStart != false) {
+        if (StartLevelPlay()) {
             return 1;
         }
         m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x458);
         return 1;
     }
-    if (m_paused != false) {
-        m_paused = false;
+    if (m_helpMessageActive != false) {
+        m_helpMessageActive = false;
         PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
@@ -2988,7 +2988,7 @@ i32 CPlay::ForwardReady() {
 RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
     CancelCursorAction();
-    if (m_paused) {
+    if (m_helpMessageActive) {
         m_statusBar->BuildGameTabResumeButton(false);
     } else {
         m_statusBar->BuildGameTabResumeButton(true);
@@ -3003,7 +3003,7 @@ RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
     m_statusBar->BuildGameTabPauseButton();
     g_frameTime = m_savedClock;
-    m_paused = false;
+    m_helpMessageActive = false;
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
     }
@@ -3773,10 +3773,10 @@ RVA(0x000d0db0, 0x347)
 i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 
     LevelCoordRect box;
-    if (m_inGame != false) {
+    if (m_waitingForStart != false) {
         return 1;
     }
-    if (m_paused != false) {
+    if (m_helpMessageActive != false) {
         return 1;
     }
     if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
@@ -3824,8 +3824,9 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             return 1;
         }
 
-        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->GetFrameGate() == false && m_inGame == false
-            && m_gruntPlacementActive == false && m_pickupPlacementActive == false) {
+        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->GetFrameGate() == false
+            && m_waitingForStart == false && m_gruntPlacementActive == false
+            && m_pickupPlacementActive == false) {
 
             if (m_cursorId != 0) {
                 if (m_cursorSnapSprite != NULL) {
@@ -5422,7 +5423,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 }
 
 RVA(0x000d60b0, 0x2cd)
-i32 CPlay::ResetPlayState() {
+i32 CPlay::StartLevelPlay() {
     char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
@@ -5474,14 +5475,14 @@ i32 CPlay::ResetPlayState() {
     if (m_cursorSnapSprite != NULL) {
         m_cursorSnapSprite->Show();
     }
-    m_inGame = false;
+    m_waitingForStart = false;
     if (!PlaceStartGruntz()) {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
         g_gameReg->GetPlayer(i).GetBattlezConfig()->StepAllRowSpawns();
     }
-    m_winLoseBanner = false;
+    m_levelTimeExpired = false;
     CLevelTimer* fm = m_levelTimer;
     if (fm != NULL) {
         fm->Start();
@@ -5906,7 +5907,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
 
 RVA(0x000d7220, 0x7b)
 i32 CPlay::ShowHelpMessage(i32 messageId) {
-    if (m_paused) {
+    if (m_helpMessageActive) {
         return 0;
     }
     if (!m_messageText.LoadStringA(messageId)) {
@@ -5914,7 +5915,7 @@ i32 CPlay::ShowHelpMessage(i32 messageId) {
     }
     m_lastMessageId = messageId;
     m_stepCountdown = 2;
-    m_paused = true;
+    m_helpMessageActive = true;
 
     PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_cursorSnapSprite) {
@@ -6146,12 +6147,12 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 
     s->Write(&m_cursorAnimationActive, sizeof(m_cursorAnimationActive));
     s->Write(&m_renderDisabled, sizeof(m_renderDisabled));
-    s->Write(&m_winLoseBanner, sizeof(m_winLoseBanner));
+    s->Write(&m_levelTimeExpired, sizeof(m_levelTimeExpired));
     s->Write(&m_initialFramePending, sizeof(m_initialFramePending));
     s->Write(&m_hudSuppressed, sizeof(m_hudSuppressed));
-    s->Write(&m_inGame, sizeof(m_inGame));
+    s->Write(&m_waitingForStart, sizeof(m_waitingForStart));
     s->Write(&m_levelOverlayOpen, sizeof(m_levelOverlayOpen));
-    s->Write(&m_paused, sizeof(m_paused));
+    s->Write(&m_helpMessageActive, sizeof(m_helpMessageActive));
     s->Write(&m_playerCommandPending, sizeof(m_playerCommandPending));
     s->Write(&m_cursorTargetValid, sizeof(m_cursorTargetValid));
     s->Write(&m_drewThisFrame, sizeof(m_drewThisFrame));
@@ -6283,12 +6284,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
     ar->Read(&m_cursorAnimationActive, sizeof(m_cursorAnimationActive));
     ar->Read(&m_renderDisabled, sizeof(m_renderDisabled));
-    ar->Read(&m_winLoseBanner, sizeof(m_winLoseBanner));
+    ar->Read(&m_levelTimeExpired, sizeof(m_levelTimeExpired));
     ar->Read(&m_initialFramePending, sizeof(m_initialFramePending));
     ar->Read(&m_hudSuppressed, sizeof(m_hudSuppressed));
-    ar->Read(&m_inGame, sizeof(m_inGame));
+    ar->Read(&m_waitingForStart, sizeof(m_waitingForStart));
     ar->Read(&m_levelOverlayOpen, sizeof(m_levelOverlayOpen));
-    ar->Read(&m_paused, sizeof(m_paused));
+    ar->Read(&m_helpMessageActive, sizeof(m_helpMessageActive));
     ar->Read(&m_playerCommandPending, sizeof(m_playerCommandPending));
     ar->Read(&m_cursorTargetValid, sizeof(m_cursorTargetValid));
     ar->Read(&m_drewThisFrame, sizeof(m_drewThisFrame));
@@ -6968,7 +6969,7 @@ i32 CPlay::CancelCursorAction() {
 
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
-    if (m_renderDisabled == false && m_inGame == false && m_levelOverlayOpen == false
+    if (m_renderDisabled == false && m_waitingForStart == false && m_levelOverlayOpen == false
         && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == false
         && m_statusBar->m_levelOverlayActive == false
         && m_statusBar->m_quitConfirmationActive == false && g_gameReg->GetFrameGate() == false

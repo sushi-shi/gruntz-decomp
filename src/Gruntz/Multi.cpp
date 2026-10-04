@@ -480,7 +480,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             e->GetBattlezConfig()->Clear();
         }
     }
-    ResetPlayState();
+    StartLevelPlay();
     srand(m_rngSeed);
     g_frameDelta = 0;
     g_lastNow = 0;

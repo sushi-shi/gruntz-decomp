@@ -277,7 +277,7 @@ public:
     i32 LoadGruntAnimationNamespaces(CMulti* multiplayerSession);
 
     i32 EnterMode(GameStateId mode);
-    i32 ResetPlayState();
+    i32 StartLevelPlay();
 
     i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY);
 
@@ -390,10 +390,10 @@ public:
     b32 m_cursorAnimationActive;
     b32 m_renderDisabled;
     b32 m_playerCommandPending;
-    b32 m_winLoseBanner;
-    b32 m_inGame;
+    b32 m_levelTimeExpired;
+    b32 m_waitingForStart;
     b32 m_levelOverlayOpen;
-    b32 m_paused;
+    b32 m_helpMessageActive;
     b32 m_cursorTargetValid;
     i32 m_lastScrollTimeX;
     i32 m_lastScrollTimeY;

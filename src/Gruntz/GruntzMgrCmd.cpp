@@ -781,7 +781,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_PAUSE_TOGGLE: {
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
                 CPlay* ps = static_cast<CPlay*>(m_curState);
-                if (ps->m_inGame) {
+                if (ps->m_waitingForStart) {
                     return 1;
                 }
                 if (ps->m_renderDisabled) {

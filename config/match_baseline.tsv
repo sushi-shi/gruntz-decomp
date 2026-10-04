@@ -3456,7 +3456,7 @@ play	?RandomizePlayerAssignments@CPlay@@QAEHXZ	100.0000	100.0000	12	26bfb5be0861
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	861aa171847b	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	16	b731ba787394	0xc8700	100.0000	
 play	?Render@CPlay@@UAEHXZ	98.9008	98.9008	51	9674407062c2	0xc8cf0	98.9008	
-play	?ResetPlayState@CPlay@@QAEHXZ	96.7800	96.7800	30	3d0e0ac3ee82	0xd60b0	96.7800	
+play	?StartLevelPlay@CPlay@@QAEHXZ	96.7800	96.7800	30	3d0e0ac3ee82	0xd60b0	96.7800	
 play	?ResetRightClickState@CPlay@@QAEXXZ	100.0000	100.0000	1	6d119bff1a05	0xcee50	100.0000	
 play	?ResetViewport@CPlay@@QAEHXZ	100.0000	100.0000	8	ebc4c3940cee	0xd8c60	100.0000	
 play	?RestoreCursorSaveUnder@CPlay@@QAEHXZ	100.0000	100.0000	9	5f7e584fb51f	0xd11e0	100.0000	
