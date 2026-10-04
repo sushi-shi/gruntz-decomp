@@ -4,9 +4,7 @@
 
 #include <Rez/RezArchive.h>
 
-#include <Dsndmgr/SoundBankLoad.h>
 #include <Enums.h>
-#include <Gruntz/CustomWorldInfoDlg.h>
 #include <Pix16.h>
 #include <Rez/DebugPrintf.h>
 #include <Rez/RezArchiveDir.h>
@@ -73,6 +71,7 @@ void CRezItm::InitRezItm(
     static_cast<void>(keys);
     m_pRezFile = storage;
     m_pParentDir = directory;
+    directory->m_loaded = false;
     if (name == NULL) {
         m_sName = const_cast<char*>(name);
     } else {
@@ -91,20 +90,11 @@ void CRezItm::InitRezItm(
 }
 
 void CRezItm::TermRezItm() {
+    if (m_pParentDir) m_pParentDir->m_loaded = false;
     if (m_sName) {
         delete[] m_sName;
     }
-    if (m_pParentDir != NULL) {
-        if (m_pParentDir->m_pMemBlock == NULL) {
-            if (m_pData) {
-                delete[] m_pData;
-            }
-        }
-    } else {
-        if (m_pData) {
-            delete[] m_pData;
-        }
-    }
+    delete[] m_pData;
     m_sName = NULL;
     m_pType = NULL;
     m_nTime = 0;
@@ -113,7 +103,7 @@ void CRezItm::TermRezItm() {
     m_pParentDir = NULL;
     m_nFilePos = 0;
     m_nCurPos = 0;
-    m_heName.SetRezItm(NULL);
+    m_heName.SetRezItm(this);
 }
 
 GZ_ENUM_RETURN(RezTypeTag, u32) CRezItm::GetType() {
@@ -148,9 +138,6 @@ char* CRezItm::GetDir() {
 }
 
 u8* CRezItm::Load() {
-    if (m_pParentDir->m_pMemBlock != NULL) {
-        return m_pParentDir->m_pMemBlock + (m_nFilePos - m_pParentDir->m_nItemsPos);
-    }
     if (m_pData != NULL) {
         return m_pData;
     }
@@ -169,76 +156,38 @@ u8* CRezItm::Load() {
 }
 
 i32 CRezItm::UnLoad() {
+    if (m_pParentDir) m_pParentDir->m_loaded = false;
     SAFE_DELETE_ARRAY(m_pData);
     return 1;
 }
 
-i32 CRezItm::IsLoaded() {
-    if (m_pParentDir->m_pMemBlock != NULL) {
-        return 1;
-    }
-    return m_pData != NULL;
-}
+i32 CRezItm::IsLoaded() { return m_pData != NULL; }
 
-i32 CRezItm::Get(u8* destination) {
-    i32 result = Get(destination, 0, m_nSize);
-    return result;
-}
+i32 CRezItm::Get(u8* destination) { return Get(destination, 0, m_nSize); }
 
 i32 CRezItm::Get(u8* destination, u32 position, u32 byteCount) {
-    CRezDir* directory = m_pParentDir;
-    if (directory->m_pMemBlock != NULL) {
-        memcpy(
-            destination,
-            directory->m_pMemBlock + (m_nFilePos - directory->m_nItemsPos + position),
-            byteCount
-        );
+    if ((!destination && byteCount) || !io::containsRange(m_nSize, position, byteCount)) return 0;
+    if (!byteCount) return 1;
+    if (m_pData) {
+        memcpy(destination, m_pData + position, byteCount);
         return 1;
     }
-    if (m_pData != NULL) {
-        memcpy(destination, (m_pData + position), byteCount);
-        return 1;
-    }
-    return m_pRezFile->Read(m_nFilePos, position, byteCount, destination)
-           == static_cast<i32>(byteCount);
+    return m_pRezFile->Read(m_nFilePos, position, byteCount, destination) == byteCount;
 }
 
 i32 CRezItm::Seek(u32 position) {
+    if (position > m_nSize) return 0;
     m_nCurPos = position;
     return 1;
 }
 
 u32 CRezItm::Read(u8* destination, u32 byteCount, u32 seekPosition) {
-    if (seekPosition != 0xffffffffu) {
-        Seek(seekPosition);
-    }
-
-    if (byteCount + m_nCurPos > m_nSize) {
-        byteCount = m_nSize - m_nCurPos;
-    }
-    if (byteCount <= 0) {
-        return 0;
-    }
-    if (m_pParentDir->m_pMemBlock != NULL) {
-        memcpy(
-            destination,
-            m_pParentDir->m_pMemBlock + m_nFilePos + m_nCurPos - m_pParentDir->m_nItemsPos,
-            byteCount
-        );
-        m_nCurPos += byteCount;
-        return byteCount;
-    }
-    if (m_pData != NULL) {
-        memcpy(destination, m_pData + m_nCurPos, byteCount);
-        m_nCurPos += byteCount;
-        return byteCount;
-    }
-    if (m_pRezFile->Read(m_nFilePos, m_nCurPos, byteCount, destination)
-        == static_cast<i32>(byteCount)) {
-        m_nCurPos += byteCount;
-        return byteCount;
-    }
-    return 0;
+    if (seekPosition != 0xffffffffU && !Seek(seekPosition)) return 0;
+    if (m_nCurPos > m_nSize) return 0;
+    if (byteCount > m_nSize - m_nCurPos) byteCount = m_nSize - m_nCurPos;
+    if (!byteCount || !Get(destination, m_nCurPos, byteCount)) return 0;
+    m_nCurPos += byteCount;
+    return byteCount;
 }
 
 i32 CRezItm::EndOfRes() {
@@ -246,7 +195,7 @@ i32 CRezItm::EndOfRes() {
 }
 
 char CRezItm::GetChar() {
-    char value;
+    char value = 0;
     Read(&value, 1, -1);
     return value;
 }
@@ -314,9 +263,7 @@ CRezDir::CRezDir(
     m_nDirSize = bodySize;
     m_nDirPos = bodyOffset;
     m_pRezMgr = archive;
-    m_nItemsSize = 0;
-    m_nItemsPos = 0;
-    m_pMemBlock = NULL;
+    m_loaded = false;
     m_pParentDir = parent;
     m_heDir.SetRezDir(this);
 }
@@ -346,16 +293,11 @@ CRezDir::~CRezDir() {
     if (m_sDirName) {
         delete[] m_sDirName;
     }
-    if (m_pMemBlock) {
-        delete[] m_pMemBlock;
-    }
     m_sDirName = NULL;
     m_nLastTimeModified = 0;
     m_nDirSize = 0;
     m_nDirPos = 0;
-    m_nItemsSize = 0;
-    m_nItemsPos = 0;
-    m_pMemBlock = NULL;
+    m_loaded = false;
     m_pRezMgr = NULL;
     m_pParentDir = NULL;
     m_heDir.SetRezDir(NULL);
@@ -388,54 +330,29 @@ CRezItm* CRezDir::GetRezFromDosName(const char* filename) {
 }
 
 i32 CRezDir::Load(b32 recursive) {
-    if (m_pMemBlock != NULL) {
-        return 1;
-    }
-
-    CRezMgr* archive = m_pRezMgr;
-    if (archive->m_bIsSorted == false || archive->m_nNumRezFiles > 1) {
-        dprintf("CRezDir::Load Failed! (File is not sorted!)\n");
-        return 0;
-    }
-
-    if (m_nItemsSize > 0) {
-        m_pMemBlock = new u8[m_nItemsSize];
-        if (m_pMemBlock != NULL) {
-            m_pRezMgr->m_pPrimaryRezFile->Read(m_nItemsPos, 0, m_nItemsSize, m_pMemBlock);
-        }
-    }
-
-    if (recursive != false) {
-        for (CRezDirHash* node = m_haDir.GetFirst(); node != NULL; node = node->Next()) {
-
-            node->GetRezDir()->Load(true);
-        }
-    }
-    return 1;
-}
-
-i32 CRezDir::UnLoad(b32 recursive) {
-    if (m_pMemBlock != NULL) {
-        delete[] m_pMemBlock;
-        m_pMemBlock = NULL;
-    } else {
-        CRezTyp* type = GetFirstType();
-        while (type) {
-            CRezItm* entry = GetFirstItem(type);
-            while (entry) {
-                entry->UnLoad();
-                entry = GetNextItem(entry);
-            }
-            type = GetNextType(type);
+    bool loaded = true;
+    for (CRezTyp* type = GetFirstType(); type; type = GetNextType(type)) {
+        for (CRezItm* item = GetFirstItem(type); item; item = GetNextItem(item)) {
+            if (item->GetSize() && !item->Load()) loaded = false;
         }
     }
     if (recursive) {
-        CRezDirHash* node = m_haDir.GetFirst();
-        while (node) {
-            node->GetRezDir()->UnLoad(true);
-            node = node->Next();
+        for (CRezDirHash* node = m_haDir.GetFirst(); node; node = node->Next()) {
+            if (!node->GetRezDir()->Load(true)) loaded = false;
         }
     }
+    m_loaded = loaded;
+    return loaded;
+}
+
+i32 CRezDir::UnLoad(b32 recursive) {
+    for (CRezTyp* type = GetFirstType(); type; type = GetNextType(type)) {
+        for (CRezItm* item = GetFirstItem(type); item; item = GetNextItem(item)) item->UnLoad();
+    }
+    if (recursive) {
+        for (CRezDirHash* node = m_haDir.GetFirst(); node; node = node->Next()) node->GetRezDir()->UnLoad(true);
+    }
+    m_loaded = false;
     return 1;
 }
 
@@ -588,7 +505,6 @@ CRezItm* CRezDir::CreateRezInternal(
 }
 
 i32 CRezDir::RemoveRezInternal(CRezTyp* type, CRezItm* entry) {
-    m_nItemsSize -= entry->m_nSize;
     type->m_haName.Delete(&entry->m_heName);
     entry->TermRezItm();
     m_pRezMgr->DeAllocateRezItm(entry);
@@ -596,168 +512,42 @@ i32 CRezDir::RemoveRezInternal(CRezTyp* type, CRezItm* entry) {
     return 1;
 }
 
-i32 CRezDir::ReadAllDirs(CBaseRezFile* storage, u32 bodyOffset, u32 bodySize, b32 replaceExisting) {
-    b32 success = true;
-    if (static_cast<u32>(bodySize) <= 0) {
-        return success;
-    }
-    CRezDirHash* node = m_haDir.GetFirst();
-    while (node) {
-        node->GetRezDir()->m_nDirPos = 0;
-        node = node->Next();
-    }
-    if (ReadDirBlock(storage, bodyOffset, bodySize, replaceExisting) != 0) {
-        node = m_haDir.GetFirst();
-        while (node) {
-            CRezDir* subdirectory = node->GetRezDir();
-            if (subdirectory->m_nDirPos != 0) {
-                if (subdirectory->ReadAllDirs(
-                        storage,
-                        subdirectory->m_nDirPos,
-                        subdirectory->m_nDirSize,
-                        replaceExisting
-                    )
-                    == 0) {
-                    success = false;
-                }
-            }
-            node = node->Next();
-        }
-    } else {
-        success = false;
-    }
-    return success;
-}
-
-GZ_ENUM_BEGIN(RezDirectoryRecordKind)
-    REZ_DIRECTORY_RECORD_RESOURCE = 0,
-    REZ_DIRECTORY_RECORD_SUBDIRECTORY = 1
-GZ_ENUM_END(RezDirectoryRecordKind)
-
-i32 CRezDir::ReadDirBlock(
-    CBaseRezFile* storage,
-    u32 bodyOffset,
-    u32 bodySize,
-    b32 replaceExisting
-) {
-    m_nItemsSize = 0;
-    m_nItemsPos = 0xffffffffu;
-    u32 maximumDataOffset = 0;
-    u8* body = new u8[bodySize];
-    if (!body) {
-        return 0;
-    }
-    if (storage->Read(bodyOffset, 0, bodySize, body) != bodySize) {
-        delete[] body;
-        return 0;
-    }
-    u8* cursor = body;
-    u8* end = body + bodySize;
-    while (cursor < end) {
-        RezDirectoryRecordKind recordKind =
-            static_cast<RezDirectoryRecordKind>(ReadPackedDWORD(cursor));
-        if (recordKind == REZ_DIRECTORY_RECORD_SUBDIRECTORY) {
-            cursor += sizeof(u32);
-            u32 childBodyOffset = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            u32 childBodySize = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            REZTIME childTime = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            char* name = static_cast<char*>(static_cast<void*>(cursor));
-            cursor += strlen(name) + 1;
-            CRezDirHashTable* subdirectories = &m_haDir;
-            CRezDir* existing = subdirectories->Find(name, m_pRezMgr->m_bLowerCaseUsed == false);
-            if (existing == NULL) {
-                CRezDir* directory = new CRezDir(
-                    m_pRezMgr,
-                    this,
-                    name,
-                    childBodyOffset,
-                    childBodySize,
-                    childTime,
-                    m_pRezMgr->m_nDirNumHashBins,
-                    m_pRezMgr->m_nTypNumHashBins
-                );
-                subdirectories->Insert(&directory->m_heDir);
+void CRezMgr::ImportArchive(CBaseRezFile* storage, const rez::Archive& archive, b32 replaceExisting) {
+    std::vector<CRezDir*> directories(archive.directories.size());
+    directories[0] = m_pRootDir;
+    for (size_t index = 0; index < archive.directories.size(); ++index) {
+        const rez::Directory& record = archive.directories[index];
+        CRezDir* directory;
+        if (index == 0) directory = m_pRootDir;
+        else {
+            CRezDir* parent = directories[record.parent];
+            directory = parent->m_haDir.Find(record.name.c_str(), m_bLowerCaseUsed == false);
+            if (!directory) {
+                directory = new CRezDir(this, parent, record.name.c_str(), record.offset,
+                    record.size, record.time, m_nDirNumHashBins, m_nTypNumHashBins);
+                parent->m_haDir.Insert(&directory->m_heDir);
             } else {
-                existing->m_nDirPos = childBodyOffset;
-                existing->m_nDirSize = childBodySize;
-                existing->m_nLastTimeModified = childTime;
+                directory->m_nDirPos = record.offset;
+                directory->m_nDirSize = record.size;
+                directory->m_nLastTimeModified = record.time;
             }
-        } else {
-
-            cursor += sizeof(u32);
-            u32 dataOffset = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            REZSIZE size = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            REZTIME time = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            REZID resourceId = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            REZTYPE typeTag = static_cast<REZTYPE>(ReadPackedDWORD(cursor));
-            cursor += sizeof(u32);
-            u32 keyCount = ReadPackedDWORD(cursor);
-            cursor += sizeof(u32);
-            char* name = static_cast<char*>(static_cast<void*>(cursor));
-            cursor += strlen(name) + 1;
-            CRezTyp* type = GetOrMakeTyp(typeTag);
-            i32 skipEntry = 0;
-            CRezItm* found = type->m_haName.Find(name, 1);
+        }
+        directories[index] = directory;
+        directory->m_loaded = false;
+        for (size_t i = 0; i < record.resources.size(); ++i) {
+            const rez::Resource& item = record.resources[i];
+            CRezTyp* type = directory->GetOrMakeTyp(static_cast<REZTYPE>(item.type));
+            CRezItm* found = type->m_haName.Find(item.name.c_str(), 1);
             if (found) {
-                if (replaceExisting != false) {
-                    RemoveRezInternal(type, found);
-                } else {
-                    skipEntry = 1;
-                }
+                if (!replaceExisting) continue;
+                directory->RemoveRezInternal(type, found);
             }
-            char* comment = static_cast<char*>(static_cast<void*>(cursor));
-            cursor += strlen(comment) + 1;
-            if (*comment == 0) {
-                comment = NULL;
-            }
-            REZKEYVAL* keys;
-            if (keyCount > 0) {
-                keys = new REZKEYVAL[keyCount];
-                for (REZKEYINDEX keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-                    keys[keyIndex] = ReadPackedDWORD(cursor);
-                    cursor += sizeof(u32);
-                }
-            } else {
-                keys = NULL;
-            }
-            if (!skipEntry) {
-                CRezItm* entry = m_pRezMgr->AllocateRezItm();
-                entry->InitRezItm(
-                    this,
-                    name,
-                    resourceId,
-                    type,
-                    comment,
-                    size,
-                    dataOffset,
-                    time,
-                    keyCount,
-                    keys,
-                    storage
-                );
-                type->m_haName.Insert(&entry->m_heName);
-                m_nItemsSize = m_nItemsSize + entry->m_nSize;
-                if (entry->m_nFilePos < m_nItemsPos) {
-                    m_nItemsPos = entry->m_nFilePos;
-                }
-                if (entry->m_nFilePos > maximumDataOffset) {
-                    maximumDataOffset = entry->m_nFilePos;
-                }
-            }
-            if (keys) {
-                delete[] keys;
-            }
+            CRezItm* entry = AllocateRezItm();
+            entry->InitRezItm(directory, item.name.c_str(), item.id, type, NULL,
+                item.size, item.offset, item.time, 0, NULL, storage);
+            type->m_haName.Insert(&entry->m_heName);
         }
     }
-    delete[] body;
-    return 1;
 }
 
 CRezTyp* CRezDir::GetOrMakeTyp(REZTYPE typeTag) {
@@ -797,11 +587,15 @@ GZ_ENUM_CONST_BEGIN(RezArchiveDefaults)
     REZ_ARCHIVE_DEFAULT_ENTRIES_PER_POOL_BLOCK = 100
 GZ_ENUM_CONST_END(RezArchiveDefaults)
 
-CRezMgr::CRezMgr() : m_hashRezItmFreeList(1) {
+CRezMgr::CRezMgr() : m_hashRezItmFreeList(1) { Initialize(); }
+
+void CRezMgr::Initialize() {
     m_bFileOpened = false;
     m_pPrimaryRezFile = NULL;
     m_nNumRezFiles = 0;
     m_nRootDirPos = 0;
+    m_nRootDirSize = 0;
+    m_nRootDirTime = 0;
     m_nNextWritePos = 0;
     m_pRootDir = NULL;
     m_nLastTimeModified = 0;
@@ -828,9 +622,7 @@ CRezMgr::CRezMgr() : m_hashRezItmFreeList(1) {
 }
 
 CRezMgr::CRezMgr(const char* path, b32 readOnly, b32 createNew) : m_hashRezItmFreeList(1) {
-    {
-        CRezMgr defaults;
-    }
+    Initialize();
     Open(path, readOnly, createNew);
 }
 
@@ -881,174 +673,64 @@ CRezMgr::~CRezMgr() {
 }
 
 i32 CRezMgr::Open(const char* path, b32 readOnly, b32 createNew) {
-    m_bReadOnly = readOnly;
-    if (readOnly == false) {
-        return 0;
-    }
-    if (m_sFileName) {
-        delete[] m_sFileName;
-    }
-    m_sFileName = new char[strlen(path) + 1];
-    strcpy(m_sFileName, path);
-    if (IsDirectory(path) != 0) {
-
-        if (m_bReadOnly == false) {
-            return 0;
-        }
-        CRezFileDirectoryEmulation* storage =
-            new CRezFileDirectoryEmulation(this, m_nMaxOpenFilesInEmulatedDir);
-        if (storage == NULL) {
-            delete[] m_sFileName;
-            m_sFileName = NULL;
-            return 0;
-        }
+    if (!path || !*path || !readOnly || createNew) return 0;
+    const std::string filename(path);
+    if (IsDirectory(filename.c_str())) {
+        if (m_bFileOpened) Close();
+        CRezFileDirectoryEmulation* storage = new CRezFileDirectoryEmulation(this, m_nMaxOpenFilesInEmulatedDir);
+        if (!storage->Open(filename.c_str(), true, false)) { delete storage; return 0; }
         m_pPrimaryRezFile = storage;
-        m_lstRezFiles.Insert(storage);
-        m_nNumRezFiles++;
-        if (storage->Open(path, readOnly, createNew) == 0) {
-            return 0;
-        }
-        m_bFileOpened = true;
-        m_pRootDir = new CRezDir(
-            this,
-            NULL,
-            "",
-            0,
-            0,
-            this->GetCurTime(),
-            m_nDirNumHashBins,
-            m_nTypNumHashBins
-        );
-        ReadEmulationDirectory(storage, m_pRootDir, m_sFileName, false);
+        m_lstRezFiles.Insert(storage); ++m_nNumRezFiles;
+        m_bFileOpened = true; m_bReadOnly = true;
+        m_sFileName = new char[filename.size() + 1]; strcpy(m_sFileName, filename.c_str());
+        m_pRootDir = new CRezDir(this, NULL, "", 0, 0, GetCurTime(), m_nDirNumHashBins, m_nTypNumHashBins);
+        if (!ReadEmulationDirectory(storage, m_pRootDir, m_sFileName, false)) { Close(); return 0; }
         return 1;
     }
-
     CRezFile* storage = new CRezFile(this);
-    if (storage == NULL) {
-        delete[] m_sFileName;
-        m_sFileName = NULL;
-        return 0;
-    }
+    rez::Archive archive;
+    if (!storage->Open(filename.c_str(), true, false)
+        || rez::decode(storage->DataSource(), archive) != rez::Decoded) { delete storage; return 0; }
+    // Malformed archives cannot mutate an existing archive or its resources.
+    if (m_bFileOpened) Close();
     m_pPrimaryRezFile = storage;
-    m_lstRezFiles.Insert(storage);
-    m_nNumRezFiles++;
-    if (storage->Open(path, readOnly, createNew) == 0) {
-        return 0;
-    }
-    m_bFileOpened = true;
-    if (createNew != false) {
-        m_nNextWritePos = sizeof(FileMainHeaderStruct);
-        m_bMustReWriteDirs = true;
-        m_pRootDir = new CRezDir(
-            this,
-            NULL,
-            "",
-            0,
-            0,
-            this->GetCurTime(),
-            m_nDirNumHashBins,
-            m_nTypNumHashBins
-        );
-        return 1;
-    }
-
-    FileMainHeaderStruct header;
-    storage->Read(0, 0, sizeof(header), &header);
-    m_nNextWritePos = header.m_nextWritePos;
-    m_nRootDirPos = header.m_rootDirPos;
-    m_nRootDirSize = header.m_rootDirSize;
-    m_nRootDirTime = header.m_rootDirTime;
-    m_nLastTimeModified = header.m_time;
-    m_nFileFormatVersion = header.m_fileFormatVersion;
-    m_nLargestKeyAry = header.m_largestKeyAry;
-    m_nLargestDirNameSize = header.m_largestDirNameSize;
-    m_nLargestRezNameSize = header.m_largestRezNameSize;
-    m_nLargestCommentSize = header.m_largestCommentSize;
-    m_bIsSorted = header.m_isSorted;
-    if (header.m_cr1 != REZ_ARCHIVE_MAGIC_CR) {
-        return 0;
-    }
-    if (header.m_lf2 != REZ_ARCHIVE_MAGIC_LF) {
-        return 0;
-    }
-    if (header.m_eof1 != REZ_ARCHIVE_MAGIC_EOF) {
-        return 0;
-    }
-    if (header.m_fileFormatVersion != REZ_ARCHIVE_VERSION_1) {
-        return 0;
-    }
-    m_pRootDir = new CRezDir(
-        this,
-        NULL,
-        "",
-        m_nRootDirPos,
-        m_nRootDirSize,
-        m_nRootDirTime,
-        m_nDirNumHashBins,
-        m_nTypNumHashBins
-    );
-    m_pRootDir->ReadAllDirs(storage, m_nRootDirPos, m_nRootDirSize, false);
+    m_lstRezFiles.Insert(storage); ++m_nNumRezFiles;
+    m_bFileOpened = true; m_bReadOnly = true;
+    m_sFileName = new char[filename.size() + 1]; strcpy(m_sFileName, filename.c_str());
+    const rez::Directory& root = archive.directories[0];
+    m_nRootDirPos = root.offset; m_nRootDirSize = root.size; m_nRootDirTime = root.time;
+    m_nNextWritePos = archive.nextWrite; m_nLastTimeModified = archive.time;
+    m_nFileFormatVersion = REZ_ARCHIVE_VERSION_1; m_bIsSorted = archive.sorted;
+    m_nLargestKeyAry = archive.largestKeys; m_nLargestDirNameSize = archive.largestDirectory;
+    m_nLargestRezNameSize = archive.largestName; m_nLargestCommentSize = archive.largestComment;
+    m_pRootDir = new CRezDir(this, NULL, "", root.offset, root.size, root.time,
+        m_nDirNumHashBins, m_nTypNumHashBins);
+    ImportArchive(storage, archive, false);
     return 1;
 }
 
 i32 CRezMgr::OpenAdditional(const char* path, b32 replaceExisting) {
-    b32 readOnly = true;
-    b32 createNew = false;
-    if (m_bReadOnly == false) {
-        return 0;
-    }
-    m_bIsSorted = false;
-    if (m_sFileName) {
-        delete[] m_sFileName;
-    }
-    m_sFileName = new char[strlen(path) + 1];
-    strcpy(m_sFileName, path);
-
+    if (!path || !*path || !m_bReadOnly || !m_bFileOpened || !m_pRootDir) return 0;
     if (IsDirectory(path)) {
-        CRezFileDirectoryEmulation* storage =
-            new CRezFileDirectoryEmulation(this, m_nMaxOpenFilesInEmulatedDir);
-        if (storage == NULL) {
-            delete[] m_sFileName;
-            m_sFileName = NULL;
-            return 0;
-        }
-        m_lstRezFiles.Insert(storage);
-        m_nNumRezFiles++;
-        if (storage->Open(path, readOnly, createNew) == 0) {
-            return 0;
-        }
-        m_bFileOpened = true;
-        ReadEmulationDirectory(storage, m_pRootDir, m_sFileName, replaceExisting);
-        return 1;
+        CRezFileDirectoryEmulation* storage = new CRezFileDirectoryEmulation(this, m_nMaxOpenFilesInEmulatedDir);
+        if (!storage->Open(path, true, false)) { delete storage; return 0; }
+        m_lstRezFiles.Insert(storage); ++m_nNumRezFiles;
+        m_bIsSorted = false;
+        std::vector<char> directory(strlen(path) + 1);
+        strcpy(&directory[0], path);
+        return ReadEmulationDirectory(storage, m_pRootDir, &directory[0], replaceExisting);
     }
-
     CRezFile* storage = new CRezFile(this);
-    if (storage == NULL) {
-        delete[] m_sFileName;
-        m_sFileName = NULL;
-        return 0;
-    }
-    m_lstRezFiles.Insert(storage);
-    m_nNumRezFiles++;
-    if (storage->Open(path, readOnly, createNew) == 0) {
-        return 0;
-    }
-
-    FileMainHeaderStruct header;
-    storage->Read(0, 0, sizeof(header), &header);
-    if (header.m_largestKeyAry > m_nLargestKeyAry) {
-        m_nLargestKeyAry = header.m_largestKeyAry;
-    }
-    if (header.m_largestDirNameSize > m_nLargestDirNameSize) {
-        m_nLargestDirNameSize = header.m_largestDirNameSize;
-    }
-    if (header.m_largestRezNameSize > m_nLargestRezNameSize) {
-        m_nLargestRezNameSize = header.m_largestRezNameSize;
-    }
-    if (header.m_largestCommentSize > m_nLargestCommentSize) {
-        m_nLargestCommentSize = header.m_largestCommentSize;
-    }
-    m_pRootDir->ReadAllDirs(storage, header.m_rootDirPos, header.m_rootDirSize, replaceExisting);
+    rez::Archive archive;
+    if (!storage->Open(path, true, false)
+        || rez::decode(storage->DataSource(), archive) != rez::Decoded) { delete storage; return 0; }
+    m_lstRezFiles.Insert(storage); ++m_nNumRezFiles;
+    m_bIsSorted = false;
+    ImportArchive(storage, archive, replaceExisting);
+    if (archive.largestKeys > m_nLargestKeyAry) m_nLargestKeyAry = archive.largestKeys;
+    if (archive.largestDirectory > m_nLargestDirNameSize) m_nLargestDirNameSize = archive.largestDirectory;
+    if (archive.largestName > m_nLargestRezNameSize) m_nLargestRezNameSize = archive.largestName;
+    if (archive.largestComment > m_nLargestCommentSize) m_nLargestCommentSize = archive.largestComment;
     return 1;
 }
 
@@ -1072,7 +754,7 @@ i32 CRezMgr::ReadEmulationDirectory(
         return 1;
     }
     do {
-        if (strcmp(fileData.name, g_singleDot) == 0 || strcmp(fileData.name, g_dotDot) == 0) {
+        if (strcmp(fileData.name, ".") == 0 || strcmp(fileData.name, "..") == 0) {
             continue;
         }
         if ((fileData.attrib & _A_SUBDIR) == _A_SUBDIR) {
@@ -1152,22 +834,17 @@ i32 CRezMgr::ReadEmulationDirectory(
 
 i32 CRezMgr::Close(b32 unusedFinal) {
     static_cast<void>(unusedFinal);
-    i32 result = m_pPrimaryRezFile->Close();
-    m_lstRezFiles.Delete(m_pPrimaryRezFile);
-    m_nNumRezFiles--;
-    delete m_pPrimaryRezFile;
-    m_pPrimaryRezFile = NULL;
-    CBaseRezFile* storage;
-    for (storage = m_lstRezFiles.GetFirst(); storage != NULL; storage = m_lstRezFiles.GetFirst()) {
-        storage->Close();
+    SAFE_DELETE(m_pRootDir);
+    bool success = true;
+    for (CBaseRezFile* storage = m_lstRezFiles.GetFirst(); storage; storage = m_lstRezFiles.GetFirst()) {
+        if (!storage->Close()) success = false;
         m_lstRezFiles.Delete(storage);
-        m_nNumRezFiles--;
         delete storage;
     }
-    SAFE_DELETE(m_pRootDir);
+    m_nNumRezFiles = 0; m_pPrimaryRezFile = NULL;
     SAFE_DELETE_ARRAY(m_sFileName);
     m_bFileOpened = false;
-    return result;
+    return success;
 }
 
 CRezDir* CRezMgr::GetRootDir() {
@@ -1395,8 +1072,8 @@ i32 CRezMgr::Reset() {
     if (!IsOpen()) {
         return 0;
     }
-    Close();
-    return Open(m_sFileName);
+    const std::string filename(m_sFileName);
+    return Open(filename.c_str());
 }
 
 i32 CRezMgr::IsDirectory(const char* path) {

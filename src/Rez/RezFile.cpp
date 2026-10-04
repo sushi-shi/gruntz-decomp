@@ -27,164 +27,26 @@ CBaseRezFile::~CBaseRezFile() {
 
 void CBaseRezFile::VirtualFoo() {}
 
-CRezFile::CRezFile(CRezMgr* rezMgr) : CBaseRezFile(rezMgr) {
-    m_pFile = NULL;
-    m_sFileName = NULL;
-    m_nLastSeekPos = 0xffffffff;
-}
-
-CRezFile::~CRezFile() {
-    if (m_pFile != NULL) {
-        Close();
-    }
-    if (m_sFileName != NULL) {
-        delete[] m_sFileName;
-    }
-}
+CRezFile::CRezFile(CRezMgr* rezMgr) : CBaseRezFile(rezMgr) {}
+CRezFile::~CRezFile() {}
 
 u32 CRezFile::Read(u32 itemPos, u32 itemOffset, u32 size, void* data) {
-    if (size <= 0) {
-        return 0;
-    }
-
-    u32 seekPos = itemPos + itemOffset;
-
-    if (m_nLastSeekPos != seekPos) {
-        while (fseek(m_pFile, seekPos, 0) != 0) {
-            if (m_pRezMgr->DiskError() == 0) {
-                m_nLastSeekPos = 0xffffffff;
-                return 0;
-            }
-        }
-    }
-
-    u32 got = fread(data, 1, size, m_pFile);
-    while (got != size) {
-        if (m_pRezMgr->DiskError() == 0) {
-            m_nLastSeekPos = 0xffffffff;
-            return 0;
-        }
-        got = fread(data, 1, size, m_pFile);
-    }
-
-    m_nLastSeekPos = got + seekPos;
-    return got;
+    if (itemOffset > 0xffffffffU - itemPos) return 0;
+    return m_file.readAt(itemPos + itemOffset, data, size) ? size : 0;
 }
-
 u32 CRezFile::Write(u32 itemPos, u32 itemOffset, u32 size, void* data) {
-    m_nLastSeekPos = 0xffffffff;
-    if (size <= 0) {
-        return 0;
-    }
-
-    while (fseek(m_pFile, itemPos + itemOffset, 0) != 0) {
-        if (m_pRezMgr->DiskError() == 0) {
-            return 0;
-        }
-    }
-
-    u32 put = fwrite(data, 1, size, m_pFile);
-    while (put != size) {
-        if (m_pRezMgr->DiskError() == 0) {
-            return 0;
-        }
-        put = fwrite(data, 1, size, m_pFile);
-    }
-    return put;
+    if (itemPos > 0x7fffffffU || itemOffset > 0x7fffffffU - itemPos
+        || size > 0x7fffffffU - itemPos - itemOffset) return 0;
+    return m_file.seek(static_cast<long>(itemPos + itemOffset), io::Start)
+        && m_file.write(data, size) ? size : 0;
 }
-
 i32 CRezFile::Open(const char* fileName, b32 readOnly, b32 createNew) {
-    for (;;) {
-        if (createNew) {
-            if (readOnly) {
-                return 0;
-            }
-            m_pFile = fopen(fileName, g_wPlusB);
-        } else if (readOnly) {
-            m_pFile = fopen(fileName, "rb");
-        } else {
-            m_pFile = fopen(fileName, g_rPlusB);
-        }
-        if (m_pFile != NULL) {
-            break;
-        }
-        if (m_pRezMgr->DiskError() == 0) {
-            return 0;
-        }
-        if (m_pFile != NULL) {
-            break;
-        }
-    }
-
-    m_bReadOnly = readOnly;
-    if (m_sFileName != NULL) {
-        delete[] m_sFileName;
-    }
-    m_sFileName = new char[strlen(fileName) + 1];
-    if (m_sFileName != NULL) {
-        strcpy(m_sFileName, fileName);
-    }
-    m_nLastSeekPos = 0xffffffff;
-    return 1;
+    if (readOnly && createNew) return 0;
+    return m_file.open(fileName, createNew ? io::Replace : readOnly ? io::ReadOnly : io::Update);
 }
-
-i32 CRezFile::Close() {
-    b32 ok;
-    i32 check;
-    if (m_pFile != NULL) {
-        do {
-            check = fclose(m_pFile);
-            if (check == 0) {
-                ok = true;
-            } else {
-                ok = false;
-                if (m_pRezMgr->DiskError() == 0) {
-                    return 0;
-                }
-            }
-        } while (!ok);
-
-    } else {
-        return 0;
-    }
-    m_pFile = NULL;
-    if (m_sFileName != NULL) {
-        delete[] m_sFileName;
-    }
-    m_sFileName = NULL;
-    m_nLastSeekPos = 0xffffffff;
-    return ok;
-}
-
-i32 CRezFile::Flush() {
-    m_nLastSeekPos = 0xffffffff;
-    if (m_pFile) {
-        b32 found;
-        do {
-            if (fflush(m_pFile) == 0) {
-                found = true;
-            } else {
-                found = false;
-                if (m_pRezMgr->DiskError() == 0) {
-                    return 0;
-                }
-            }
-        } while (!found);
-        return found;
-    }
-    return 0;
-}
-
-i32 CRezFile::VerifyFileOpen() {
-    m_nLastSeekPos = 0xffffffff;
-    if (!m_pFile) {
-        return 0;
-    }
-    if (ftell(m_pFile) != -1) {
-        return 1;
-    }
-    return Open(m_sFileName, m_bReadOnly, false) != 0;
-}
+i32 CRezFile::Close() { return m_file.finish(); }
+i32 CRezFile::Flush() { return m_file.flush(); }
+i32 CRezFile::VerifyFileOpen() { return m_file.good(); }
 
 CRezFileDirectoryEmulation::CRezFileDirectoryEmulation(CRezMgr* rezMgr, i32 maxOpenFiles)
     : CBaseRezFile(rezMgr) {

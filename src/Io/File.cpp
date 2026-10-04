@@ -131,6 +131,14 @@ size_t File::read(void* data, size_t count) {
     if (n != count) m_error = ReadFailed;
     return n;
 }
+bool File::readAt(size_t offset, void* data, size_t count) {
+    const size_t length = size();
+    if (!good() || !containsRange(length, offset, count) || offset > 0x7fffffffU) {
+        if (m_error == NoError) m_error = ReadFailed;
+        return false;
+    }
+    return seek(static_cast<long>(offset), Start) && read(data, count) == count && good();
+}
 bool File::write(const void* data, size_t count) {
     if (!m_file && m_error == NoError) m_error = NotOpen;
     if (!good()) return false;

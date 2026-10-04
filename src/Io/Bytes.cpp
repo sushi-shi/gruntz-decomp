@@ -25,6 +25,13 @@ size_t MemoryInput::read(void* data, size_t count) {
     if (amount != count) m_good = false;
     return amount;
 }
+bool MemoryInput::readAt(size_t offset, void* data, size_t count) {
+    if (!m_good || !containsRange(m_bytes.size(), offset, count)) {
+        m_good = false; return false;
+    }
+    m_offset = offset;
+    return read(data, count) == count && m_good;
+}
 bool MemoryOutput::write(const void* data, size_t count) {
     if (!m_good) return false;
     if ((!data && count) || count > 0x7fffffffU - m_bytes.size()) {

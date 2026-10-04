@@ -2,6 +2,7 @@
 #define REZ_REZFILE_H
 
 #include <Ints.h>
+#include <Io/File.h>
 
 #include <Enums.h>
 #include <Ints.h>
@@ -61,12 +62,9 @@ public:
     virtual i32 Flush()  ;
     virtual i32 VerifyFileOpen()  ;
 
+    io::RandomInput& DataSource() { return m_file; }
 private:
-    FILE* m_pFile;
-    char* m_sFileName;
-    b32 m_bReadOnly;
-    b32 m_bCreateNew;
-    u32 m_nLastSeekPos;
+    io::File m_file;
 };
 
 class CRezFileDirectoryEmulation : public CBaseRezFile {

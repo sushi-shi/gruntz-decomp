@@ -3459,6 +3459,17 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "rezarchivedata",
+      "source": "src/Rez/ArchiveData.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

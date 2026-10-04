@@ -12,7 +12,7 @@ enum Access { ReadOnly, Replace, Update };
 enum Origin { Start, Current, End };
 enum Error { NoError, NotOpen, NotFound, OpenFailed, ReadFailed, WriteFailed, SeekFailed, TooLarge, CloseFailed };
 
-class File : public Input, public Output {
+class File : public Input, public Output, public RandomInput {
 public:
     File();
     virtual ~File();
@@ -22,6 +22,7 @@ public:
     bool finish();
     bool flush();
     size_t read(void* data, size_t size);
+    bool readAt(size_t offset, void* data, size_t count);
     bool write(const void* data, size_t size);
     bool seek(long offset, Origin origin);
     long position();

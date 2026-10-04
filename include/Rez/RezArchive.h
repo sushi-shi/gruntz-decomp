@@ -10,43 +10,11 @@
 #include <Rez/RezHash.h>
 #include <Rez/RezList.h>
 #include <Rez/RezTypes.h>
+#include <Rez/ArchiveData.h>
 
 struct CRezItm;
 
-#pragma pack(push, 1)
-GZ_ENUM_CONST_BEGIN(RezArchiveMagic)
-    REZ_ARCHIVE_MAGIC_CR = '\r',
-    REZ_ARCHIVE_MAGIC_LF = '\n',
-    REZ_ARCHIVE_MAGIC_EOF = 0x1a,
-    REZ_MGR_USER_TITLE_SIZE = 60
-GZ_ENUM_CONST_END(RezArchiveMagic)
-
 GZ_ENUM_FORWARD(RezArchiveVersion);
-
-struct FileMainHeaderStruct {
-    char m_cr1;
-    char m_lf1;
-    char m_fileType[REZ_MGR_USER_TITLE_SIZE];
-    char m_cr2;
-    char m_lf2;
-    char m_userTitle[REZ_MGR_USER_TITLE_SIZE];
-    char m_cr3;
-    char m_lf3;
-    char m_eof1;
-    RezArchiveVersion m_fileFormatVersion;
-    u32 m_rootDirPos;
-    u32 m_rootDirSize;
-    REZTIME m_rootDirTime;
-    u32 m_nextWritePos;
-    REZTIME m_time;
-    u32 m_largestKeyAry;
-    u32 m_largestDirNameSize;
-    u32 m_largestRezNameSize;
-    u32 m_largestCommentSize;
-    u8 m_isSorted;
-};
-
-#pragma pack(pop)
 
 class CRezMgr {
 public:
@@ -159,6 +127,8 @@ private:
         }
     };
 
+    void Initialize();
+    void ImportArchive(CBaseRezFile* storage, const rez::Archive& archive, b32 replaceExisting);
     i32 ReadEmulationDirectory(
         CRezFileDirectoryEmulation* rezFileEmulation,
         CRezDir* directory,
