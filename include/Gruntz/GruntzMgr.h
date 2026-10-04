@@ -185,6 +185,9 @@ public:
 
     i32 Rand();
     i32 RandRange(i32 lo, i32 hi);
+    i32 GetVoiceVolume() const {
+        return m_voiceVolume;
+    }
     i32 SetVoiceVolume(i32 v);
     i32 GetSoundVolume() const {
         return m_soundVolume;
