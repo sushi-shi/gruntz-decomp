@@ -4007,8 +4007,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 cy;
     {
         CRect dst(w->m_level->GetViewportRect());
-        cx = dst.left + (dst.right - dst.left) / 2;
-        cy = dst.top + (dst.bottom - dst.top) / 2;
+        cx = dst.left + dst.Width() / 2;
+        cy = dst.top + dst.Height() / 2;
     }
 
     if (m_quitConfirmationActive != false) {
@@ -4064,7 +4064,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     cx -= 0x8e;
     cy -= 0x48;
 
-    i32 reason = IDX(g_gameReg->GetTriggerMgr()->m_finishReasonFrame);
+    FinishLevelReason reason = g_gameReg->GetTriggerMgr()->GetFinishReason();
 
     CSBI_Image* dialog;
     NEW_STATUS_BAR_ITEM(
@@ -4105,7 +4105,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             TAB_DIALOG,
             CRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
             "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-            reason,
+            IDX(reason),
             0
         );
         AddTabItem(6, rsn);
@@ -4183,7 +4183,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         TAB_DIALOG,
         CRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
         "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-        reason,
+        IDX(reason),
         0
     );
     AddTabItem(6, rsn);

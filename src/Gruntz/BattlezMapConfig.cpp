@@ -325,6 +325,7 @@ void CBattlezMapConfig::FreeArrays() {
     m_reserved13c = 0;
 }
 
+// @early-stop
 RVA(0x00025d90, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
     if (m_active == false) {
@@ -435,13 +436,13 @@ i32 CBattlezMapConfig::StepBoard() {
                     continue;
                 }
 
-                PickupType mode = unit->m_defenderPickupType;
+                PickupType mode = unit->GetDefenderPickupType();
                 if (PathCrossesMarkedTile(unit) != 0) {
                     unit->SetDefenderState(AISTATE_RETREAT);
                 } else {
                     unit->SetDefenderState(AISTATE_SEEK);
                 }
-                unit->LoadPickupSprites(unit->m_defenderPickupType, 1, 0, 0, 1);
+                unit->LoadPickupSprites(unit->GetDefenderPickupType(), 1, 0, 0, 1);
 
                 switch (mode) {
                     case PICKUP_WINGZ: {
@@ -590,7 +591,7 @@ candidateFound:
     UNSET_COORD(unit->m_unusedBattleCell);
     UNSET_COORD(unit->m_defenderPx);
     unit->SetTargetTeam(-1);
-    unit->m_defenderPickupType = PICKUP_NONE;
+    unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
     unit->m_blockedVoicePending = true;
@@ -1969,7 +1970,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
     }
     m_claimTimer = 0;
     unit->SetDefenderState(AISTATE_RETURN);
-    unit->m_defenderPickupType = static_cast<PickupType>(value);
+    unit->SetDefenderPickupType(static_cast<PickupType>(value));
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     i32 count = 0;
     for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
@@ -3396,7 +3397,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     UNSET_COORD(unit->m_unusedBattleCell);
     unit->SetDefenderState(AISTATE_SEEK);
     UNSET_COORD(unit->m_defenderPx);
-    unit->m_defenderPickupType = PICKUP_NONE;
+    unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
     unit->m_blockedVoicePending = true;
