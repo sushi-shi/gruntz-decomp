@@ -784,14 +784,14 @@ i32 CGiantRockLogic::BreakRock() {
 
 // @early-stop
 RVA(0x00112590, 0x166)
-i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
+i32 CTileTriggerLogic::UncoverPickup(TileCollisionKind tileKind) {
     i32 tok = m_tileToken;
     if (tok != 0) {
         i32 ty = m_tileY;
         i32 tx = m_tileX;
         SET_MAIN_PLANE_TILE(g_gameReg, tx, ty, tok);
     } else {
-        switch (verb) {
+        switch (tileKind) {
             case TILEKIND_COVERED_POWERUP: {
                 i32 ty = m_tileY;
                 CGruntzMgr* reg = g_gameReg;

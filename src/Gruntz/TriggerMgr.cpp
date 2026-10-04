@@ -1598,7 +1598,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
             CTileTriggerLogic* lo =
                 root->GetTileTriggers()->FindLogic(CellKey(tx, ty), TRIGID_COVERED_POWERUP_26);
             if (lo != NULL) {
-                lo->ApplyMove(type);
+                lo->UncoverPickup(type);
                 root->GetTileTriggers()->RemoveIdleLogic(lo);
             } else {
                 CGruntzMgr* reg = g_gameReg;

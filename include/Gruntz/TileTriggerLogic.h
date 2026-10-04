@@ -81,7 +81,7 @@ public:
 
     i32 UpdateTimedSequence(i32 unusedFrameDelta);
 
-    i32 ApplyMove(TileCollisionKind verb);
+    i32 UncoverPickup(TileCollisionKind tileKind);
 
     i32 HasLinkKey(i32 key);
 

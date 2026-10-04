@@ -4205,7 +4205,7 @@ tileswitchlogic	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	9068e
 tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	2	1bc2bdb29063	0x1107f0	100.0000	
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	2	00d79f78254e	0x110430	100.0000	
 tileswitchlogic	?AddTopBrick@CBrickStack@@QAEHW4PickupType@@W4PlayerSlot@@@Z	98.6645	98.6645	3	a8e340b8bfcd	0x113420	98.6645	
-tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	99.5905	99.5905	24	3ec17fa73167	0x112590	99.5905	
+tileswitchlogic	?UncoverPickup@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	99.5905	99.5905	24	3ec17fa73167	0x112590	99.5905	
 tileswitchlogic	?AreCheckpointSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	6	da7d22532ae0	0x112c70	100.0000	
 tileswitchlogic	?AreMultiSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	17	f9acbbeb6a50	0x111f40	100.0000	
 tileswitchlogic	?BreakTopBrick@CBrickStack@@QAEHPAVCGrunt@@@Z	97.9808	97.9808	25	e2df33d19172	0x112ee0	97.9808	
