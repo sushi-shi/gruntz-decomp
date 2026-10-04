@@ -347,17 +347,15 @@ i32 CPlay::EnterState(GameStateId previousState) {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    if (previousState == GAMESTATE_HELP) {
-        g_frameTime = m_savedClock;
-        if (!EnterMode(GAMESTATE_HELP)) {
-            return 0;
-        }
-        m_stepCountdown = 2;
-    } else if (m_renderDisabled == false || m_mgr->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-        if (!EnterMode(previousState)) {
-            return 0;
-        }
-    }
+    if (previousState == GAMESTATE_HELP || !m_renderDisabled
+        || m_mgr->GetGameMode() == GAMEMODE_MULTIPLAYER)
+        return QueueGameplayPresentation(EnterGameplayState, previousState);
+    FinishStateEntry(previousState);
+    return 1;
+}
+
+void CPlay::FinishStateEntry(GameStateId previousState) {
+    if (previousState == GAMESTATE_HELP) m_stepCountdown = 2;
     if (ShowCursor(false) >= 0) {
         do {
         } while (ShowCursor(false) >= 0);
@@ -375,7 +373,6 @@ i32 CPlay::EnterState(GameStateId previousState) {
         (static_cast<CTriggerMgr*>(m_mgr->m_triggerMgr))->DestroyAllAnims();
         (static_cast<CVoiceManager*>(m_mgr->VoiceMgr()))->PauseAllVoices();
     }
-    return 1;
 }
 
 i32 CPlay::LeaveState(GameStateId nextState) {
@@ -420,6 +417,7 @@ i32 CPlay::Render() {
 
     m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
+    if (GameplayFrameInterrupted()) return 1;
 
     if (m_renderDisabled != false) {
         return 1;
@@ -428,6 +426,8 @@ i32 CPlay::Render() {
     if (m_inGame != false) {
 
         RestoreCursorSaveUnder();
+
+        if (GameplayFrameInterrupted()) return 1;
         LoadScrollSpeedOptions();
         m_world->m_level->ActivateVisibleObjectsOnMainPlane();
 
@@ -436,6 +436,7 @@ i32 CPlay::Render() {
 
         m_world->ChildGroup()->TickKillCues(0);
         DrawVisibleWorld();
+        if (GameplayFrameInterrupted()) return 1;
         m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_scrollPixelX,
             m_world->m_level->m_mainPlane->m_scrollPixelY
@@ -448,6 +449,7 @@ i32 CPlay::Render() {
         }
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
+        if (GameplayFrameInterrupted()) return 1;
 
         {
             if (m_cueTiming.Expired()) {
@@ -469,7 +471,9 @@ i32 CPlay::Render() {
         m_levelTimer->Draw(back, true);
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
+        if (GameplayFrameInterrupted()) return 1;
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+        if (GameplayFrameInterrupted()) return 1;
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
@@ -488,7 +492,10 @@ i32 CPlay::Render() {
         }
 
         RestoreCursorSaveUnder();
+
+        if (GameplayFrameInterrupted()) return 1;
         StepViewportResize();
+        if (GameplayFrameInterrupted()) return 1;
 
         UpdateAmbientMusic();
 
@@ -528,8 +535,10 @@ i32 CPlay::Render() {
             }
         }
         DrawWorldView();
+        if (GameplayFrameInterrupted()) return 1;
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
+        if (GameplayFrameInterrupted()) return 1;
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
@@ -621,7 +630,9 @@ i32 CPlay::Render() {
         if (m_worldReady != false) {
             view->DrawBox(&m_hudRect, 0xff);
         }
+        if (GameplayFrameInterrupted()) return 1;
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+        if (GameplayFrameInterrupted()) return 1;
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         {
             CGameLevel* lvl = m_world->m_level;
@@ -654,6 +665,8 @@ i32 CPlay::Render() {
     }
 
     RestoreCursorSaveUnder();
+
+    if (GameplayFrameInterrupted()) return 1;
     CDDrawSurfacePair* back = m_world->GetDrawTarget()->GetBackPair();
     if (back == NULL) {
         return 0;
@@ -670,7 +683,9 @@ i32 CPlay::Render() {
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
                 DrawVisibleWorld();
+                if (GameplayFrameInterrupted()) return 1;
                 m_statusBar->LoadMainStatusBarSprite();
+                if (GameplayFrameInterrupted()) return 1;
                 back->GetSurface()->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
@@ -679,7 +694,10 @@ i32 CPlay::Render() {
         } else {
 
             DrawVisibleWorld();
+
+            if (GameplayFrameInterrupted()) return 1;
             m_statusBar->LoadMainStatusBarSprite();
+            if (GameplayFrameInterrupted()) return 1;
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -688,7 +706,9 @@ i32 CPlay::Render() {
         }
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
+        if (GameplayFrameInterrupted()) return 1;
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+        if (GameplayFrameInterrupted()) return 1;
     }
     return 1;
 }
@@ -809,6 +829,7 @@ i32 CPlay::ProfileInputFrame() {
 
     i32 statusBarMs = static_cast<i32>(tg());
     m_statusBar->LoadMainStatusBarSprite();
+    if (GameplayFrameInterrupted()) return 1;
     statusBarMs = static_cast<i32>(tg() - static_cast<u32>(statusBarMs));
 
     g_brickText1 = formatText("Input=%i, Activate=%i, Deact=%i, Update=%i, HitTest=%i, Draw=%i, Fixed=%i, "
@@ -816,7 +837,9 @@ i32 CPlay::ProfileInputFrame() {
 
     DrawDebugStats();
     g_flipProfileMs = static_cast<i32>(tg());
+    if (GameplayFrameInterrupted()) return 1;
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    if (GameplayFrameInterrupted()) return 1;
     g_flipProfileMs = static_cast<i32>((tg() - static_cast<u32>(g_flipProfileMs)));
     g_deactivateProfileMs = static_cast<i32>(tg());
     {
@@ -847,10 +870,13 @@ i32 CPlay::ProfileDeltaFrame() {
     );
     u32 t2 = tg();
     DrawVisibleWorld();
+    if (GameplayFrameInterrupted()) return 1;
     i32 presentMs = static_cast<i32>((tg() - t2));
     g_brickText1 = formatText("Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ", static_cast<i32>(g_frameDelta), renderMs, presentMs, updates);
     DrawDebugStats();
+    if (GameplayFrameInterrupted()) return 1;
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    if (GameplayFrameInterrupted()) return 1;
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {
@@ -917,7 +943,12 @@ i32 CPlay::PrepareLoadingTitle() {
 }
 
 i32 CPlay::RestoreAfterSceneFade() {
-    return IsLoading() ? RestoreLoading() : InputVirtual();
+    if (IsLoading()) return RestoreLoading();
+    GameplayPresentation pending = m_gameplayPresentation;
+    CancelSceneFade();
+    if (!pending.recover() || !RestoreGameplayImages() || m_mgr->IsQuitPending()) return 0;
+    m_gameplayPresentation = pending;
+    return 1;
 }
 
 i32 CPlay::RestoreLoading() {
@@ -1519,7 +1550,7 @@ void CPlay::ModeCleanup() {
     }
 }
 
-i32 CPlay::InputVirtual() {
+i32 CPlay::RestoreGameplayImages() {
     if (!CState::InputVirtual()) {
         return 0;
     }
@@ -1550,42 +1581,27 @@ i32 CPlay::InputVirtual() {
         return 0;
     }
 
-    g_inputMgr->ReadAll();
-    while (ShowCursor(false) >= 0)
-        ;
-
-    m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
-
-    DrawWorldView();
-
-    m_statusBar->Deactivate();
-    m_statusBar->LoadMainStatusBarSprite();
-    m_stepCountdown = 2;
-    m_world->GetDrawTarget()->TransTitle();
-    RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
+i32 CPlay::InputVirtual() {
+    if (IsLoading()) return RestoreLoading();
+    if (m_gameplayPresentation.active()) return RestoreAfterSceneFade();
+    CancelSceneFade();
+    if (!RestoreGameplayImages()) return 0;
+    return QueueGameplayPresentation(RestoreGameplay, GAMESTATE_NONE);
+}
+
 i32 CPlay::RestoreDisplay() {
-    if (IsActive() == 0) {
-        return 0;
-    }
-    i32 savedW = m_mgr->m_savedModeSize.cx;
-    i32 liveW = m_mgr->m_modeSize.cx;
-    i32 savedH = m_mgr->m_savedModeSize.cy;
-    i32 liveH = m_mgr->m_modeSize.cy;
-    if (savedW != liveW || savedH != liveH) {
-        if (m_mgr->SetVideoMode(savedW, savedH, true) == 0) {
-            return 0;
-        }
-    }
-    if (m_statusBar != NULL) {
-        m_statusBar->Deactivate();
-        DrawWorldView();
-        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    }
-    return 1;
+    if (!IsActive()) return 0;
+    return InputVirtual();
+}
+
+i32 CPlay::RestoreArrival(GameStateId previousState) {
+    CancelSceneFade();
+    if (!IsActive() || !RestoreGameplayImages()) return 0;
+    if (!QueueGameplayPresentation(EnterGameplayState, previousState)) return 0;
+    return m_gameplayPresentation.recover();
 }
 
 i32 CPlay::OnChar(i32 charCode, i32 keyData) {
@@ -1595,8 +1611,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     if (m_renderDisabled != false) {
         m_renderDisabled = false;
         m_hudSuppressed = true;
-        EnterMode(GAMESTATE_PLAY);
-        m_inGame = true;
+        if (!EnterMode(GAMESTATE_PLAY)) m_mgr->ReportError(IDX(IDS_SET_GAME_STATE), 0x435);
         return 1;
     }
     if (m_inGame != false) {
@@ -2456,8 +2471,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     if (m_renderDisabled != false) {
         m_hudSuppressed = true;
         m_renderDisabled = false;
-        EnterMode(GAMESTATE_PLAY);
-        m_inGame = true;
+        if (!EnterMode(GAMESTATE_PLAY)) m_mgr->ReportError(IDX(IDS_SET_GAME_STATE), 0x435);
         return 1;
     }
     if (m_inGame != false) {
@@ -2848,8 +2862,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_renderDisabled != false) {
         m_hudSuppressed = true;
         m_renderDisabled = false;
-        EnterMode(GAMESTATE_PLAY);
-        m_inGame = true;
+        if (!EnterMode(GAMESTATE_PLAY)) m_mgr->ReportError(IDX(IDS_SET_GAME_STATE), 0x435);
         return 1;
     }
     if (m_inGame != false) {
@@ -5745,35 +5758,112 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
 }
 
 i32 CPlay::EnterMode(GameStateId mode) {
-    (g_gameReg)->CheckSavedMode();
-    m_statusBar->Deactivate();
-    m_statusBar->UpdateStatusBar(0);
-    m_mgr->RefreshGameClock();
+    return QueueGameplayPresentation(StartGameplayInput, mode);
+}
 
-    if (m_initialFramePending != false) {
-        m_initialFramePending = false;
-        m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
-        DrawWorldView();
+i32 CPlay::QueueGameplayPresentation(GameplayPresentationKind kind, GameStateId previous) {
+    if (m_mgr->IsQuitPending() || IsLoading() || IsDeparting() || IsSceneFading()) return 0;
+    return m_gameplayPresentation.request(kind, previous);
+}
+
+bool CPlay::IsSceneFading() const {
+    return m_preparingGameplay || m_gameplayPresentation.active() || CState::IsSceneFading();
+}
+
+bool CPlay::GameplayFrameInterrupted() const {
+    return m_mgr->IsQuitPending() || (!m_preparingGameplay && IsSceneFading());
+}
+
+void CPlay::OnSceneFadeCancelled() {
+    m_gameplayPresentation.cancel();
+}
+
+i32 CPlay::AdvanceSceneFade(u32 deltaMs) {
+    if (!m_gameplayPresentation.needsPrepare()) return CState::AdvanceSceneFade(deltaMs);
+    GameplayPresentation pending = m_gameplayPresentation;
+    const GameplayPresentationAction action = pending.action();
+    m_preparingGameplay = true;
+    // Display-mode changes and BeginSceneFade release old surface borrows and
+    // cancel the stored action. Only this live preparation may restore its copy.
+    const bool prepared = PrepareGameplayFrame(action) != 0;
+    const bool started = prepared && !m_mgr->IsQuitPending()
+        && (action.recovery ? BeginScenePresentation() : BeginSceneFade(0x50, 0x3e8, 0, true));
+    m_preparingGameplay = false;
+    if (!started || m_mgr->IsQuitPending()) {
+        CancelSceneFade();
+        return -1;
+    }
+    pending.prepared();
+    m_gameplayPresentation = pending;
+    return 1;
+}
+
+i32 CPlay::PrepareGameplayFrame(const GameplayPresentationAction& action) {
+    const bool restoring = action.kind == RestoreGameplay || action.recovery;
+    const bool initial = m_initialFramePending != false;
+    if (!m_mgr->CheckSavedMode() || m_mgr->IsQuitPending()) return 0;
+    if (action.previous == GAMESTATE_HELP) g_frameTime = m_savedClock;
+    if (!restoring) {
         m_statusBar->Deactivate();
-        m_statusBar->LoadMainStatusBarSprite();
-    } else {
-        DrawWorldView();
-        m_statusBar->Deactivate();
-        m_statusBar->LoadMainStatusBarSprite();
-        if (mode == GAMESTATE_HELP) {
-            if (m_world->GetDrawTarget()->HasOverlay() == 0
-                && m_world->GetDrawTarget()->CreateOverlay(0, 0x30000) == 0) {
+        m_statusBar->UpdateStatusBar(0);
+    }
+    g_inputMgr->ReadAll();
+    while (ShowCursor(false) >= 0) {}
+    m_mgr->RefreshGameClock();
+    for (i32 attempt = 0; attempt < 2; ++attempt) {
+        m_gameplayPreparationInterrupted = false;
+        CDDrawSubMgrPages* pages = m_world->GetDrawTarget();
+        if (restoring || initial) {
+            if (!pages->GetBackPair()->GetSurface()->Fill(0)) {
+                if (m_gameplayPreparationInterrupted) continue;
                 return 0;
             }
-        } else {
-            m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
+            UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        }
+        DrawWorldView();
+        if (m_mgr->IsQuitPending()) return 0;
+        m_statusBar->Deactivate();
+        m_statusBar->LoadMainStatusBarSprite();
+        if (!restoring && !initial && action.previous != GAMESTATE_HELP) {
+            if (!pages->GetBackPair()->GetSurface()->Fill(0)) {
+                if (m_gameplayPreparationInterrupted) continue;
+                return 0;
+            }
+        }
+        if (!pages->HasOverlay() && !pages->CreateOverlay(0, 0x30000)) return 0;
+        if (!pages->TransTitle() || m_mgr->IsQuitPending()) return 0;
+        if (!m_gameplayPreparationInterrupted) {
+            if (action.kind != RestoreGameplay) m_initialFramePending = false;
+            return 1;
         }
     }
+    return 0;
+}
 
-    m_world->GetDrawTarget()->TransTitle();
-    RetireScene(0x50, 0x3e8, 0, true);
+i32 CPlay::RecoverScene() {
+    if (m_preparingGameplay) {
+        m_gameplayPreparationInterrupted = true;
+        return RestoreGameplayImages();
+    }
+    return InputVirtual();
+}
 
+void CPlay::OnSceneFadeComplete() {
+    GameplayPresentationAction action;
+    if (!m_gameplayPresentation.take(action) || m_mgr->IsQuitPending()) return;
+    if (action.kind != RestoreGameplay) {
+        FinishEnterMode(action.previous);
+        if (action.kind == EnterGameplayState) FinishStateEntry(action.previous);
+        else m_inGame = true;
+    } else {
+        m_stepCountdown = 2;
+        m_cursorSavedSurfaceValid[0] = m_cursorSavedSurfaceValid[1] = 0;
+        m_cursorBufferIndex = 0;
+        m_mgr->RefreshGameClock();
+    }
+}
+
+void CPlay::FinishEnterMode(GameStateId mode) {
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {
         lvl->m_mainPlane->DeactivateDistantObjects();
@@ -5789,9 +5879,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
         g_frameTime = m_savedClock;
     }
     m_statusBar->Deactivate();
-    RegisterInputBindings();
     m_hudSuppressed = false;
-    return 1;
 }
 
 i32 CPlay::PostActionCue(i32 cueId) {
@@ -6439,18 +6527,6 @@ i32 CPlay::NotifyVisibleEntities() {
     return 1;
 }
 
-i32 CPlay::RegisterInputBindings() {
-    m_mgr->m_gameWnd->PumpMessages(WM_CHAR, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_MOUSEMOVE, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDBLCLK, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDBLCLK, 0x40);
-    return 1;
-}
 
 i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     if (active != false) {

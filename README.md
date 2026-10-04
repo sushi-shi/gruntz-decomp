@@ -435,8 +435,8 @@ The Windows sine adapter uses nonwaiting locks for returning playback. It retrie
 busy surfaces, unlocks before reporting failure, and releases playback before
 asking the state to restore its display. The adapter retains its existing bounded
 2000-row/sample storage and rejects larger dimensions. Unmigrated synchronous
-callers retain their waiting/restoring lock path. Gameplay entry/restoration and booty fades
-still require caller-continuation rewrites. The returning state-departure path
+callers retain their waiting/restoring lock path. Booty fades still require
+caller-continuation rewrites. The returning state-departure path
 below retains states through exit fades and audio ramps. This is not completion
 of the scene-transition or rendering-host port.
 
@@ -481,8 +481,7 @@ ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-state
 The portable tests cover phase order, retained-state lifetime, per-phase failure,
 cancellation and replacement during callbacks, delay saturation, clock wrap and
 suspension. They do not execute the production graphics/audio adapters or game UI.
-Gameplay entry/restoration fades, booty scene fades, movie playback and
-multiplayer waits remain synchronous. Menu `StopMusicChain` still has separate
+Booty scene fades, movie playback and multiplayer waits remain synchronous. Menu `StopMusicChain` still has separate
 modal/movie callers to migrate. This is not a complete browser-host lifecycle yet.
 
 ### Staged level loading
@@ -510,3 +509,28 @@ callback, new-state versus reload completion, failure/cancellation at every load
 step, reentrant replacement, and presentation delays across wrap and suspension.
 The integration compiles with both Windows toolchains; graphics recovery and
 network readiness are not exercised by the portable component tests.
+
+
+### Returning gameplay presentation
+
+Gameplay entry, continue-input presentation, and display restoration own a pending
+completion action. Preparation runs on a later frame, then fade playback advances
+without spinning. Input and repaint rendering are gated from request through
+completion. Audio, cursor state, Help-return clock restoration and multiplayer
+entry bookkeeping run after the final presented frame. Canceling playback also
+discards its completion action; loading/departure fades have no gameplay action.
+
+A lost surface restores images immediately, but queues scene composition outside
+the interrupted draw. The interrupted renderer stops before presenting another
+frame. Recovery retains the original entry action and uses one bounded final
+presentation attempt; it cannot complete that action twice. Preparation can redraw
+once after a reentrant surface restoration. A resumed stacked state keeps its
+single display-restoration fallback when deferred arrival fails; successful
+fallback still runs the original state-entry completion.
+
+`check-fades.py --target all` tests the portable completion state alongside actual
+fade playback: deferred preparation, state versus input entry, Help mode retention,
+cancellation before/during playback, recovery before/during playback, one-shot
+completion, busy/failure cleanup, and wrap/suspension timing. The Windows adapter
+and its production rendering callers are compile-checked and statically reviewed;
+these component tests do not exercise DirectDraw, audio or the multiplayer session.

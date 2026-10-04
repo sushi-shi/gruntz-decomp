@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <Runtime/LevelLoading.h>
+#include <Gruntz/GameplayPresentation.h>
 
 #include <string>
 #include <Gruntz/GlyphStringDraw.h>
@@ -87,6 +88,14 @@ public:
 
     virtual i32 InputVirtual()  ;
     virtual i32 EnterState(GameStateId previousState)  ;
+    virtual void FinishStateEntry(GameStateId previousState);
+    virtual i32 RestoreArrival(GameStateId previousState);
+    virtual i32 AdvanceSceneFade(u32 deltaMs);
+    virtual bool IsSceneFading() const;
+    virtual void OnSceneFadeComplete();
+    virtual void OnSceneFadeCancelled();
+    virtual i32 RecoverScene();
+    bool GameplayFrameInterrupted() const;
     virtual i32 LeaveState(GameStateId nextState)  ;
     virtual i32 FinishDeparture(GameStateId nextState);
     virtual i32 RestoreDeparture();
@@ -236,7 +245,6 @@ public:
     i32 ValidateLevelTiles();
 
     i32 BuildHelpReveal(b32 final);
-    i32 RegisterInputBindings();
 
     i32 LoadLevelAnims(i32 force);
 
@@ -417,6 +425,13 @@ public:
     i32 ScanShuffleQuads();
 
 private:
+    GameplayPresentation m_gameplayPresentation;
+    bool m_preparingGameplay, m_gameplayPreparationInterrupted;
+    i32 QueueGameplayPresentation(GameplayPresentationKind kind, GameStateId previous);
+    i32 PrepareGameplayFrame(const GameplayPresentationAction& action);
+    i32 RestoreGameplayImages();
+    void FinishEnterMode(GameStateId mode);
+
     i32 PrepareLevelLoad(i32 level);
     i32 PrepareLoadingTitle();
     i32 DrawLoadingPrompt();
@@ -474,6 +489,8 @@ inline CPlay::~CPlay() {
 }
 
 inline CPlay::CPlay() {
+    m_preparingGameplay = false;
+    m_gameplayPreparationInterrupted = false;
     m_loadNamespaces = false;
     m_loadFailed = false;
     m_loadRestoreAttempted = false;

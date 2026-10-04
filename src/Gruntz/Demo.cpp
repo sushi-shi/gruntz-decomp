@@ -90,6 +90,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) {
 
 i32 CDemo::Render() {
     CPlay::Render();
+    if (GameplayFrameInterrupted()) return 1;
     CInputDeviceGroup* list = g_actorList;
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
