@@ -304,15 +304,12 @@ i32 CRollingBall::Update() {
                             m_target.m_x -= 0x10;
                             break;
                         case MOVING_DEATH_A_NE_1:
+                        case MOVING_DEATH_A_NE_3:
                             m_target.m_x += 0x10;
                             m_target.m_y -= 0x10;
                             break;
                         case MOVING_DEATH_A_NW_2:
                             m_target.m_x -= 0x10;
-                            m_target.m_y -= 0x10;
-                            break;
-                        case MOVING_DEATH_A_NE_3:
-                            m_target.m_x += 0x10;
                             m_target.m_y -= 0x10;
                             break;
                         case MOVING_DEATH_A_N_1:
@@ -328,6 +325,23 @@ i32 CRollingBall::Update() {
                             return 0;
                     }
                     break;
+                }
+
+                case TILEKIND_REVEALED_POWERUP: {
+                    switch (static_cast<LevelArea>(g_gameReg->m_curState->m_levelType)) {
+                        case AREA_HIGH_ON_SWEETZ:
+                        case AREA_HIGH_ROLLERZ:
+                        case AREA_GRUNTZ_IN_SPACE:
+                            SetImageSetByName("LEVEL_ROLLINGBALL_FALL");
+                            SwitchAnimationByName("LEVEL_ROLLINGBALLFALL", 0);
+                            break;
+                        default:
+                            SetImageSetByName("LEVEL_ROLLINGBALL_SINK");
+                            SwitchAnimationByName("LEVEL_ROLLINGBALLSINKHOLE", 0);
+                            break;
+                    }
+                    m_explodeLatch = true;
+                    return 0;
                 }
 
                 case TILEKIND_WATER:
@@ -347,23 +361,6 @@ i32 CRollingBall::Update() {
                             "GAME_WATER",
                             "GAME_WATER"
                         );
-                    }
-                    m_explodeLatch = true;
-                    return 0;
-                }
-
-                case TILEKIND_REVEALED_POWERUP: {
-                    switch (static_cast<LevelArea>(g_gameReg->m_curState->m_levelType)) {
-                        case AREA_HIGH_ON_SWEETZ:
-                        case AREA_HIGH_ROLLERZ:
-                        case AREA_GRUNTZ_IN_SPACE:
-                            SetImageSetByName("LEVEL_ROLLINGBALL_FALL");
-                            SwitchAnimationByName("LEVEL_ROLLINGBALLFALL", 0);
-                            break;
-                        default:
-                            SetImageSetByName("LEVEL_ROLLINGBALL_SINK");
-                            SwitchAnimationByName("LEVEL_ROLLINGBALLSINKHOLE", 0);
-                            break;
                     }
                     m_explodeLatch = true;
                     return 0;
