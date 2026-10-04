@@ -3761,7 +3761,7 @@ sbi_rectonly	?AdvanceGruntWell@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	d24fb0
 sbi_rectonly	?AdvanceTab@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	6	7bcfe4469a0b	0x10b4f0	100.0000	
 sbi_rectonly	?AnySlotActive@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	a2374f91cba2	0x105710	100.0000	
 sbi_rectonly	?ArmSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	0a34a099b032	0x105560	100.0000	
-sbi_rectonly	?BuildGameMenu@CStatusBarMgr@@QAEHXZ	96.3063	96.3063	17	f4451d6fa062	0x101580	96.3063	
+sbi_rectonly	?BuildGameTabContent@CStatusBarMgr@@QAEHXZ	96.3063	96.3063	17	f4451d6fa062	0x101580	96.3063	
 sbi_rectonly	?BuildGameTabPauseButton@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	ae2ed2f39dd6	0x102200	100.0000	
 sbi_rectonly	?BuildGameTabResumeButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	6	875193a915f5	0x102180	100.0000	
 sbi_rectonly	?BuildSideTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	5	ecfb352b6448	0x105070	100.0000	
@@ -3770,7 +3770,7 @@ sbi_rectonly	?BuildTabzDialog@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	25	189dc87
 sbi_rectonly	?ClearButtonHighlights@CStatusBarMgr@@QAEHW4StatusBarTab@@@Z	100.0000	100.0000	3	371a5cc3fb75	0x101420	100.0000	
 sbi_rectonly	?ClearHlCell@CStatusBarMgr@@QAEXHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	2	39821914feb1	0x1069c0	100.0000	
 sbi_rectonly	?ClearUnitSample@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	11	896dd06b7358	0x104f90	100.0000	
-sbi_rectonly	?ClearTabGroup@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	0b9b5ee6faee	0x100b00	100.0000	
+sbi_rectonly	?ClearActiveTabContent@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	0b9b5ee6faee	0x100b00	100.0000	
 sbi_rectonly	?CommitSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	22ff35e2e23b	0x106790	100.0000	
 sbi_rectonly	?CreateCollapsedSprite@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	6	2d8d11571b59	0x104dd0	100.0000	
 sbi_rectonly	?Deserialize@CStatusBarMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	24	ec4bc25266d9	0x109520	100.0000	
@@ -3797,7 +3797,7 @@ sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	15	9
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	17	9e0e805c8b9e	0x107ae0	100.0000	
 sbi_rectonly	?LoadRezMachineConfig@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	21	762907255a9c	0x105e40	100.0000	
 sbi_rectonly	?SetUnitSampleMode@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	17	d7ee87bff18d	0x104e60	100.0000	
-sbi_rectonly	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	95.0502	95.0502	31	ac6757fc7f2a	0x102250	95.8091	
+sbi_rectonly	?BuildActiveTabContent@CStatusBarMgr@@QAEHXZ	95.0502	95.0502	31	ac6757fc7f2a	0x102250	95.8091	
 sbi_rectonly	?LockDestructButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	cb0c3a749c03	0x10bb90	100.0000	
 sbi_rectonly	?NotifyAllSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	02dcf5a9d65c	0x106a00	100.0000	
 sbi_rectonly	?OnDoubleClick@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	2	776837415b4a	0x100550	100.0000	
@@ -3832,7 +3832,7 @@ sbi_rectonly	?SetHlCellByTier@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	1	1b3c44
 sbi_rectonly	?SetLeftRezMachineAnimation@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	100.0000	100.0000	5	80d8684e1204	0x1066f0	100.0000	
 sbi_rectonly	?SetRightRezMachineAnimation@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	100.0000	100.0000	5	c0b7fdc57374	0x106740	100.0000	
 sbi_rectonly	?SetState@CStatusBarMgr@@QAEHW4StatusBarDock@@@Z	100.0000	100.0000	4	ba8fe952a782	0xfe3e0	100.0000	
-sbi_rectonly	?SetTab@CStatusBarMgr@@QAEHW4GameTabContent@@H@Z	100.0000	100.0000	7	53b4305ce240	0x1020a0	100.0000	
+sbi_rectonly	?SetGameTabContent@CStatusBarMgr@@QAEHW4GameTabContent@@H@Z	100.0000	100.0000	7	53b4305ce240	0x1020a0	100.0000	
 sbi_rectonly	?SetTabState@CStatusBarMgr@@QAEHW4SbiCommandId@@W4SbiMenuItemState@@@Z	100.0000	100.0000	4	ded6edc760e8	0x100d70	100.0000	
 sbi_rectonly	?Setup@CStatusBarItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDH@Z	100.0000	100.0000	3	5e830b4ac9d0	0x100660	100.0000	
 sbi_rectonly	?StartChipMachineCycle@CStatusBarMgr@@QAEHXZ	98.4768	98.4768	11	2a11f4ca9650	0x107d00	98.4768	

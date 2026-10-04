@@ -2069,7 +2069,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->GetActiveTab() != TAB_GAME) {
             lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        lv->SetTab(GAME_TAB_MENU, true);
+        lv->SetGameTabContent(GAME_TAB_MENU, true);
         lv->RequestRedraw();
         return 1;
     }
@@ -5520,7 +5520,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
         if (g->GetActiveTab() != TAB_GAME) {
             g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        g->SetTab(GAME_TAB_MISSION_STATUS, true);
+        g->SetGameTabContent(GAME_TAB_MISSION_STATUS, true);
         g->RequestRedraw();
     }
     m_statusBar->BuildGameTabResumeButton(true);

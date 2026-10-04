@@ -108,8 +108,8 @@ public:
         Teardown();
     }
 
-    i32 LoadTabSprites();
-    i32 BuildGameMenu();
+    i32 BuildActiveTabContent();
+    i32 BuildGameTabContent();
 
     void StartDestructWarning(i32 countdownMs);
     i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
@@ -173,7 +173,7 @@ public:
     i32 SelectToolResource(StatusBarHighlightRow row);
     i32 SelectToyResource(StatusBarHighlightRow row);
     i32 SelectBrickResource(StatusBarHighlightRow row);
-    i32 SetTab(GameTabContent tab, b32 forceReload);
+    i32 SetGameTabContent(GameTabContent content, b32 forceReload);
     i32 ClearButtonHighlights(StatusBarTab idx);
     i32 HitTestSideTabs(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
@@ -198,7 +198,7 @@ public:
     i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
     CStatusBarItem* HitTestRects(i32 x, i32 y);
     void ResetWidgets(b32 keepLists);
-    void ClearTabGroup();
+    void ClearActiveTabContent();
     void AddTabItem(i32 tab, CStatusBarItem* item) {
         m_tabLists[tab].AddTail(item);
     }
@@ -247,7 +247,7 @@ public:
 
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
-    GameTabContent m_itemKind;
+    GameTabContent m_gameTabContent;
     StatusSampleMode m_unitSampleModes[TM_UNITS_PER_PLAYER];
     CSBI_SideTab* m_unitSideTabs[TM_UNITS_PER_PLAYER];
 

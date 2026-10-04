@@ -119,9 +119,9 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
     }
 
     if (state == MENUITEM_SELECTED) {
-        m_owner->ClearTabGroup();
+        m_owner->ClearActiveTabContent();
         m_owner->m_activeTab = static_cast<StatusBarTab>(IDX(m_cmd));
-        m_owner->LoadTabSprites();
+        m_owner->BuildActiveTabContent();
         m_owner->RequestRedraw();
     } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 

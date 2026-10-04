@@ -105,7 +105,7 @@ i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
     m_redrawFrames = 0;
     m_collapsedSpriteX = vx - 0x45;
     m_collapsedSpriteY = vy - 0x30;
-    m_itemKind = GAME_TAB_MENU;
+    m_gameTabContent = GAME_TAB_MENU;
     m_tabCycle = g_curPlayer;
     Reset();
     if (BuildStatusBarTabs() == 0) {
@@ -453,7 +453,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_GAME_TAB:
                     HiCueLookup();
-                    SetTab(GAME_TAB_MENU, false);
+                    SetGameTabContent(GAME_TAB_MENU, false);
                     return 1;
                 case SBICMD_DESTRUCT:
                     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
@@ -976,7 +976,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (BuildSideTabs() == 0) {
         return 0;
     }
-    if (LoadTabSprites() == 0) {
+    if (BuildActiveTabContent() == 0) {
         return 0;
     }
     if (BuildTabzDialog() == 0) {
@@ -1097,7 +1097,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
 }
 
 RVA(0x00100b00, 0x150)
-void CStatusBarMgr::ClearTabGroup() {
+void CStatusBarMgr::ClearActiveTabContent() {
     if (m_activeTab == TAB_NONE) {
         return;
     }
@@ -1386,12 +1386,12 @@ i32 CStatusBarMgr::ClearButtonHighlights(StatusBarTab idx) {
 }
 
 RVA(0x00101580, 0x806)
-i32 CStatusBarMgr::BuildGameMenu() {
+i32 CStatusBarMgr::BuildGameTabContent() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_barRect.left;
     i32 by = m_barRect.top;
 
-    switch (m_itemKind) {
+    switch (m_gameTabContent) {
         case GAME_TAB_MISSION_STATUS: {
             CSBI_ImageSet* status;
             if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
@@ -1571,8 +1571,8 @@ RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
 RVA_COMPGEN(0x00102000, 0x7f, ??1CSBI_ImageSet@@UAE@XZ)
 
 RVA(0x001020a0, 0xae)
-i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
-    if (tab == m_itemKind && forceReload == false) {
+i32 CStatusBarMgr::SetGameTabContent(GameTabContent content, b32 forceReload) {
+    if (content == m_gameTabContent && forceReload == false) {
         return 1;
     }
     DELETE_STATUS_ITEMS(m_tabLists[5])
@@ -1582,9 +1582,9 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     m_gameSettingsButton = NULL;
     m_gameHelpButton = NULL;
     m_gameQuitButton = NULL;
-    m_itemKind = tab;
+    m_gameTabContent = content;
 
-    if (!LoadTabSprites()) {
+    if (!BuildActiveTabContent()) {
         g_gameReg->ReportError(s_activateErrId, s_setTabErrTag);
         return 0;
     }
@@ -1619,7 +1619,7 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 }
 
 RVA(0x00102250, 0x1de4)
-i32 CStatusBarMgr::LoadTabSprites() {
+i32 CStatusBarMgr::BuildActiveTabContent() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_barRect.left;
     i32 by = m_barRect.top;
@@ -2266,7 +2266,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                 }
             }
-            BuildGameMenu();
+            BuildGameTabContent();
             return 1;
     }
     return 1;
@@ -3300,10 +3300,10 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         RestoreStatusBar();
     }
     if (m_activeTab != TAB_GAME) {
-        ClearTabGroup();
+        ClearActiveTabContent();
         m_activeTab = TAB_GAME;
     }
-    SetTab(GAME_TAB_MENU, true);
+    SetGameTabContent(GAME_TAB_MENU, true);
     memset(m_unitSampleModes, 0, sizeof(m_unitSampleModes));
     Reset();
 
@@ -3672,7 +3672,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
     s->Write(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
     s->Write(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
-    s->Write(&m_itemKind, sizeof(m_itemKind));
+    s->Write(&m_gameTabContent, sizeof(m_gameTabContent));
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_unitSampleModes;
@@ -3760,7 +3760,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
     ar->Read(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
     ar->Read(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
-    ar->Read(&m_itemKind, sizeof(m_itemKind));
+    ar->Read(&m_gameTabContent, sizeof(m_gameTabContent));
     ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_unitSampleModes;
@@ -4327,7 +4327,7 @@ void CStatusBarMgr::ExitMode() {
         if (m_activeTab != TAB_GAME) {
             SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        SetTab(GAME_TAB_MENU, true);
+        SetGameTabContent(GAME_TAB_MENU, true);
         RequestRedraw();
     } else {
         m_chatBoxDisabled = false;
