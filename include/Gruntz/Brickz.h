@@ -4,8 +4,8 @@
 #include <rva.h>
 
 #include <Enums.h>
-#include <Gruntz/MapMgr.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapMgr.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 
