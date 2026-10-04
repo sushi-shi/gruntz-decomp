@@ -3831,7 +3831,7 @@ sbi_rectonly	?SetGruntWell@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	812a7155db
 sbi_rectonly	?SetGruntWellTarget@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	bba8ebd627a7	0x1057b0	100.0000	
 sbi_rectonly	?SetLeftRezMachineAnimation@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	100.0000	100.0000	5	80d8684e1204	0x1066f0	100.0000	
 sbi_rectonly	?SetRightRezMachineAnimation@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	100.0000	100.0000	5	c0b7fdc57374	0x106740	100.0000	
-sbi_rectonly	?SetState@CStatusBarMgr@@QAEHW4StatusBarDock@@@Z	100.0000	100.0000	4	ba8fe952a782	0xfe3e0	100.0000	
+sbi_rectonly	?SetDockState@CStatusBarMgr@@QAEHW4StatusBarDock@@@Z	100.0000	100.0000	4	ba8fe952a782	0xfe3e0	100.0000	
 sbi_rectonly	?SetTabState@CStatusBarMgr@@QAEHW4SbiCommandId@@W4SbiMenuItemState@@@Z	100.0000	100.0000	4	ded6edc760e8	0x100d70	100.0000	
 sbi_rectonly	?SetUnitSampleMode@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	18	0044545a849a	0x104e60	100.0000	
 sbi_rectonly	?Setup@CStatusBarItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDH@Z	100.0000	100.0000	3	5e830b4ac9d0	0x100660	100.0000	

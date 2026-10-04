@@ -51,7 +51,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     tagSIZE screenSize = g_gameReg->m_modeSize;
     i32 cx = screenSize.cx / 2;
     i32 cy = screenSize.cy / 2;
-    if (bar->GetState() != STATUSBAR_HIDDEN) {
+    if (bar->GetDockState() != STATUSBAR_HIDDEN) {
         cx -= 0xa0;
     }
     if (snapFlag) {

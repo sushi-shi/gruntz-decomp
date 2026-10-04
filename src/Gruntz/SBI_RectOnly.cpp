@@ -204,7 +204,7 @@ void CStatusBarMgr::Teardown() {
 }
 
 RVA(0x000fe3e0, 0x55)
-i32 CStatusBarMgr::SetState(StatusBarDock state) {
+i32 CStatusBarMgr::SetDockState(StatusBarDock state) {
     if (m_layoutLocked != false) {
         return 1;
     }
@@ -231,7 +231,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
     if (m_layoutLocked == false && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(true);
         SetRect(&m_barRect, 0, 0, 0xa0, SCREEN_H_PX);
-        SetState(STATUSBAR_DOCK_LEFT);
+        SetDockState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
             g_gameReg->ReportError(s_activateErrId, 0x448);
@@ -254,7 +254,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
 
     tagSIZE screenSize = g_gameReg->m_modeSize;
     SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
-    SetState(STATUSBAR_DOCK_RIGHT);
+    SetDockState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
         g_gameReg->ReportError(s_activateErrId, 0x449);
@@ -269,7 +269,7 @@ i32 CStatusBarMgr::HideStatusBar() {
     if (m_layoutLocked == false && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(true);
         SetRect(&m_barRect, -1, -1, -1, -1);
-        SetState(STATUSBAR_HIDDEN);
+        SetDockState(STATUSBAR_HIDDEN);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     }
     return 1;
@@ -3981,7 +3981,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
         WarpStoneFragment fragment = m_fragment;
         g_gameReg->GetTriggerMgr()->AddWarpStoneFragment(fragment);
         m_owner->m_layoutLocked = false;
-        if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
+        if (m_owner->GetDockState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);
             m_owner->TryActivate();
         }

@@ -213,13 +213,13 @@ public:
     const RECT* GetBarRect() const {
         return &m_barRect;
     }
-    StatusBarDock GetState() const {
+    StatusBarDock GetDockState() const {
         return m_position;
     }
     StatusBarTab GetActiveTab() const {
         return m_activeTab;
     }
-    i32 SetState(StatusBarDock state);
+    i32 SetDockState(StatusBarDock state);
     i32 RestoreStatusBar();
     i32 SetCollapsedSpritePosition(i32 x, i32 y);
     i32 HitTestCollapsedSprite(i32 x, i32 y);

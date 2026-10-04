@@ -33,7 +33,7 @@ static __inline void HiCueTimed() {
 }
 
 static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const char* cueKey) {
-    if (statusBar->GetActiveTab() == tab && statusBar->GetState() != STATUSBAR_HIDDEN) {
+    if (statusBar->GetActiveTab() == tab && statusBar->GetDockState() != STATUSBAR_HIDDEN) {
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), cueKey);
     }
 }

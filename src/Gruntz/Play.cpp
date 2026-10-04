@@ -530,10 +530,10 @@ i32 CPlay::Render() {
         m_statusBar->Render();
         m_mgr->GetTileGrid()->UpdateDiagonals(m_mgr);
 
-        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        if (m_minimap != NULL && m_statusBar->GetDockState() != STATUSBAR_HIDDEN
             && m_statusBar->GetActiveTab() != TAB_GAME) {
             RECT rc;
-            if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
+            if (m_statusBar->GetDockState() == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
                 SetRect(
@@ -1336,7 +1336,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
 
                 CStatusBarMgr* statusBar = self->m_statusBar;
                 i32 originX = TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX;
-                if (statusBar->GetState() != STATUSBAR_DOCK_RIGHT) {
+                if (statusBar->GetDockState() != STATUSBAR_DOCK_RIGHT) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
                 if (!self->m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
@@ -1668,7 +1668,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
         if (charCode == '=' || charCode == '+') {
             m_statusBar->RestoreStatusBar();
 
-            if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
+            if (m_statusBar->GetDockState() == STATUSBAR_DOCK_LEFT) {
                 m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
             } else {
                 m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
@@ -1993,7 +1993,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_layoutLocked != false) {
             return 1;
         }
-        if (lv->GetState() == STATUSBAR_HIDDEN) {
+        if (lv->GetDockState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_GRUNTZ) {
@@ -2018,7 +2018,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_layoutLocked != false) {
             return 1;
         }
-        if (lv->GetState() == STATUSBAR_HIDDEN) {
+        if (lv->GetDockState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_RESOURCE) {
@@ -2039,7 +2039,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_layoutLocked != false) {
             return 1;
         }
-        if (lv->GetState() == STATUSBAR_HIDDEN) {
+        if (lv->GetDockState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_STATZ) {
@@ -2074,7 +2074,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_layoutLocked != false) {
             return 1;
         }
-        if (lv->GetState() == STATUSBAR_HIDDEN) {
+        if (lv->GetDockState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
         if (lv->GetActiveTab() != TAB_GAME) {
@@ -2528,7 +2528,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
     xr = x;
     if (m_mgr->GetFrameGate() == false) {
-        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        if (m_minimap != NULL && m_statusBar->GetDockState() != STATUSBAR_HIDDEN
             && m_statusBar->GetActiveTab() != TAB_GAME) {
             if (m_minimap->BeginMinimapPan(eventArg, xr, y)) {
                 return 1;
@@ -2650,7 +2650,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        if (m_statusBar->GetState() == STATUSBAR_HIDDEN) {
+        if (m_statusBar->GetDockState() == STATUSBAR_HIDDEN) {
             if (m_statusBar->HitTestCollapsedSprite(xr, y)) {
                 m_statusBarDragActive = true;
 
@@ -2767,7 +2767,7 @@ ret1:
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
     if (m_inputBlocked == false) {
-        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        if (m_minimap != NULL && m_statusBar->GetDockState() != STATUSBAR_HIDDEN
             && m_statusBar->GetActiveTab() != TAB_GAME) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
@@ -2779,7 +2779,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         }
         m_selectionDragActive = false;
         m_statusBarDragActive = false;
-        if (m_statusBar->GetState() != STATUSBAR_HIDDEN) {
+        if (m_statusBar->GetDockState() != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->GetLevel()->GetViewportRect();
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
                 return m_statusBar->OnPointerRelease(keyFlags, x, y);
@@ -2803,11 +2803,12 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
-    if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestCollapsedSprite(x, y)) {
+    if (m_statusBar->GetDockState() == STATUSBAR_HIDDEN
+        && m_statusBar->HitTestCollapsedSprite(x, y)) {
         SoundCueRegistry* registry = m_mgr->World()->SoundRegistry();
         registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
-        if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
+        if (m_statusBar->GetDockState() == STATUSBAR_DOCK_LEFT) {
             m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         } else {
             m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
@@ -2924,7 +2925,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_mgr->GetFrameGate() != false) {
         return 1;
     }
-    if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+    if (m_minimap != NULL && m_statusBar->GetDockState() != STATUSBAR_HIDDEN
         && m_statusBar->GetActiveTab() != TAB_GAME
         && m_minimap->IssueMinimapCommand(keyFlags, x, y)) {
         return 1;
@@ -3790,7 +3791,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     if (m_helpMessageActive != false) {
         return 1;
     }
-    if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+    if (m_minimap != NULL && m_statusBar->GetDockState() != STATUSBAR_HIDDEN
         && m_statusBar->GetActiveTab() != TAB_GAME) {
         m_minimap->ContinueMinimapPan(keyFlags, x, y);
     }
@@ -5525,7 +5526,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     CancelCursorAction();
     if (showQuitConfirmation == false) {
         CStatusBarMgr* g = m_statusBar;
-        if (g->GetState() == STATUSBAR_HIDDEN) {
+        if (g->GetDockState() == STATUSBAR_HIDDEN) {
             g->RestoreStatusBar();
         }
         if (g->GetActiveTab() != TAB_GAME) {
@@ -6430,7 +6431,7 @@ i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
     tagSIZE mode = w->GetModeSize();
     i32 right = mode.cx;
-    StatusBarDock state = m_statusBar->GetState();
+    StatusBarDock state = m_statusBar->GetDockState();
     i32 bottom = mode.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
@@ -6512,8 +6513,8 @@ i32 CPlay::ExpandViewport(i32 step) {
     SET_SIZE_COMPONENTS(modeSize, manager->m_modeSize.cx, manager->m_modeSize.cy);
 
     if (resized.right - resized.left
-        < (statusBar->GetState() == STATUSBAR_HIDDEN ? modeSize.cx
-                                                     : modeSize.cx - STATUSBAR_WIDTH_PX)) {
+        < (statusBar->GetDockState() == STATUSBAR_HIDDEN ? modeSize.cx
+                                                         : modeSize.cx - STATUSBAR_WIDTH_PX)) {
         resized.left -= step;
         resized.right += step;
         if (resized.left < 0) {
