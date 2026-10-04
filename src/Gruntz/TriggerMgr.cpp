@@ -1048,7 +1048,7 @@ i32 CTriggerMgr::SpawnPuddle(
     }
     sprite->GetLogicRecord()->Dispatch(sprite);
     sprite->m_smarts = playerIndex;
-    sprite->m_score = moveIcon;
+    sprite->SetScore(moveIcon);
     sprite->m_points = gaugePoints;
     return PlacePuddle(sprite, animatePlacement);
 }
@@ -1060,7 +1060,8 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     if (gaugePoints == 0) {
         gaugePoints = 0x19;
     }
-    if (puddle->Place(sprite->GetSmarts(), sprite->m_score, animatePlacement, gaugePoints) == 0) {
+    if (puddle->Place(sprite->GetSmarts(), sprite->GetScore(), animatePlacement, gaugePoints)
+        == 0) {
         puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
@@ -1131,7 +1132,7 @@ i32 CTriggerMgr::SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, 
     }
     spr->SetImageSetByName("GAME_TOYBOX");
     spr->m_points = IDX(toyType);
-    spr->m_score = playerIndex;
+    spr->SetScore(playerIndex);
     spr->m_faceDirection = scrollSpell;
     spr->Hide();
     return 1;
@@ -1534,7 +1535,7 @@ i32 CTriggerMgr::SpawnExplosion(i32 x, i32 y, i32 killerPlayerIndex, i32 animati
         key.Format("GAME_EXPLOSION%d", v);
         spr->SetAnimationByName(key, 0);
         spr->m_smarts = killerPlayerIndex;
-        spr->m_score = 1;
+        spr->SetScore(1);
     }
     return spr != NULL;
 }
@@ -2234,7 +2235,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     }
     spr->SetImageSetByName(name);
     spr->m_damage = damage;
-    spr->m_score = 0;
+    spr->SetScore(0);
     spr->m_points = 0;
     spr->m_smarts = 0;
     spr->m_powerup = 0;

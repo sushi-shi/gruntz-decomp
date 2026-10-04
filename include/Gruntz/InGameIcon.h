@@ -51,11 +51,11 @@ public:
     }
 
     i32 GetPlayerIndex() const {
-        return m_object->m_score;
+        return m_object->GetScore();
     }
 
     void SetPlayerIndex(i32 playerIndex) {
-        m_object->m_score = playerIndex;
+        m_object->SetScore(playerIndex);
     }
 
     void SetupSprite(const char* cat);

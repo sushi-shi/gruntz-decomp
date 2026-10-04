@@ -198,7 +198,7 @@ i32 CExitTrigger::AdvanceAnim() {
                             if (fx != NULL) {
                                 fx->SetAnimationByName("GAME_EXPLOSION3", 0);
                                 fx->m_smarts = 0;
-                                fx->m_score = 0;
+                                fx->SetScore(0);
                             }
                         }
                         cur->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

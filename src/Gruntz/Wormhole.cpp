@@ -462,7 +462,7 @@ i32 CTeleporter::Update() {
         if (spawned != NULL) {
             spawned->m_smarts = IDX(TELEPORTER_SINGLE_USE);
             spawned->m_health = m_object->m_health;
-            spawned->SetSpeedX(m_object->m_score);
+            spawned->SetSpeedX(m_object->GetScore());
             spawned->SetSpeedY(m_object->m_points);
             spawned->GetLogicRecord()->SetSpeed(0);
         }

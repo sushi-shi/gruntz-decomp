@@ -384,7 +384,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
         if (sl != NULL) {
             sl->SetImageSetByName("LEVEL_SPOTLIGHT");
             CLogicRecord* sub = sl->GetLogicRecord();
-            sl->m_score = 1;
+            sl->SetScore(1);
             sl->m_direction = 0;
             sl->m_smarts = 2;
             sl->m_powerup = 0;

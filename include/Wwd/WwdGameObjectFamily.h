@@ -99,6 +99,13 @@ public:
         m_moveMode = mode;
     }
 
+    i32 GetScore() const {
+        return m_score;
+    }
+    void SetScore(i32 score) {
+        m_score = score;
+    }
+
     void SetSpeedX(i32 speed) {
         m_speedX = speed;
     }

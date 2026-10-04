@@ -4507,7 +4507,7 @@ b32 CPlay::PlaceStartGruntz() {
                     y,
                     100000,
                     entranceMode,
-                    obj->m_score,
+                    obj->GetScore(),
                     obj->m_powerup,
                     obj->m_damage,
                     obj->m_points,
@@ -5016,7 +5016,7 @@ i32 CPlay::ValidateLevelTiles() {
                 && g_gameReg->GetEasyMode() != false
                 && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 i32 seconds = obj->m_points;
-                i32 minutes = obj->m_score;
+                i32 minutes = obj->GetScore();
                 seconds += seconds;
                 minutes += minutes;
                 if (seconds > 0x3b) {
@@ -5029,7 +5029,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (dispatch == DispatchInGameIconLogic) {
             if (obj->GetSmarts() == IDX(PICKUP_MEGAPHONE)) {
 
-                m_statusBar->QueuePickupReward(obj->m_points, obj->m_score);
+                m_statusBar->QueuePickupReward(obj->m_points, obj->GetScore());
             }
         } else if (dispatch == DispatchGruntCreationPointLogic) {
             if (obj->GetSmarts() == g_curPlayer) {
@@ -5115,7 +5115,7 @@ i32 CPlay::ValidateLevelTiles() {
                 Coord* slot = g_coordPool.Pop();
                 slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
                 slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
-                CPtrArray* cells = &m_placedObjectCells[obj->m_score];
+                CPtrArray* cells = &m_placedObjectCells[obj->GetScore()];
                 cells->Add(slot);
             }
         }
@@ -5184,7 +5184,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->m_points, p->m_score);
+                m_statusBar->QueuePickupReward(p->m_points, p->GetScore());
             }
             p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchCoveredPowerupLogic) {
@@ -5238,7 +5238,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->m_points, p->m_score);
+                m_statusBar->QueuePickupReward(p->m_points, p->GetScore());
             }
             p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
@@ -5273,7 +5273,7 @@ i32 CPlay::AddLevelGruntz() {
                 y,
                 0x186a0,
                 GRUNT_ENTRANCE_NONE,
-                g->m_score,
+                g->GetScore(),
                 g->m_powerup,
                 g->m_damage,
                 g->m_points,
