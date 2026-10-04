@@ -54,7 +54,7 @@ public:
     inline void SetSavedClock(u32 clock);
     inline void ClearSaveSlot();
     inline void SetCompletedFinalLevel(b32 completed);
-    inline void SetNotifyLatch(b32 notify);
+    inline void SetReturningToMenu(b32 returning);
     inline void SetInitialFramePending(b32 pending);
     inline void ResetAssetLoadState(GruntzPlayer* player);
 
@@ -238,7 +238,7 @@ public:
     i32 ForwardReady();
     void ResetRightClickState();
 
-    i32 QuitToMenu();
+    i32 PrepareReturnToMenu();
 
     i32 SelectCursor(i32 cursorId);
 

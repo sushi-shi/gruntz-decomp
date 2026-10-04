@@ -193,7 +193,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_colorSelectionRejected = false;
     m_gameFull = false;
     m_outOfSync = false;
-    m_notifyLatch = false;
+    m_returningToMenu = false;
     m_completedFinalLevel = false;
     m_syncGate = false;
     m_connected = false;
@@ -412,8 +412,8 @@ RVA(0x000b63f0, 0x11b)
 i32 CMulti::LeaveState(GameStateId nextState) {
     m_mgr->VoiceMgr()->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
-    if (m_notifyLatch) {
-        QuitToMenu();
+    if (m_returningToMenu) {
+        PrepareReturnToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;

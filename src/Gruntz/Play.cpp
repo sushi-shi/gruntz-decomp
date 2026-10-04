@@ -270,7 +270,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         while (ShowCursor(false) >= 0) {
         }
         SetInitialFramePending(true);
-        SetNotifyLatch(false);
+        SetReturningToMenu(false);
         SetCompletedFinalLevel(false);
         ClearSaveSlot();
         mgr->ResetClockGlobals();
@@ -391,8 +391,8 @@ RVA(0x000c8b80, 0x11b)
 i32 CPlay::LeaveState(GameStateId nextState) {
     m_mgr->VoiceMgr()->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
-    if (m_notifyLatch) {
-        QuitToMenu();
+    if (m_returningToMenu) {
+        PrepareReturnToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
@@ -3011,7 +3011,7 @@ i32 CPlay::ResumeGame() {
 }
 
 RVA(0x000cef50, 0x46)
-i32 CPlay::QuitToMenu() {
+i32 CPlay::PrepareReturnToMenu() {
 
     m_mgr->m_strWorldFile.Empty();
     if (m_completedFinalLevel != false) {
@@ -3253,7 +3253,7 @@ i32 CPlay::CompleteLevel() {
     QuestLevel level = CurrentQuestLevel();
     if (level == QUESTLEVEL_CAMPAIGN_LAST) {
         m_completedFinalLevel = true;
-        m_notifyLatch = true;
+        m_returningToMenu = true;
 
         SoundCueRegistry* reg = m_world->SoundRegistry();
         if (reg->m_soundStream) {

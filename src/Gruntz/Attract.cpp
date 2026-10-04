@@ -508,7 +508,7 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_previousStateId, sizeof(m_previousStateId));
     ar->Write(&m_reserved38, sizeof(m_reserved38));
     ar->Write(&m_ready, sizeof(m_ready));
-    ar->Write(&m_notifyLatch, sizeof(m_notifyLatch));
+    ar->Write(&m_returningToMenu, sizeof(m_returningToMenu));
     ar->Write(&m_reserved44, sizeof(m_reserved44));
     ar->Write(&m_reserved48, sizeof(m_reserved48));
     ar->Write(m_versionString, 0x100);
@@ -540,7 +540,7 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_previousStateId, sizeof(m_previousStateId));
     ar->Read(&m_reserved38, sizeof(m_reserved38));
     ar->Read(&m_ready, sizeof(m_ready));
-    ar->Read(&m_notifyLatch, sizeof(m_notifyLatch));
+    ar->Read(&m_returningToMenu, sizeof(m_returningToMenu));
     ar->Read(&m_reserved44, sizeof(m_reserved44));
     ar->Read(&m_reserved48, sizeof(m_reserved48));
     ar->Read(m_versionString, 0x100);

@@ -3451,7 +3451,7 @@ play	?PlayCurseMusic@CPlay@@QAEXXZ	100.0000	100.0000	4	771bfb0caa55	0xd88f0	100.
 play	?DrawChatMessages@CPlay@@UAEXPAUHDC__@@@Z	100.0000	100.0000	6	5de8309b973f	0xd00a0	100.0000	
 play	?ProfileDeltaFrame@CPlay@@QAEHXZ	100.0000	100.0000	12	9f152b6e28be	0xca0a0	100.0000	
 play	?ProfileInputFrame@CPlay@@QAEHXZ	100.0000	100.0000	16	dfc2c540f7fd	0xc9e40	100.0000	
-play	?QuitToMenu@CPlay@@QAEHXZ	100.0000	100.0000	5	251d2c9eb122	0xcef50	100.0000	
+play	?PrepareReturnToMenu@CPlay@@QAEHXZ	100.0000	100.0000	5	251d2c9eb122	0xcef50	100.0000	
 play	?RandomizePlayerAssignments@CPlay@@QAEHXZ	100.0000	100.0000	12	26bfb5be0861	0xd9290	100.0000	
 play	?DiscardQueuedInput@CPlay@@QAEHXZ	100.0000	100.0000	2	861aa171847b	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	16	b731ba787394	0xc8700	100.0000	

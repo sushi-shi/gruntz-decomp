@@ -203,7 +203,7 @@ public:
     // no state operation consumes its value. Keep the individual archive field.
     i32 m_reserved38;
     b32 m_ready;
-    b32 m_notifyLatch;
+    b32 m_returningToMenu;
 
     // @identity-TODO: LoadGameAssetNamespaces initializes both words to -1;
     // HeaderRead/Write preserve them independently, with no other consumer.

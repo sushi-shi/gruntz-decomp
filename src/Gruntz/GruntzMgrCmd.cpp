@@ -853,7 +853,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             // fall through
         case CMD_RETURN_TO_MENU:
-            m_curState->m_notifyLatch = true;
+            m_curState->m_returningToMenu = true;
             if (!TransitionState(GAMESTATE_MENU, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x432);
             }

@@ -98,8 +98,8 @@ inline void CPlay::SetInitialFramePending(b32 pending) {
     m_initialFramePending = pending;
 }
 
-inline void CPlay::SetNotifyLatch(b32 notify) {
-    m_notifyLatch = notify;
+inline void CPlay::SetReturningToMenu(b32 returning) {
+    m_returningToMenu = returning;
 }
 
 inline void CPlay::SetCompletedFinalLevel(b32 completed) {
