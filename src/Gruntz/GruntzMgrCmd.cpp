@@ -917,8 +917,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 }
             }
             m_soundEnabled ^= 1;
-            g_soundEnabled = m_soundEnabled;
-            b32 soundEnabled = m_soundEnabled;
+            g_soundEnabled = IsSoundEnabled();
+            b32 soundEnabled = IsSoundEnabled();
             if (soundEnabled != false) {
                 m_worldSounds->Resume();
             } else {

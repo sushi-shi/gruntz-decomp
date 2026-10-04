@@ -234,7 +234,7 @@ void CMenuState::StartMusic() {
     if (m_menuMusicCue == NULL) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == false) {
+    if (g_gameReg->IsSoundEnabled() == false) {
         return;
     }
     b32 saved = g_soundEnabled;

@@ -894,7 +894,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         goto fail;
     }
     gameMgr = g_gameReg;
-    if (gameMgr->m_soundEnabled == false) {
+    if (gameMgr->IsSoundEnabled() == false) {
         goto fail;
     }
     world = gameMgr->World();

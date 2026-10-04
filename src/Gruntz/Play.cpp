@@ -2007,7 +2007,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == 'S') {
         if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
-            g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == false);
+            g_gameReg->SetSoundEnabled(g_gameReg->IsSoundEnabled() == false);
             return 1;
         }
         if (statusBar->m_gameplayControlsDisabled != false) {

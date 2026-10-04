@@ -565,7 +565,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (sound != NULL) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == false) {
+    if (g_gameReg->IsSoundEnabled() == false) {
         return;
     }
     CDDrawSurfaceMgr* world = g_gameReg->World();
@@ -625,7 +625,7 @@ void CGrunt::StopPowerupLoopSound() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyLoopSoundParams() {
-    if (g_gameReg->m_soundEnabled == false) {
+    if (g_gameReg->IsSoundEnabled() == false) {
         return;
     }
     SoundBuffer* vehicleSound = m_vehicleLoopSound;
