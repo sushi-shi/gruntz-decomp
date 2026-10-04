@@ -4231,7 +4231,7 @@ i32 CPlay::ExecuteCommand(
                 &hitUnitIndex,
                 PLAYER_SLOT_ALL
             );
-            if (node != NULL && g->m_busy == false) {
+            if (node != NULL && g->IsBusy() == false) {
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -4284,7 +4284,7 @@ i32 CPlay::ExecuteCommand(
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
-            if (g2 == NULL || g->m_busy != false) {
+            if (g2 == NULL || g->IsBusy() != false) {
                 g->m_actionTargetsGrunt = false;
                 return 0;
             }
@@ -4329,7 +4329,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->IsEntranceCommitted() == false || g->m_busy != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->IsBusy() != false) {
                 return 0;
             }
             if (g->IsGuarding() != false) {
@@ -4344,7 +4344,7 @@ i32 CPlay::ExecuteCommand(
                 &hitUnitIndex,
                 PLAYER_SLOT_ALL
             );
-            if (node != NULL && g->m_busy == false) {
+            if (node != NULL && g->IsBusy() == false) {
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -4388,7 +4388,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->IsEntranceCommitted() == false || g->m_busy != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->IsBusy() != false) {
                 return 0;
             }
             if (g->IsGuarding() != false) {
@@ -4397,7 +4397,7 @@ i32 CPlay::ExecuteCommand(
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
-            if (g2 == NULL || g->m_busy != false) {
+            if (g2 == NULL || g->IsBusy() != false) {
                 g->m_actionTargetsGrunt = false;
                 return 0;
             }
@@ -4482,7 +4482,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u8>(playerIndex),
                 static_cast<u8>(unitIndex)
             );
-            if (g == NULL || g->IsEntranceCommitted() == false || g->m_busy != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->IsBusy() != false) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);

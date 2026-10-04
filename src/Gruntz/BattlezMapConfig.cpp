@@ -392,7 +392,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->IsDeathAnimationStarted() != false) {
                     continue;
                 }
-                if (unit->m_busy != false) {
+                if (unit->IsBusy() != false) {
                     continue;
                 }
                 if (unit->IsInCombat() != false) {
@@ -2660,7 +2660,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u->m_deathAnimStarted != false) {
                 continue;
             }
-            if (u->m_busy != false) {
+            if (u->IsBusy() != false) {
                 continue;
             }
             if (u->m_inCombat != false) {
@@ -2837,7 +2837,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
             if (IsGruntAtSavedScreenPos(cand) && cand->IsEntranceCommitted() != false
-                && cand->IsDeathAnimationStarted() == false && cand->m_busy == false
+                && cand->IsDeathAnimationStarted() == false && cand->IsBusy() == false
                 && cand->IsInCombat() == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
@@ -2901,7 +2901,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->IsDeathAnimationStarted() != false) {
         return 0;
     }
-    if (unit->m_busy != false) {
+    if (unit->IsBusy() != false) {
         return 0;
     }
     if (unit->IsInCombat() != false) {

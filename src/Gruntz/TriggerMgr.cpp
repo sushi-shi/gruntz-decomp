@@ -244,7 +244,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
         Coord* selection = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_busy == false) {
+        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->IsBusy() == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -292,7 +292,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
         Coord* selection = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_busy == false) {
+        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->IsBusy() == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -2603,7 +2603,7 @@ i32 CTriggerMgr::EnqueueSelectedStop() {
 
             CGrunt* grunt = UnitAt(identity->m_x, identity->m_y);
             playerIndex = static_cast<char>(identity->m_x);
-            if (grunt->GetPlayerIndex() == localPlayerIndex && grunt->m_busy == false) {
+            if (grunt->GetPlayerIndex() == localPlayerIndex && grunt->IsBusy() == false) {
                 unitIndices[count] = static_cast<u8>(identity->m_y);
                 count++;
             }

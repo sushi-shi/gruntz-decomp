@@ -224,6 +224,10 @@ public:
     b32 IsSelected() const {
         return m_selected;
     }
+    b32 IsBusy() const {
+        return m_busy;
+    }
+
     b32 IsInCombat() const {
         return m_inCombat;
     }
