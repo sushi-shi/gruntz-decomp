@@ -159,7 +159,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         }
                         PLAYCUE("GAME_MONOLITH");
                         AppendChatMessage("Monolith Rulez...");
-                        if (!m_musicEnabled) {
+                        if (!IsMusicEnabled()) {
                             return 1;
                         }
                         if (g_monolithOverlayVisible) {
@@ -894,7 +894,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 return 1;
             }
             m_musicEnabled ^= 1;
-            b32 enabled = m_musicEnabled;
+            b32 enabled = IsMusicEnabled();
             b32 isPlayState = CheckPlayState();
             if (!isPlayState) {
                 if (m_curState->GetStateId() != GAMESTATE_CREDITS_OVER_CURRENT

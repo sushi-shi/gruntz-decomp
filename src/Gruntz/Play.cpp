@@ -1975,7 +1975,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'M' && (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5))) {
-        g_gameReg->SetMusicEnabled(g_gameReg->m_musicEnabled == false);
+        g_gameReg->SetMusicEnabled(g_gameReg->IsMusicEnabled() == false);
         return 1;
     }
 
@@ -5404,10 +5404,10 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::StartLevelPlay() {
     char sequenceName[0x40];
-    if (m_mgr->m_musicEnabled != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
+    if (m_mgr->IsMusicEnabled() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_introMusicTimer.Start(INTRO_MUSIC_DURATION_MS);
         wsprintfA(sequenceName, "INTRO%d", GetMusicVariant());
-        if (g_gameReg->m_musicEnabled != false) {
+        if (g_gameReg->IsMusicEnabled() != false) {
             m_mgr->GetMidiManager()->PlaySequence(sequenceName, false);
         }
         m_introMusicComplete = false;
@@ -5416,7 +5416,7 @@ i32 CPlay::StartLevelPlay() {
         m_mgr->GetMidiManager()->SelectSequence(sequenceName);
         m_mgr->GetMidiManager()->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
-        if (gameManager->m_musicEnabled != false
+        if (gameManager->IsMusicEnabled() != false
             && gameManager->GetGameMode() == GAMEMODE_BATTLEZ) {
             m_mgr->GetMidiManager()->PlaySequence(sequenceName, true);
         }
@@ -6003,7 +6003,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
             }
             char sequenceName[0x40];
             wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
-            if (g_gameReg->m_musicEnabled) {
+            if (g_gameReg->IsMusicEnabled()) {
                 m_mgr->GetMidiManager()->PlaySequence(sequenceName, true);
             }
             m_introMusicComplete = true;
@@ -6317,7 +6317,7 @@ void CPlay::PlayCurseMusic() {
         m_savedMusicSequence = gameManager->GetMidiManager()->m_currentSequence;
         gameManager->GetMidiManager()->PauseCurrent();
     }
-    if (g_gameReg->m_musicEnabled != false) {
+    if (g_gameReg->IsMusicEnabled() != false) {
         m_mgr->GetMidiManager()->PlaySequence("CURSE", false);
     }
 }
@@ -6329,7 +6329,7 @@ void CPlay::RestoreMusicAfterCurses() {
         && m_savedMusicSequence != NULL) {
         m_mgr->GetMidiManager()->EndCurrent();
         m_mgr->GetMidiManager()->m_currentSequence = m_savedMusicSequence;
-        if (g_gameReg->m_musicEnabled != false) {
+        if (g_gameReg->IsMusicEnabled() != false) {
             m_mgr->GetMidiManager()->RestartCurrent(true);
         }
         m_savedMusicSequence = NULL;

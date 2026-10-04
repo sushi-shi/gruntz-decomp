@@ -219,7 +219,7 @@ i32 CCreditsState::Render() {
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
     drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
 
-    if (!m_musicStarted && owner()->m_musicEnabled) {
+    if (!m_musicStarted && owner()->IsMusicEnabled()) {
         owner()->GetMidiManager()->PlaySequence("CREDITZ", true);
         m_musicStarted = true;
     }
