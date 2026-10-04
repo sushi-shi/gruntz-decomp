@@ -3858,9 +3858,9 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_barRect.left + targetOffset.m_x;
+    i32 tx = base->GetBarRect()->left + targetOffset.m_x;
     m_targetX = tx;
-    i32 ty = base->m_barRect.top + targetOffset.m_y;
+    i32 ty = base->GetBarRect()->top + targetOffset.m_y;
     m_targetY = ty;
 
     i32 deltaX = tx - srcX;

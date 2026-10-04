@@ -210,6 +210,9 @@ public:
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 
+    const RECT* GetBarRect() const {
+        return &m_barRect;
+    }
     StatusBarDock GetState() const {
         return m_position;
     }
