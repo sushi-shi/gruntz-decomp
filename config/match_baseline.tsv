@@ -651,7 +651,7 @@ bootystateactivate	?RestoreGraphics@CBootyState@@UAEHXZ	100.0000	100.0000	10	546
 bootystateactivate	?RestoreGraphics@CMultiBootyState@@UAEHXZ	100.0000	100.0000	10	84de0160f8e3	0x1f6f0	100.0000	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	100.0000	100.0000	8	d0c36174ae0a	0x1c9d0	100.0000	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	12	67c4ec97f559	0x18f00	100.0000	
-bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	98.0597	98.0597	8	66c12d2f9ca2	0x196c0	98.0597	
+bootystateactivate	?UpdateWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	98.0597	98.0597	8	66c12d2f9ca2	0x196c0	98.0597	
 bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	98.7295	98.7295	41	59e83c61c2d4	0x1b690	98.7295	
 brickz	?FindPathWithEndpointOverrides@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	90.2761	90.2761	9	6356f8a0f989	0x81e10	90.2761	
 brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	100.0000	100.0000	2	e366236958cb	0x82250	100.0000	

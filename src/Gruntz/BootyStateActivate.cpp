@@ -87,6 +87,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @identity-TODO: current consumers use the first four coordinates for WarpStone pieces;
+// the role of the remaining entries is not established.
 DATA(0x001e8fe8)
 const Coord g_bootyLetterCoords[16] = {
     {472, 101},
@@ -446,90 +448,93 @@ i32 CBootyState::ShowSecretBonusMessage() {
 
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
-    CWwdSpriteObject** slot = m_trailSprites;
-    m_letterIdx = (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4;
-    m_radius = 0xc8;
-    m_angleStep = 0;
-    m_scratchX = 0;
-    m_scratchY = 0;
+    CWwdSpriteObject** pieces = m_warpStonePieceSprites;
+    m_warpStonePieceIndex = (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4;
+    m_pieceOrbitRadius = 0xc8;
+    m_pieceOrbitAngle = 0;
+    m_pieceOrbitX = 0;
+    m_pieceOrbitY = 0;
     for (i32 i = 0; i < 4; i++) {
-        CWwdSpriteObject* a = g_gameReg->World()->ChildGroup()->CreateSprite(
+        CWwdSpriteObject* piece = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
-            (i != m_letterIdx) ? 1 : 3,
+            (i != m_warpStonePieceIndex) ? 1 : 3,
             "DoNothing",
             WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
         );
-        slot[i] = a;
-        if (a == NULL) {
+        pieces[i] = piece;
+        if (piece == NULL) {
             return 0;
         }
-        a->SetImageFrameByName("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
-        slot[i]->Hide();
+        piece->SetImageFrameByName("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
+        pieces[i]->Hide();
     }
-    for (i32 k = 0; k <= m_letterIdx; k++) {
-        slot[k]->Show();
+    for (i32 k = 0; k <= m_warpStonePieceIndex; k++) {
+        pieces[k]->Show();
     }
-    CWwdSpriteObject* g = CreateSimpleAnimationSprite(4);
-    m_cursorLetter = g;
-    if (g == NULL) {
+    CWwdSpriteObject* glitter = CreateSimpleAnimationSprite(4);
+    m_warpStoneGlitterSprite = glitter;
+    if (glitter == NULL) {
         return 0;
     }
-    g->SetImageSetByName("GAME_GLITTERGOLD");
-    m_cursorLetter->SetAnimationByName("GAME_CYCLE100", 0);
+    glitter->SetImageSetByName("GAME_GLITTERGOLD");
+    m_warpStoneGlitterSprite->SetAnimationByName("GAME_CYCLE100", 0);
     return 1;
 }
 
 // @early-stop
 RVA(0x000196c0, 0x1d3)
-i32 CBootyState::StepGlitterAnim() {
+i32 CBootyState::UpdateWarpStoneGlitterAnimation() {
     if (m_initGate) {
-        for (i32 i = 0; i <= m_letterIdx; i++) {
-            CWwdSpriteObject* e = m_trailSprites[i];
-            e->m_screenX = g_bootyLetterCoords[i].m_x;
-            e = m_trailSprites[i];
-            e->m_screenY = g_bootyLetterCoords[i].m_y;
-            e = m_trailSprites[i];
-            e->SetSortKey(1);
+        for (i32 i = 0; i <= m_warpStonePieceIndex; i++) {
+            CWwdSpriteObject* piece = m_warpStonePieceSprites[i];
+            piece->m_screenX = g_bootyLetterCoords[i].m_x;
+            piece = m_warpStonePieceSprites[i];
+            piece->m_screenY = g_bootyLetterCoords[i].m_y;
+            piece = m_warpStonePieceSprites[i];
+            piece->SetSortKey(1);
         }
         SET_SCREEN_POS(
-            m_cursorLetter,
-            g_bootyLetterCoords[m_letterIdx].m_x,
-            g_bootyLetterCoords[m_letterIdx].m_y
+            m_warpStoneGlitterSprite,
+            g_bootyLetterCoords[m_warpStonePieceIndex].m_x,
+            g_bootyLetterCoords[m_warpStonePieceIndex].m_y
         );
         return 1;
     }
 
-    i32 step = m_angleStep;
-    i32 idx = m_letterIdx;
-    double r = static_cast<float>(m_radius);
-    double ang = (static_cast<float>(step) - s_glitterPhaseBias) * s_degToRad;
-    m_scratchX = static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x));
-    m_scratchY = static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y));
-    m_angleStep = step + 5;
-    double shrink = static_cast<float>(step + 5) * s_glitterShrinkRate;
-    m_radius = static_cast<i32>((s_glitterStartRadius - shrink * s_glitterStartRadius));
+    i32 angleDegrees = m_pieceOrbitAngle;
+    i32 pieceIndex = m_warpStonePieceIndex;
+    double radius = static_cast<float>(m_pieceOrbitRadius);
+    double angleRadians = (static_cast<float>(angleDegrees) - s_glitterPhaseBias) * s_degToRad;
+    m_pieceOrbitX =
+        static_cast<i32>((sin(angleRadians) * radius + g_bootyLetterCoords[pieceIndex].m_x));
+    m_pieceOrbitY =
+        static_cast<i32>((cos(angleRadians) * radius + g_bootyLetterCoords[pieceIndex].m_y));
+    m_pieceOrbitAngle = angleDegrees + 5;
+    double shrinkFraction = static_cast<float>(angleDegrees + 5) * s_glitterShrinkRate;
+    m_pieceOrbitRadius =
+        static_cast<i32>((s_glitterStartRadius - shrinkFraction * s_glitterStartRadius));
 
     i32 i = 0;
-    if (idx > 0) {
+    if (pieceIndex > 0) {
         do {
-            CWwdSpriteObject* e = m_trailSprites[i];
-            e->m_screenX = g_bootyLetterCoords[i].m_x;
-            e = m_trailSprites[i];
-            e->m_screenY = g_bootyLetterCoords[i].m_y;
+            CWwdSpriteObject* piece = m_warpStonePieceSprites[i];
+            piece->m_screenX = g_bootyLetterCoords[i].m_x;
+            piece = m_warpStonePieceSprites[i];
+            piece->m_screenY = g_bootyLetterCoords[i].m_y;
             i++;
-        } while (i < m_letterIdx);
+        } while (i < m_warpStonePieceIndex);
     }
 
-    SET_SCREEN_POS(m_cursorLetter, m_scratchX, m_scratchY);
-    SET_SCREEN_POS(m_trailSprites[i], m_scratchX, m_scratchY);
+    SET_SCREEN_POS(m_warpStoneGlitterSprite, m_pieceOrbitX, m_pieceOrbitY);
+    SET_SCREEN_POS(m_warpStonePieceSprites[i], m_pieceOrbitX, m_pieceOrbitY);
 
     UpdateGruntSprintAnimation();
 
-    if (m_radius == 0) {
-        CWwdSpriteObject* e = m_trailSprites[i];
-        e->SetSortKey(1);
+    if (m_pieceOrbitRadius == 0) {
+        CWwdSpriteObject* piece = m_warpStonePieceSprites[i];
+        piece->SetSortKey(1);
         return 1;
     }
     return 0;
@@ -1350,7 +1355,7 @@ i32 CBootyState::Render() {
             // FALL THROUGH
 
         case BOOTYSEQ_GLITTER: {
-            if (StepGlitterAnim() == 0) {
+            if (UpdateWarpStoneGlitterAnimation() == 0) {
                 break;
             }
             m_activation = BOOTYSEQ_LETTERS;
@@ -1591,7 +1596,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         }
                     }
                 }
-                CWwdSpriteObject** ap = m_trailSprites;
+                CWwdSpriteObject** ap = m_warpStonePieceSprites;
                 for (i32 k = 0; k < 4; k++) {
                     SET_SCREEN_POS((*ap), g_bootyLetterCoords[k].m_x, g_bootyLetterCoords[k].m_y);
                     (*ap)->Show();
