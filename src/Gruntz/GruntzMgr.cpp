@@ -874,7 +874,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
         return;
     }
 
-    if (CheatMgr()->m_cheatsUsed == false) {
+    if (CheatMgr()->HasUsedCheats() == false) {
         m_gameStats->UpdateLevelRecord(currentState->m_levelIndex, false);
         g_gameReg->m_saveGame->SetCurLevel(static_cast<QuestLevel>(currentState->m_levelIndex));
         g_gameReg->m_saveGame->SetMaxLevel(
@@ -3263,7 +3263,7 @@ void CGruntzMgr::SetMusicEnabled(b32 enabled) {
 
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
-    if (CheatMgr()->m_cheatsUsed != false) {
+    if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -3287,7 +3287,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    if (CheatMgr()->m_cheatsUsed != false) {
+    if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);

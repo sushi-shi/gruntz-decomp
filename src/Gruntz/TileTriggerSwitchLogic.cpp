@@ -689,13 +689,13 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
-        if (node->m_cellKey != m_cellKey && node->m_linkGate != false) {
+        if (node->GetCellKey() != m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
             b32 any = false;
             POSITION pos = m_owner->GetIdleHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* o = m_owner->GetNextIdleLogic(pos);
-                if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
+                if (o != NULL && o->FindIndexByKey(node->GetCellKey())) {
                     o->Tick();
                     counter++;
                     any = true;

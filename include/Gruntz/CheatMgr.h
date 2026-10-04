@@ -30,6 +30,10 @@ public:
         }
         return entry;
     }
+    b32 HasUsedCheats() const {
+        return m_cheatsUsed;
+    }
+
     void RegisterCheats();
     void LoadCheatConfig();
     BOOL CheckCode(CString code);

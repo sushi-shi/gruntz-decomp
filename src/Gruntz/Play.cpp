@@ -5441,7 +5441,7 @@ i32 CPlay::ResetPlayState() {
             m_mgr->GetGameStats()->UpdateLevelRecord(m_levelIndex, true);
             reg = g_gameReg;
 
-            if (reg->CheatMgr()->m_cheatsUsed == false) {
+            if (reg->CheatMgr()->HasUsedCheats() == false) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     (static_cast<CSaveGame*>(reg->m_saveGame))

@@ -1265,25 +1265,14 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         i32 tile0 = m_board->CellFlagsAt(ux, uy);
         if (static_cast<u8>(tile0) == 1) {
-            if (unit->CoordsEmpty()) {
-                goto returnZero;
-            }
-            POSITION n = unit->CoordHead();
-            while (n != NULL) {
-                POSITION cur = n;
-                unit->GetNextCoord(n);
-                if (unit->GetCoordAt(cur) != NULL) {
-                    g_coordPool.Push(unit->GetCoordAt(cur));
-                }
-            }
-            coordList->RemoveAll();
+            unit->RecycleCoords();
             return 0;
         }
 
         POSITION head = coordList->GetHeadPosition();
         Coord* firstCoord = unit->GetCoordAt(head);
         BrickzCell pathHeadCell = m_board->CellAt(firstCoord->m_x, firstCoord->m_y);
-        if (coordList->IsEmpty()) {
+        if (unit->CoordsEmpty()) {
             goto returnZero;
         }
         Coord* pathHead = unit->GetHeadCoord();
@@ -1307,7 +1296,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 ry = pt2.m_y;
             CTileTriggerSwitchLogic* rec =
                 m_cellQuery->FindSwitchLogic(CellKey(rx, ry), TRIGID_ANY);
-            if (rec->m_typeId == TRIGID_SWITCH_2) {
+            if (rec->GetType() == TRIGID_SWITCH_2) {
                 unit->SetDefenderState(AISTATE_SEEK);
                 unit->RecycleCoords();
                 unit->SetBattlezTask(BZTASK_SEEK_SWITCH);
@@ -2200,7 +2189,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         g->GetScreenTile(&tp);
         i32 key = CellKey(keyHi, tp.m_y);
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
-        if (r->m_typeId == TRIGID_SWITCH_2) {
+        if (r->GetType() == TRIGID_SWITCH_2) {
             g->SetDefenderState(AISTATE_SEEK);
             g->RecycleCoords();
             g->SetBattlezTask(BZTASK_SEEK_SWITCH);
