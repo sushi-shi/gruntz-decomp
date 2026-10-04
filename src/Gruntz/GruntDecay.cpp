@@ -43,7 +43,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
         ClockInterval* clock = &m_idleWindowTiming;
-        if (m_object->m_shadeMode == SHADE_PAL_ALPHA_16) {
+        if (m_object->GetShadeMode() == SHADE_PAL_ALPHA_16) {
             epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
             clock->m_interval = static_cast<u32>(dt);
             clock->m_start = static_cast<u32>(epoch);

@@ -913,7 +913,7 @@ i32 CGrunt::StartExitAnimation() {
     FinishActiveAction();
     STOP_GRUNT_LOOP_SOUNDS;
 
-    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    m_object->StopFlashing();
     m_entranceCommitted = false;
     m_deathAnimStarted = true;
 
@@ -1187,7 +1187,7 @@ i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
     GruntItemPose pose = GRUNT_ITEM1;
     if (m_activePickupType == PICKUP_BOMB) {
         SET_ANIMATION_ACT("M");
-        m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+        m_object->StopFlashing();
         m_timePerTile = g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64);
         m_busy = true;
         m_bombRunStarting = true;
