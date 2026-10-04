@@ -1976,7 +1976,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'A') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2001,7 +2001,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == false);
             return 1;
         }
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2022,7 +2022,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'D') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2043,7 +2043,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'F') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
@@ -2055,7 +2055,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'G') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2405,7 +2405,7 @@ tail_default:
 }
 tail_default2:
 
-    if (this->m_statusBar->m_chatBoxDisabled != false) {
+    if (this->m_statusBar->m_gameplayControlsDisabled != false) {
         return 1;
     }
     {

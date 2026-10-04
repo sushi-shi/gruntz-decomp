@@ -388,7 +388,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     SbiCommandId cmd = w->GetCommandId();
     switch (w->GetTab()) {
         case TAB_CONTROLS:
-            if (m_chatBoxDisabled != false) {
+            if (m_gameplayControlsDisabled != false) {
                 break;
             }
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
@@ -462,7 +462,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     if (m_destructButtonLocked != false) {
                         break;
                     }
-                    if (m_chatBoxDisabled != false) {
+                    if (m_gameplayControlsDisabled != false) {
                         break;
                     }
                     HiCueLookup();
@@ -492,7 +492,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             break;
 
         case TAB_STATZ:
-            if (m_chatBoxDisabled != false) {
+            if (m_gameplayControlsDisabled != false) {
                 break;
             }
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
@@ -540,7 +540,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             }
 
         case TAB_MULTIPLAYER:
-            if (m_chatBoxDisabled != false) {
+            if (m_gameplayControlsDisabled != false) {
                 break;
             }
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
@@ -557,7 +557,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             return 1;
 
         case TAB_GRUNTZ:
-            if (m_chatBoxDisabled != false) {
+            if (m_gameplayControlsDisabled != false) {
                 break;
             }
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
@@ -570,7 +570,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             return 1;
 
         case TAB_RESOURCE:
-            if (m_chatBoxDisabled != false) {
+            if (m_gameplayControlsDisabled != false) {
                 break;
             }
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
@@ -673,7 +673,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     SbiCommandId cmd = r->GetCommandId();
     switch (r->GetTab()) {
         case TAB_STATZ:
-            if (m_chatBoxDisabled == false
+            if (m_gameplayControlsDisabled == false
                 && g_gameReg->GetTriggerMgr()->m_playerControlEnabled != false
                 && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
@@ -704,7 +704,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     SbiCommandId cmd = r->GetCommandId();
-    if (m_chatBoxDisabled == false) {
+    if (m_gameplayControlsDisabled == false) {
         if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
@@ -1424,7 +1424,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
             break;
         }
         default: {
-            if (m_chatBoxDisabled != false && g_gameReg->GetFrameGate() != false) {
+            if (m_gameplayControlsDisabled != false && g_gameReg->GetFrameGate() != false) {
                 CSBI_MenuItem* resume;
                 NEW_STATUS_BAR_ITEM(
                     resume,
@@ -1605,7 +1605,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(b32 show) {
         RequestRedraw();
         m_gameResumePauseButton->RequestRedraw();
     }
-    m_chatBoxDisabled = true;
+    m_gameplayControlsDisabled = true;
 }
 
 RVA(0x00102200, 0x37)
@@ -1615,7 +1615,7 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
         RequestRedraw();
         m_gameResumePauseButton->RequestRedraw();
     }
-    m_chatBoxDisabled = false;
+    m_gameplayControlsDisabled = false;
 }
 
 RVA(0x00102250, 0x1de4)
@@ -2405,7 +2405,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
 
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
-    if (m_chatBoxDisabled == false) {
+    if (m_gameplayControlsDisabled == false) {
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
             if (m_unitSideTabs[i] && m_unitSideTabs[i]->IsEnabled()) {
                 CSBI_SideTab* p = m_unitSideTabs[i];
@@ -3683,7 +3683,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 
     s->Write(&m_reserved34c, sizeof(m_reserved34c));
     s->Write(&m_reserved350, sizeof(m_reserved350));
-    s->Write(&m_chatBoxDisabled, sizeof(m_chatBoxDisabled));
+    s->Write(&m_gameplayControlsDisabled, sizeof(m_gameplayControlsDisabled));
     s->Write(&m_activeSlot, sizeof(m_activeSlot));
     s->Write(&m_pendingHlRow, sizeof(m_pendingHlRow));
     s->Write(&m_activeTab, sizeof(m_activeTab));
@@ -3771,7 +3771,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
 
     ar->Read(&m_reserved34c, sizeof(m_reserved34c));
     ar->Read(&m_reserved350, sizeof(m_reserved350));
-    ar->Read(&m_chatBoxDisabled, sizeof(m_chatBoxDisabled));
+    ar->Read(&m_gameplayControlsDisabled, sizeof(m_gameplayControlsDisabled));
     ar->Read(&m_activeSlot, sizeof(m_activeSlot));
     ar->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
     ar->Read(&m_activeTab, sizeof(m_activeTab));
@@ -4330,7 +4330,7 @@ void CStatusBarMgr::ExitMode() {
         SetGameTabContent(GAME_TAB_MENU, true);
         RequestRedraw();
     } else {
-        m_chatBoxDisabled = false;
+        m_gameplayControlsDisabled = false;
     }
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;

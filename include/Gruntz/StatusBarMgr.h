@@ -291,7 +291,7 @@ public:
     // @identity-TODO: both words are save-streamed without a status-bar consumer.
     i32 m_reserved34c;
     i32 m_reserved350;
-    b32 m_chatBoxDisabled;
+    b32 m_gameplayControlsDisabled;
     b32 m_tabsBuilt;
     i32 m_activeSlot;
     StatusBarHighlightRow m_pendingHlRow;
@@ -373,7 +373,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_world = NULL;
     m_redrawFrames = 0;
     m_activeTab = TAB_NONE;
-    m_chatBoxDisabled = false;
+    m_gameplayControlsDisabled = false;
     m_tabsBuilt = false;
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
