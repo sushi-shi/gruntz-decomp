@@ -4076,7 +4076,7 @@ spotlight	?SerializeDispatch@CSpotLight@@UAEHPAVCFileMemBase@@W4SerialMode@@W4Lo
 spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984	33	9395338fdc2f	0xb1af0	84.2097	
 spotlight	?Update@CSpotLight@@QAEHXZ	81.3820	81.3820	25	8fa560fb327f	0xb1ee0	81.3820	
 spriteloaders	??0CLevelTimer@@QAE@XZ	100.0000	100.0000	7	f4859ebedc88	0x9bab0	100.0000	
-spriteloaders	?AddTime@CLevelTimer@@QAEXHH@Z	99.8214	99.8214	6	b44593f62198	0x9c0e0	100.0000	
+spriteloaders	?AddTime@CLevelTimer@@QAEXHH@Z	100.0000	99.8214	6	b44593f62198	0x9c0e0	100.0000	
 spriteloaders	?Draw@CLevelTimer@@QAEHPAVCDDrawSurfacePair@@H@Z	100.0000	100.0000	5	22f7d078dee0	0x9bfa0	100.0000	
 spriteloaders	?LoadTimerSprite@CLevelTimer@@QAEHHH@Z	100.0000	100.0000	8	8ab1c60e98eb	0x9bb00	100.0000	
 spriteloaders	?Reset@CLevelTimer@@QAEXXZ	100.0000	100.0000	3	b9b49b15f1e5	0x9bc70	100.0000	
