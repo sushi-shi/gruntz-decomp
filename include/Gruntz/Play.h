@@ -287,7 +287,7 @@ public:
 
     i32 UnloadGruntAndWarlordAssets(CMulti* multiplayerSession);
 
-    i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
+    i32 LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAssetGroups);
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
@@ -411,8 +411,8 @@ public:
         CMulti* multiplayerSession
     );
 
-    i32 ScanBuildTiles();
-    i32 ScanShuffleQuads();
+    i32 BuildRockAndCoveredPowerupLogics();
+    i32 RandomizePlayerAssignments();
 };
 
 ColorTint FindAvailablePlayerColor();

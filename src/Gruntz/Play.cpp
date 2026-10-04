@@ -1299,7 +1299,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         }
         if (notTraining) {
-            ScanShuffleQuads();
+            RandomizePlayerAssignments();
         }
     }
 
@@ -1345,8 +1345,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 }
             }
             {
-                if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
-                    && ValidateLevelTiles() && AddLevelGruntz()) {
+                if (LoadRequiredCharacterAssets(savedThis, initScratch)
+                    && BuildRockAndCoveredPowerupLogics() && ValidateLevelTiles()
+                    && AddLevelGruntz()) {
                     self->m_world->ChildGroup()->TickKillCues(0);
                     self->m_statusBar->StartChipMachineCycle();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
@@ -5146,62 +5147,62 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
 
 // @early-stop
 RVA(0x000d53d0, 0x466)
-i32 CPlay::ScanBuildTiles() {
-    CObList* pl = m_world->ChildGroup()->GetList();
-    if (pl == NULL) {
+i32 CPlay::BuildRockAndCoveredPowerupLogics() {
+    CObList* objects = m_world->ChildGroup()->GetList();
+    if (objects == NULL) {
         return 0;
     }
-    POSITION pos = pl->GetHeadPosition();
+    POSITION pos = objects->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* p = m_world->ChildGroup()->NextChild(pos);
-        if (p == NULL) {
+        CGameObject* object = m_world->ChildGroup()->NextChild(pos);
+        if (object == NULL) {
             continue;
         }
-        if (!p->HasMovementBounds()) {
-            p->m_extent.left = 0;
+        if (!object->HasMovementBounds()) {
+            object->m_extent.left = 0;
         }
-        if (!p->HasHitBounds()) {
-            p->m_area.left = 0;
+        if (!object->HasHitBounds()) {
+            object->m_area.left = 0;
         }
-        if (!p->HasAttackBounds()) {
-            p->m_switchRect.left = 0;
+        if (!object->HasAttackBounds()) {
+            object->m_switchRect.left = 0;
         }
-        if (p->m_clip.left == COORD_UNSET) {
-            p->m_clip.left = 0;
+        if (object->m_clip.left == COORD_UNSET) {
+            object->m_clip.left = 0;
         }
-        LogicRecordDispatchFn dispatch = p->GetLogicRecord()->GetDispatch();
+        LogicRecordDispatchFn dispatch = object->GetLogicRecord()->GetDispatch();
         if (dispatch == DispatchGiantRockLogic) {
             i32 buf[9];
-            buf[0] = p->m_extent.left;
-            buf[1] = p->m_extent.top;
-            buf[2] = p->m_extent.right;
-            buf[3] = p->m_area.left;
-            buf[4] = p->m_area.top;
-            buf[5] = p->m_area.right;
-            buf[6] = p->m_switchRect.left;
-            buf[7] = p->m_switchRect.top;
-            buf[8] = p->m_switchRect.right;
+            buf[0] = object->m_extent.left;
+            buf[1] = object->m_extent.top;
+            buf[2] = object->m_extent.right;
+            buf[3] = object->m_area.left;
+            buf[4] = object->m_area.top;
+            buf[5] = object->m_area.right;
+            buf[6] = object->m_switchRect.left;
+            buf[7] = object->m_switchRect.top;
+            buf[8] = object->m_switchRect.right;
             if (m_tileTriggers->AddGiantRockLogic(
-                    p->m_speedX,
-                    p->m_speedY,
-                    p->m_id,
+                    object->m_speedX,
+                    object->m_speedY,
+                    object->m_id,
                     buf,
-                    p->m_powerup,
-                    p->GetPoints(),
-                    p->m_faceDirection
+                    object->m_powerup,
+                    object->GetPoints(),
+                    object->m_faceDirection
                 )
                 == NULL) {
-                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", object->m_screenX, object->m_screenY);
                 return 0;
             }
-            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->GetPoints(), p->GetScore());
+            if (object->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+                m_statusBar->QueuePickupReward(object->GetPoints(), object->GetScore());
             }
-            p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->GetLevel();
-            i32 x = p->m_screenX;
-            i32 y = p->m_screenY;
+            i32 x = object->m_screenX;
+            i32 y = object->m_screenY;
             if (x < 0) {
                 x = 0;
             } else {
@@ -5230,28 +5231,32 @@ i32 CPlay::ScanBuildTiles() {
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
-                    p->m_speedX,
-                    p->m_speedY,
-                    p->m_id,
-                    p->m_extent,
-                    p->m_area,
-                    p->m_switchRect,
-                    p->m_clip,
-                    p->GetLogicRecord()->GetUserRect1(),
-                    p->GetLogicRecord()->GetUserRect2(),
-                    p->GetSmarts(),
-                    p->m_powerup,
-                    p->GetPoints(),
-                    p->m_faceDirection
+                    object->m_speedX,
+                    object->m_speedY,
+                    object->m_id,
+                    object->m_extent,
+                    object->m_area,
+                    object->m_switchRect,
+                    object->m_clip,
+                    object->GetLogicRecord()->GetUserRect1(),
+                    object->GetLogicRecord()->GetUserRect2(),
+                    object->GetSmarts(),
+                    object->m_powerup,
+                    object->GetPoints(),
+                    object->m_faceDirection
                 )
                 == NULL) {
-                MODAL_REPORT_AT("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                MODAL_REPORT_AT(
+                    "Bad covered powerup at: x=%d, y=%d",
+                    object->m_screenX,
+                    object->m_screenY
+                );
                 return 0;
             }
-            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_statusBar->QueuePickupReward(p->GetPoints(), p->GetScore());
+            if (object->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+                m_statusBar->QueuePickupReward(object->GetPoints(), object->GetScore());
             }
-            p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     return 1;
@@ -5542,54 +5547,54 @@ i32 CPlay::CloseLevelOverlay(i32) {
 // @early-stop
 
 RVA(0x000d65d0, 0x7cc)
-i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
+i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAssetGroups) {
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
-            if (loaded[id] == 0) {
+            if (loadedAssetGroups[id] == 0) {
                 AdvanceLoadingBar(false);
-                loaded[id] = 1;
+                loadedAssetGroups[id] = 1;
             }
-            if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, ctx)) {
+            if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, multiplayerSession)) {
                 return 0;
             }
         }
-        if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x21] == 0) {
+        if (loadedAssetGroups[0x21] == 0) {
             AdvanceLoadingBar(false);
-            loaded[0x21] = 1;
+            loadedAssetGroups[0x21] = 1;
         }
-        if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x22] == 0) {
+        if (loadedAssetGroups[0x22] == 0) {
             AdvanceLoadingBar(false);
-            loaded[0x22] = 1;
+            loadedAssetGroups[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
-        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x23] == 0) {
+        if (loadedAssetGroups[0x23] == 0) {
             AdvanceLoadingBar(false);
-            loaded[0x23] = 1;
+            loadedAssetGroups[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
-        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x24] == 0) {
+        if (loadedAssetGroups[0x24] == 0) {
             AdvanceLoadingBar(false);
-            loaded[0x24] = 1;
+            loadedAssetGroups[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
-        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, multiplayerSession)) {
             return 0;
         }
-        if (loaded[0x25] == 0) {
+        if (loadedAssetGroups[0x25] == 0) {
             AdvanceLoadingBar(false);
-            loaded[0x25] = 1;
+            loadedAssetGroups[0x25] = 1;
         }
         return 1;
     }
@@ -5603,96 +5608,106 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 v = obj->m_powerup;
                 if (v) {
-                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(
+                            static_cast<PickupType>(v),
+                            1,
+                            0,
+                            multiplayerSession
+                        )) {
                         return 0;
                     }
-                    if (loaded[v] == 0) {
+                    if (loadedAssetGroups[v] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[v] = 1;
+                        loadedAssetGroups[v] = 1;
                     }
                 }
                 v = obj->m_damage;
                 if (v) {
-                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(
+                            static_cast<PickupType>(v),
+                            1,
+                            0,
+                            multiplayerSession
+                        )) {
                         return 0;
                     }
-                    if (loaded[v] == 0) {
+                    if (loadedAssetGroups[v] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[v] = 1;
+                        loadedAssetGroups[v] = 1;
                     }
                 }
                 EnemyAiType aiType = static_cast<EnemyAiType>(obj->GetPoints());
                 switch (aiType) {
                     case AI_BOMBER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_BOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BOMB, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[1] == 0) {
+                        if (loadedAssetGroups[1] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[1] = 1;
+                            loadedAssetGroups[1] = 1;
                         }
                         break;
                     case AI_BRICKLAYER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_BRICK, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BRICK, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[3] == 0) {
+                        if (loadedAssetGroups[3] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[3] = 1;
+                            loadedAssetGroups[3] = 1;
                         }
                         break;
                     case AI_GAUNTLETZGRUNT:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GAUNTLETZ, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[5] == 0) {
+                        if (loadedAssetGroups[5] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[5] = 1;
+                            loadedAssetGroups[5] = 1;
                         }
                         break;
                     case AI_GOOSUCKER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_GOOBER, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GOOBER, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[7] == 0) {
+                        if (loadedAssetGroups[7] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[7] = 1;
+                            loadedAssetGroups[7] = 1;
                         }
                         break;
                     case AI_DIGGER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_SHOVEL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SHOVEL, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0xd] == 0) {
+                        if (loadedAssetGroups[0xd] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[0xd] = 1;
+                            loadedAssetGroups[0xd] = 1;
                         }
                         break;
                     case AI_TIMEBOMBER:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_TIMEBOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_TIMEBOMB, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0x11] == 0) {
+                        if (loadedAssetGroups[0x11] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[0x11] = 1;
+                            loadedAssetGroups[0x11] = 1;
                         }
                         break;
                     case AI_MAGICWANDGRUNT:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_WAND, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_WAND, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0x13] == 0) {
+                        if (loadedAssetGroups[0x13] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[0x13] = 1;
+                            loadedAssetGroups[0x13] = 1;
                         }
                         break;
                     case AI_SCROLLGRUNT:
-                        if (!SetGruntTypeAssetsLoaded(PICKUP_SCROLL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SCROLL, 1, 0, multiplayerSession)) {
                             return 0;
                         }
-                        if (loaded[0x1e] == 0) {
+                        if (loadedAssetGroups[0x1e] == 0) {
                             AdvanceLoadingBar(false);
-                            loaded[0x1e] = 1;
+                            loadedAssetGroups[0x1e] = 1;
                         }
                         break;
                 }
@@ -5713,54 +5728,54 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 d = obj->GetSmarts();
                 PickupType item = static_cast<PickupType>(d);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[obj->GetSmarts()] == 0) {
+                    if (loadedAssetGroups[obj->GetSmarts()] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[obj->GetSmarts()] = 1;
+                        loadedAssetGroups[obj->GetSmarts()] = 1;
                     }
                 } else if (d == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x21] == 0) {
+                    if (loadedAssetGroups[0x21] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[0x21] = 1;
+                        loadedAssetGroups[0x21] = 1;
                     }
                 } else if (d == IDX(GRUNT_REAPER)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x22] == 0) {
+                    if (loadedAssetGroups[0x22] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[0x22] = 1;
+                        loadedAssetGroups[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[obj->GetPoints()] = 1;
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[obj->GetPoints()] = 1;
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 }
             } else if (dispatch == DispatchCoveredPowerupLogic
@@ -5782,54 +5797,54 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 e = obj->m_powerup;
                 PickupType item = static_cast<PickupType>(e);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[obj->m_powerup] == 0) {
+                    if (loadedAssetGroups[obj->m_powerup] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[obj->m_powerup] = 1;
+                        loadedAssetGroups[obj->m_powerup] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x21] == 0) {
+                    if (loadedAssetGroups[0x21] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[0x21] = 1;
+                        loadedAssetGroups[0x21] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_REAPER)) {
-                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loaded[0x22] == 0) {
+                    if (loadedAssetGroups[0x22] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[0x22] = 1;
+                        loadedAssetGroups[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[obj->GetPoints()] = 1;
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
-                            ctx
+                            multiplayerSession
                         )) {
                         return 0;
                     }
-                    if (loaded[obj->GetPoints()] == 0) {
+                    if (loadedAssetGroups[obj->GetPoints()] == 0) {
                         AdvanceLoadingBar(false);
-                        loaded[obj->GetPoints()] = 1;
+                        loadedAssetGroups[obj->GetPoints()] = 1;
                     }
                 }
             }
@@ -6574,64 +6589,70 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
 }
 
 RVA(0x000d9290, 0x2a7)
-i32 CPlay::ScanShuffleQuads() {
-    CDDrawSurfaceMgr* v = m_world;
+i32 CPlay::RandomizePlayerAssignments() {
+    CDDrawSurfaceMgr* world = m_world;
 
-    CObList* pl = v->ChildGroup()->GetList();
-    if (pl == NULL) {
+    CObList* objects = world->ChildGroup()->GetList();
+    if (objects == NULL) {
         return 0;
     }
-    POSITION pos = pl->GetHeadPosition();
+    POSITION pos = objects->GetHeadPosition();
 
-    i32 perm[4];
-    CByteArray arr;
-    arr.Add(0);
-    arr.Add(1);
-    arr.Add(2);
-    arr.Add(3);
-    i32 r;
-    r = GetRandom(0, arr.GetUpperBound());
-    perm[0] = arr.GetAt(r);
-    arr.RemoveAt(r, 1);
-    r = GetRandom(0, arr.GetUpperBound());
-    perm[1] = arr.GetAt(r);
-    arr.RemoveAt(r, 1);
-    r = GetRandom(0, arr.GetUpperBound());
-    perm[2] = arr.GetAt(r);
-    arr.RemoveAt(r, 1);
-    perm[3] = arr.GetAt(0);
-    arr.RemoveAt(0, 1);
+    i32 playerPermutation[4];
+    CByteArray remainingPlayerSlots;
+    remainingPlayerSlots.Add(0);
+    remainingPlayerSlots.Add(1);
+    remainingPlayerSlots.Add(2);
+    remainingPlayerSlots.Add(3);
+    i32 randomIndex;
+    randomIndex = GetRandom(0, remainingPlayerSlots.GetUpperBound());
+    playerPermutation[0] = remainingPlayerSlots.GetAt(randomIndex);
+    remainingPlayerSlots.RemoveAt(randomIndex, 1);
+    randomIndex = GetRandom(0, remainingPlayerSlots.GetUpperBound());
+    playerPermutation[1] = remainingPlayerSlots.GetAt(randomIndex);
+    remainingPlayerSlots.RemoveAt(randomIndex, 1);
+    randomIndex = GetRandom(0, remainingPlayerSlots.GetUpperBound());
+    playerPermutation[2] = remainingPlayerSlots.GetAt(randomIndex);
+    remainingPlayerSlots.RemoveAt(randomIndex, 1);
+    playerPermutation[3] = remainingPlayerSlots.GetAt(0);
+    remainingPlayerSlots.RemoveAt(0, 1);
 
     while (pos != NULL) {
-        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
-        if (p == NULL) {
+        CGameObject* object = static_cast<CGameObject*>(objects->GetNext(pos));
+        if (object == NULL) {
             continue;
         }
-        LogicRecordDispatchFn dispatch = p->GetLogicRecord()->m_dispatch;
+        LogicRecordDispatchFn dispatch = object->GetLogicRecord()->m_dispatch;
         if (dispatch == DispatchGruntCreationPointLogic || dispatch == DispatchExitTriggerLogic
             || dispatch == DispatchFortressFlagLogic || dispatch == DispatchWayPointLogic
             || dispatch == DispatchGuardPointLogic) {
-            p->m_smarts = perm[p->m_smarts];
+            object->m_smarts = playerPermutation[object->m_smarts];
         } else if (dispatch == DispatchBrickzLogic) {
-            if (p->m_extent.left == COORD_UNSET) {
-                p->m_extent.left = 0;
+            if (object->m_extent.left == COORD_UNSET) {
+                object->m_extent.left = 0;
             }
-            if (p->m_area.left == COORD_UNSET) {
-                p->m_area.left = 0;
+            if (object->m_area.left == COORD_UNSET) {
+                object->m_area.left = 0;
             }
-            if (p->m_switchRect.left == COORD_UNSET) {
-                p->m_switchRect.left = 0;
+            if (object->m_switchRect.left == COORD_UNSET) {
+                object->m_switchRect.left = 0;
             }
-            if (p->m_clip.left == COORD_UNSET) {
-                p->m_clip.left = 0;
+            if (object->m_clip.left == COORD_UNSET) {
+                object->m_clip.left = 0;
             }
 
-            i32 scatter[4];
-            scatter[perm[0]] = p->m_extent.left;
-            scatter[perm[1]] = p->m_extent.top;
-            scatter[perm[2]] = p->m_extent.right;
-            scatter[perm[3]] = p->m_extent.bottom;
-            SET_RECT_COMPONENTS(p->m_extent, scatter[0], scatter[1], scatter[2], scatter[3]);
+            i32 permutedPlayerFlags[4];
+            permutedPlayerFlags[playerPermutation[0]] = object->m_extent.left;
+            permutedPlayerFlags[playerPermutation[1]] = object->m_extent.top;
+            permutedPlayerFlags[playerPermutation[2]] = object->m_extent.right;
+            permutedPlayerFlags[playerPermutation[3]] = object->m_extent.bottom;
+            SET_RECT_COMPONENTS(
+                object->m_extent,
+                permutedPlayerFlags[0],
+                permutedPlayerFlags[1],
+                permutedPlayerFlags[2],
+                permutedPlayerFlags[3]
+            );
         }
     }
     return 1;
