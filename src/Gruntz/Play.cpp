@@ -2502,10 +2502,9 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             }
         }
         CGameLevel* geom = m_mgr->World()->GetLevel();
-        CLevelPlane* cam = geom->m_mainPlane;
-        RECT* view = cam->GetPlaneViewRect();
-        sx = view->left - geom->m_viewportRect.left + xr;
-        sy = view->top - geom->m_viewportRect.top + y;
+        CPoint worldPoint = geom->ViewportToWorld(CPoint(xr, y));
+        sx = worldPoint.x;
+        sy = worldPoint.y;
 
         if (m_gruntPlacementActive != false && m_playerCommandPending == false) {
             eventArg = 0;
@@ -2556,9 +2555,9 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 }
 
                 CGameLevel* ds = m_world->GetLevel();
-                LevelCoordRect* vr2 = ds->m_mainPlane->GetPlaneViewRect();
-                i32 wx = vr2->left - ds->m_viewportRect.left + xr;
-                i32 wy = vr2->top - ds->m_viewportRect.top + y;
+                CPoint worldPoint = ds->ViewportToWorld(CPoint(xr, y));
+                i32 wx = worldPoint.x;
+                i32 wy = worldPoint.y;
                 if (g_gameReg->GetTriggerMgr()
                         ->PickGruntAtWorldPoint(wx, wy, &eventArg, &y, g_curPlayer)
                     != NULL) {
@@ -2809,7 +2808,6 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     CGameLevel* h;
-    RECT* vr;
     i32 px;
     i32 py;
     i32 i;
@@ -2821,9 +2819,9 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     h = m_mgr->World()->GetLevel();
-    vr = h->m_mainPlane->GetPlaneViewRect();
-    px = vr->left - h->m_viewportRect.left + x;
-    py = vr->top - h->m_viewportRect.top + y;
+    CPoint worldPoint = h->ViewportToWorld(CPoint(x, y));
+    px = worldPoint.x;
+    py = worldPoint.y;
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* e = StartMarkerAt(i);
         if (e == NULL) {
@@ -3822,9 +3820,9 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
                 }
             }
             CGameLevel* v = m_world->GetLevel();
-            LevelCoordRect* vr = v->m_mainPlane->GetPlaneViewRect();
-            i32 wx = vr->left - v->m_viewportRect.left + x;
-            i32 wy = vr->top - v->m_viewportRect.top + y;
+            CPoint worldPoint = v->ViewportToWorld(CPoint(x, y));
+            i32 wx = worldPoint.x;
+            i32 wy = worldPoint.y;
             m_mgr->GetTriggerMgr()->UpdateTargetingCursor(wx, wy);
             return 1;
         }
@@ -4065,10 +4063,9 @@ RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->GetLevel();
 
-    RECT* vr = v->m_mainPlane->GetPlaneViewRect();
-
-    i32 y = m_cursorY + (vr->top - v->m_viewportRect.top);
-    i32 x = vr->left + (m_cursorX - v->m_viewportRect.left);
+    CPoint worldPoint = v->ViewportToWorld(CPoint(m_cursorX, m_cursorY));
+    i32 y = worldPoint.y;
+    i32 x = worldPoint.x;
 
     y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
     x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;

@@ -220,13 +220,10 @@ void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
     i32 scheduleSlot
 ) {
     CGameLevel* level = m_manager->m_world->GetLevel();
-    const RECT* view = level->m_mainPlane->GetPlaneViewRect();
-    i32 targetX =
-        ((view->left - level->m_viewportRect.left + static_cast<u16>(screenX)) & ~TILE_MASK_PX)
-        + TILE_HALF_PX;
-    i32 targetY =
-        ((view->top - level->m_viewportRect.top + static_cast<u16>(screenY)) & ~TILE_MASK_PX)
-        + TILE_HALF_PX;
+    CPoint worldPoint =
+        level->ViewportToWorld(CPoint(static_cast<u16>(screenX), static_cast<u16>(screenY)));
+    i32 targetX = (worldPoint.x & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 targetY = (worldPoint.y & ~TILE_MASK_PX) + TILE_HALF_PX;
     EnqueueSingle(
         isLocalCommand,
         static_cast<char>(playerIndex),

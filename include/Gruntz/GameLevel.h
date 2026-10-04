@@ -70,6 +70,14 @@ GZ_ENUM_CONST_END(LevelPlaneLayout)
 
 class CGameLevel : public CWapObj {
 public:
+    CPoint ViewportToWorld(const CPoint& point) const {
+        const RECT* planeView = m_mainPlane->GetPlaneViewRect();
+        return CPoint(
+            planeView->left - m_viewportRect.left + point.x,
+            planeView->top - m_viewportRect.top + point.y
+        );
+    }
+
     LevelCoordRect GetViewportRect() const {
         return m_viewportRect;
     }

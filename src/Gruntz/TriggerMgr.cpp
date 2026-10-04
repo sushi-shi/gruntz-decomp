@@ -112,12 +112,12 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::SelectUnitsInRect(RECT selectionRect, b32 preserveSelection) {
     CGameLevel* level = m_world->GetLevel();
-    const RECT* planeView = level->m_mainPlane->GetPlaneViewRect();
-    selectionRect.left += planeView->left - level->m_viewportRect.left;
-    selectionRect.top += planeView->top - level->m_viewportRect.top;
-    planeView = level->m_mainPlane->GetPlaneViewRect();
-    selectionRect.right += planeView->left - level->m_viewportRect.left;
-    selectionRect.bottom += planeView->top - level->m_viewportRect.top;
+    CPoint topLeft = level->ViewportToWorld(CPoint(selectionRect.left, selectionRect.top));
+    selectionRect.left = topLeft.x;
+    selectionRect.top = topLeft.y;
+    CPoint bottomRight = level->ViewportToWorld(CPoint(selectionRect.right, selectionRect.bottom));
+    selectionRect.right = bottomRight.x;
+    selectionRect.bottom = bottomRight.y;
     for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             CGrunt* grunt = UnitAt(playerIndex, unitIndex);
@@ -864,9 +864,9 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
         return 0;
     }
     CGameLevel* view = m_world->GetLevel();
-    RECT* vr = view->m_mainPlane->GetPlaneViewRect();
-    i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
-    i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
+    CPoint worldPoint = view->ViewportToWorld(CPoint(pointerX, pointerY));
+    i32 worldX = worldPoint.x;
+    i32 worldY = worldPoint.y;
     this->UpdateTargetingCursor(worldX, worldY);
     return 1;
 }
