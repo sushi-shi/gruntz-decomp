@@ -254,6 +254,10 @@ public:
     }
 
     i32 m_smarts;
+    i32 GetHealth() const {
+        return m_health;
+    }
+
     i32 m_health;
 
     i32 m_direction;

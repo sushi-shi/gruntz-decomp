@@ -770,7 +770,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetImageSetByName("GAME_HELPBOX");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
-    InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
+    InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->GetHealth());
     if (vis == INGAME_TEXT_EASY_ONLY) {
 
         if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {

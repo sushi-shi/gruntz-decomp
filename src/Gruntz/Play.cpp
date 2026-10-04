@@ -4959,7 +4959,7 @@ i32 CPlay::ValidateLevelTiles() {
                         0,
                         obj->m_damage,
                         obj->GetPoints(),
-                        obj->m_health
+                        obj->GetHealth()
                     )) {
                     MODAL_REPORT_AT(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",

@@ -211,7 +211,7 @@ i32 CStaticHazard::UpdateActiveState() {
             );
         }
         CWwdSpriteObject* o = m_object;
-        o->SetSortKey(o->m_health);
+        o->SetSortKey(o->GetHealth());
         CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 row = m_tileRow;
         i32 col = m_tileCol;
