@@ -69,7 +69,7 @@ i32 CGameObject::IsLoaded() {
 
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
-    : CResolveNode(owner, id, objectFlags, CResolveNode::INLINE_SEED),
+    : CRenderState(owner, id, objectFlags, CRenderState::INLINE_SEED),
       m_region(WwdRegion::INLINE_SEED),
       m_shadow(WwdDirtyRect::INLINE_SEED) {
     AttachToOwner(owner, id);
@@ -427,14 +427,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
         }
 
         boundSprite = m_boundObject;
-        boundSprite->m_plotDX = 0;
-        boundSprite->m_plotDY = 0;
+        boundSprite->m_imageOffsetX = 0;
+        boundSprite->m_imageOffsetY = 0;
         switch (m_currentRecord->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
                 CAniFrameRecord* positionRecord = m_currentRecord;
                 CWwdSpriteObject* sprite = m_boundObject;
-                sprite->m_plotDX = positionRecord->m_positionParameterX;
-                sprite->m_plotDY = positionRecord->m_positionParameterY;
+                sprite->m_imageOffsetX = positionRecord->m_positionParameterX;
+                sprite->m_imageOffsetY = positionRecord->m_positionParameterY;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {

@@ -160,16 +160,16 @@ i32 CTransientDrawList::IsReady() {
 }
 
 RVA(0x00156fd0, 0x8b)
-CTransientPixel* CTransientDrawList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
-    CTransientPixel* w = new CTransientPixel(OwnerMgr());
-    if (w->PlacePixel(x, y, pixelValue) == 0) {
-        if (w != NULL) {
-            delete w;
+CTransientPixel* CTransientDrawList::AddPixel(i32 x, i32 y, i32 pixelValue) {
+    CTransientPixel* item = new CTransientPixel(OwnerMgr());
+    if (item->PlacePixel(x, y, pixelValue) == 0) {
+        if (item != NULL) {
+            delete item;
         }
         return NULL;
     }
-    m_workers.AddTail(static_cast<CObject*>(w));
-    return w;
+    m_items.AddTail(static_cast<CObject*>(item));
+    return item;
 }
 
 RVA(0x00157060, 0x16)
@@ -206,30 +206,25 @@ i32 CTransientPixel::PlacePixel(i32 x, i32 y, i32 pixelValue) {
 RVA(0x00157130, 0x17)
 void CTransientPixel::Unload() {
     m_pixelValue = 0;
-    CResolveNode::Unload();
+    CRenderState::Unload();
 }
 
 RVA(0x00157150, 0xa5)
-CTransientImage* CTransientDrawList::CreateFrameWorker(
-    i32 x,
-    i32 y,
-    const char* workerName,
-    i32 frameIndex,
-    i32 addHead
-) {
-    CTransientImage* w = new CTransientImage(OwnerMgr());
-    if (w->PlaceFrame(x, y, workerName, frameIndex) == 0) {
-        if (w != NULL) {
-            delete w;
+CTransientImage*
+CTransientDrawList::AddImage(i32 x, i32 y, const char* imageSetName, i32 frameIndex, i32 addHead) {
+    CTransientImage* item = new CTransientImage(OwnerMgr());
+    if (item->PlaceImage(x, y, imageSetName, frameIndex) == 0) {
+        if (item != NULL) {
+            delete item;
         }
         return NULL;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<CObject*>(w));
+        m_items.AddHead(static_cast<CObject*>(item));
     } else {
-        m_workers.AddTail(static_cast<CObject*>(w));
+        m_items.AddTail(static_cast<CObject*>(item));
     }
-    return w;
+    return item;
 }
 
 RVA(0x00157200, 0xb)
@@ -250,68 +245,63 @@ CTransientImage::~CTransientImage() {
 }
 
 RVA(0x00157280, 0x30)
-i32 CTransientImage::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
-    ResolveFrame(workerName, frameIndex);
+i32 CTransientImage::PlaceImage(i32 x, i32 y, const char* imageSetName, i32 frameIndex) {
+    SetImageByName(imageSetName, frameIndex);
     SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x001572b0, 0x38)
-i32 CTransientImage::PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex) {
-    CImage* frame = source->GetAt(frameIndex);
-    m_frame = frame;
+i32 CTransientImage::PlaceImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex) {
+    CImage* image = imageSet->GetAt(frameIndex);
+    m_image = image;
     SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x001572f0, 0x20)
-i32 CTransientImage::PlaceFrame(i32 x, i32 y, CImage* frame) {
-    m_frame = frame;
+i32 CTransientImage::PlaceImage(i32 x, i32 y, CImage* image) {
+    m_image = image;
     SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x00157310, 0x1a)
 void CTransientDrawItem::Unload() {
     m_contentValue = 0;
-    CResolveNode::Unload();
+    CRenderState::Unload();
 }
 
 RVA(0x00157330, 0xa5)
-CTransientImage* CTransientDrawList::CreateFrameWorker(
-    i32 x,
-    i32 y,
-    CImageSet* source,
-    i32 frameIndex,
-    i32 addHead
-) {
-    CTransientImage* w = new CTransientImage(OwnerMgr());
-    if (w->PlaceFrame(x, y, source, frameIndex) == 0) {
-        if (w != NULL) {
-            delete w;
+CTransientImage*
+CTransientDrawList::AddImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex, i32 addHead) {
+    CTransientImage* item = new CTransientImage(OwnerMgr());
+    if (item->PlaceImage(x, y, imageSet, frameIndex) == 0) {
+        if (item != NULL) {
+            delete item;
         }
         return NULL;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<CObject*>(w));
+        m_items.AddHead(static_cast<CObject*>(item));
     } else {
-        m_workers.AddTail(static_cast<CObject*>(w));
+        m_items.AddTail(static_cast<CObject*>(item));
     }
-    return w;
+    return item;
 }
 
 RVA(0x001573e0, 0xa0)
-CTransientImage* CTransientDrawList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
-    CTransientImage* w = new CTransientImage(OwnerMgr());
-    if (w->PlaceFrame(x, y, frame) == 0) {
-        if (w != NULL) {
-            delete w;
+CTransientImage* CTransientDrawList::AddImage(i32 x, i32 y, CImage* image, i32 addHead) {
+    CTransientImage* item = new CTransientImage(OwnerMgr());
+    if (item->PlaceImage(x, y, image) == 0) {
+        if (item != NULL) {
+            delete item;
         }
         return NULL;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<CObject*>(w));
+        m_items.AddHead(static_cast<CObject*>(item));
     } else {
-        m_workers.AddTail(static_cast<CObject*>(w));
+        m_items.AddTail(static_cast<CObject*>(item));
     }
-    return w;
+    return item;
 }
 
 RVA(0x00157480, 0x1e)

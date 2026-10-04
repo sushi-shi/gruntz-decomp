@@ -3,6 +3,6 @@
 
 #define SET_POSITION_AND_RESET_RENDER_PASSES(x, y)                                                 \
     m_renderPassesRemaining = 2;                                                                   \
-    return CResolveNode::SetPosition(x, y)
+    return CRenderState::SetPosition(x, y)
 
 #endif // GRUNTZ_DDRAWMGR_RESOLVENODEMACROS_H

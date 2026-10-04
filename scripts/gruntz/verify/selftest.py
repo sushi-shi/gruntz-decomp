@@ -4879,7 +4879,7 @@ class EhRegistrationRenameControls(unittest.TestCase):
     delinked side that is the ONLY structure available, and a
     `push <$E atexit thunk>; call _atexit` has exactly the same shape - it was
     renamed on 12 sites in the tree, asserting a registration stub that does
-    not exist (`0x153800` is `mov ecx,&clip; jmp ~CResolveNode`).  The
+    not exist (`0x153800` is `mov ecx,&clip; jmp ~CRenderState`).  The
     discriminator is the instruction that makes a pushed record ACTIVE."""
 
     def test_the_registration_prologue_is_recognized(self):

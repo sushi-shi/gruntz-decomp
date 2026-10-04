@@ -1730,16 +1730,16 @@ void CGrunt::StepBehavior(char*) {
         expireSpawnProtection: {
             CWwdSpriteObject* obj = m_object;
             m_spawnProtectionActive = false;
-            obj->m_drawActive = true;
-            obj->m_drawFillCmd = SHADE_PAL_16;
+            obj->m_hasShadeOverride = true;
+            obj->m_shadeMode = SHADE_PAL_16;
         }
             m_entranceTiming.m_intervalLo = 0;
             m_entranceTiming.m_intervalHi = 0;
         } else if (m_flashTiming.Expired()) {
             CWwdSpriteObject* obj = m_object;
-            if (obj->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
-                obj->m_drawActive = true;
-                obj->m_drawFillCmd = SHADE_PAL_16;
+            if (obj->m_shadeMode == SHADE_PAL_ALPHA_16) {
+                obj->m_hasShadeOverride = true;
+                obj->m_shadeMode = SHADE_PAL_16;
             } else {
                 i32 fade = g_buteMgr.GetInt("Grunt", s_fadeTransparency, 0xc0);
                 CWwdSpriteObject* o2 = m_object;
@@ -2151,7 +2151,7 @@ updatePowerup:
                     m_activePickupType >= PICKUP_TOYZ_FIRST
                 );
                 CWwdSpriteObject* obj = m_object;
-                ShadeMode cmd = obj->m_drawFillCmd;
+                ShadeMode cmd = obj->m_shadeMode;
                 obj->SetDrawFill(cmd, sel);
             }
         }
@@ -2181,8 +2181,8 @@ updatePowerup:
                     case PICKUP_GHOST: {
                         CWwdSpriteObject* obj = m_object;
                         m_powerupType = GRUNT_NORMAL;
-                        obj->m_drawActive = true;
-                        obj->m_drawFillCmd = SHADE_PAL_16;
+                        obj->m_hasShadeOverride = true;
+                        obj->m_shadeMode = SHADE_PAL_16;
                         break;
                     }
                     case PICKUP_INVULNERABILITY:

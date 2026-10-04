@@ -17,7 +17,7 @@ class CImageSet;
 class CDDrawSurfacePair;
 
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
-class CTransientDrawItem : public CResolveNode {
+class CTransientDrawItem : public CRenderState {
 public:
     virtual ~CTransientDrawItem() OVERRIDE {
         m_dirty.Reset();
@@ -29,19 +29,19 @@ public:
 
     virtual i32 SetPosition(i32 x, i32 y) OVERRIDE;
 
-    virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
+    virtual void Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 
     i32 m_renderPassesRemaining;
 
     union {
         i32 m_contentValue;
-        class CImage* m_frame;
+        class CImage* m_image;
         char m_pixelValue;
     };
 
     CTransientDrawItem() {}
 
-    CTransientDrawItem(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
+    CTransientDrawItem(CDDrawSurfaceMgr* ctx) : CRenderState(NO_SEED) {
         m_id = 0;
         m_ownerCtx = ctx;
         m_flags = 0;
@@ -62,7 +62,7 @@ struct CTransientPixel : public CTransientDrawItem {
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
+    virtual void Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
     CTransientPixel() {}
     CTransientPixel(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
         m_pixelValue = 0;
@@ -74,16 +74,16 @@ struct CTransientPixel : public CTransientDrawItem {
 struct CTransientImage : public CTransientDrawItem {
     virtual ~CTransientImage() OVERRIDE;
 
-    virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
+    virtual void Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
     CTransientImage() {}
     CTransientImage(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
         m_contentValue = 0;
     }
-    virtual i32 PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex);
-    virtual i32 PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex);
-    virtual i32 PlaceFrame(i32 x, i32 y, CImage* frame);
+    virtual i32 PlaceImage(i32 x, i32 y, const char* imageSetName, i32 frameIndex);
+    virtual i32 PlaceImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex);
+    virtual i32 PlaceImage(i32 x, i32 y, CImage* image);
 
-    i32 ResolveFrame(const char* workerName, i32 frameIndex);
+    i32 SetImageByName(const char* imageSetName, i32 frameIndex);
 };
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWPLACEDWORKER_H

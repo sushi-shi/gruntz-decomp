@@ -4,22 +4,22 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <Gruntz/ResolveNode.h>
 
-inline void CResolveNode::ResetDrawFill() {
-    m_drawFillArg = NULL;
-    m_drawFillCmd = SHADE_COPY;
-    m_drawActive = false;
+inline void CRenderState::ResetDrawFill() {
+    m_shadeTable = NULL;
+    m_shadeMode = SHADE_COPY;
+    m_hasShadeOverride = false;
 }
 
-inline void CResolveNode::SetDrawFill(ShadeMode mode, CShadeTable* table) {
-    m_drawActive = true;
-    m_drawFillCmd = mode;
-    m_drawFillArg = table;
+inline void CRenderState::SetDrawFill(ShadeMode mode, CShadeTable* table) {
+    m_hasShadeOverride = true;
+    m_shadeMode = mode;
+    m_shadeTable = table;
 }
 
-inline void CResolveNode::SetDrawFillReversed(ShadeMode mode, CShadeTable* table) {
-    m_drawActive = true;
-    m_drawFillArg = table;
-    m_drawFillCmd = mode;
+inline void CRenderState::SetDrawFillReversed(ShadeMode mode, CShadeTable* table) {
+    m_hasShadeOverride = true;
+    m_shadeTable = table;
+    m_shadeMode = mode;
 }
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODEINLINE_H

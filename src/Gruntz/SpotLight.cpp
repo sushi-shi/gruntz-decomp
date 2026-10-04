@@ -266,9 +266,9 @@ i32 CSpotLight::SerializeDispatch(
         case SERIAL_POSTLOAD: {
             CWwdSpriteObject* o = m_object;
             CShadeTable* fill = reg->GetLightFxMgr()->GetShadeTable(o->GetPowerup());
-            o->m_drawActive = true;
-            o->m_drawFillArg = fill;
-            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+            o->m_hasShadeOverride = true;
+            o->m_shadeTable = fill;
+            o->m_shadeMode = SHADE_DST_BY_SRC_16;
             break;
         }
     }

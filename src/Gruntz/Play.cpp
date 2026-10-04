@@ -802,7 +802,7 @@ i32 CPlay::ProfileInputFrame() {
     drawMs = static_cast<i32>(tg() - static_cast<u32>(drawMs));
 
     i32 fixedMs = static_cast<i32>(tg());
-    m_world->m_workerList->RenderAndPruneWorkers(
+    m_world->m_transientDrawList->RenderAndPrune(
         m_world->GetDrawTarget()->GetBackPair(),
         m_world->GetDrawTarget()->m_overlayPair
     );
@@ -1497,7 +1497,7 @@ void CPlay::ClearLevelState() {
     triggerManager->m_levelWarpStoneCollected = false;
     m_mgr->GetTriggerMgr()->m_puddles.RemoveAll();
     m_mgr->GetTriggerMgr()->SetLocalWarlord(NULL);
-    (static_cast<CTransientDrawList*>(m_world->m_workerList))->ClearWorkers();
+    (static_cast<CTransientDrawList*>(m_world->m_transientDrawList))->Clear();
     FreeStartMarkers();
     for (k = 0; k < 4; k++) {
         FreePlacedObjectCells(k);
@@ -1546,7 +1546,7 @@ void CPlay::ModeCleanup() {
         m_world->ChildGroup()->ClearChildren();
     }
     if (m_world) {
-        m_world->m_workerList->ClearWorkers();
+        m_world->m_transientDrawList->Clear();
     }
 }
 
@@ -1594,7 +1594,7 @@ i32 CPlay::RestoreGraphics() {
     m_statusBar->RequestRedraw();
     m_statusBar->Render();
     m_stepCountdown = 2;
-    m_world->GetDrawTarget()->TransTitle();
+    m_world->GetDrawTarget()->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
@@ -2991,7 +2991,7 @@ i32 CPlay::PrepareReturnToMenu() {
     m_mgr->m_strWorldFile.Empty();
     if (m_completedFinalLevel != false) {
         if (m_world->GetDrawTarget()->HasOverlay() != 0) {
-            m_world->GetDrawTarget()->TransEnter();
+            m_world->GetDrawTarget()->CopyFrontToOverlay();
         }
         m_mgr->PlayMovieEntry(IDX(MOVIE_ENTRY_ENDING));
     }
@@ -5862,7 +5862,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
         }
     }
 
-    m_world->GetDrawTarget()->TransTitle();
+    m_world->GetDrawTarget()->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGameLevel* lvl = m_world->m_level;

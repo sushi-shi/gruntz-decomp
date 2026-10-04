@@ -34,7 +34,7 @@ RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_drawTarget = NULL;
     m_childGroup = NULL;
-    m_workerList = NULL;
+    m_transientDrawList = NULL;
     m_imageRegistry = NULL;
     m_logicRegistry = NULL;
     m_paletteRegistry = NULL;
@@ -63,7 +63,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
     m_drawTarget = new CDDrawSubMgrPages(this);
     m_childGroup = new CDDrawChildGroup(this);
-    m_workerList = new CTransientDrawList(this);
+    m_transientDrawList = new CTransientDrawList(this);
     m_imageRegistry = new CImageSetRegistry(this);
     m_logicRegistry = new CLogicRecordRegistry(this);
     m_paletteRegistry = new CDDrawPaletteRegistry(this);
@@ -77,7 +77,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         SetInitError(WORLDERR_CHILD_GROUP);
         return 0;
     }
-    if (!m_workerList->IsReady()) {
+    if (!m_transientDrawList->IsReady()) {
         SetInitError(WORLDERR_WORKER_LIST);
         return 0;
     }
@@ -140,7 +140,7 @@ void CDDrawSurfaceMgr::Cleanup() {
     SAFE_DELETE(m_soundStream);
     SAFE_DELETE(m_drawTarget);
     SAFE_DELETE(m_childGroup);
-    SAFE_DELETE(m_workerList);
+    SAFE_DELETE(m_transientDrawList);
     SAFE_DELETE(m_imageRegistry);
     SAFE_DELETE(m_logicRegistry);
     SAFE_DELETE(m_paletteRegistry);
@@ -153,8 +153,9 @@ RVA(0x00155f00, 0x41)
 b32 CDDrawSurfaceMgr::IsReady() {
     CDDrawSubMgrPages* first = m_drawTarget;
 
-    return first != NULL && ChildGroup() != NULL && m_workerList != NULL && m_imageRegistry != NULL
-           && m_logicRegistry != NULL && first->IsLoaded() != 0 && m_level != NULL;
+    return first != NULL && ChildGroup() != NULL && m_transientDrawList != NULL
+           && m_imageRegistry != NULL && m_logicRegistry != NULL && first->IsLoaded() != 0
+           && m_level != NULL;
 }
 
 RVA(0x00155f50, 0x10)

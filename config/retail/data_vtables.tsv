@@ -170,7 +170,7 @@ rva	size	name	kind	note
 0x1efb28	0x14	??_7?$CArray@PAUCShadeTable@@PAU1@@@6B@	primary	MFC CArray instantiation
 0x1efb80	0x28	??_7CLogicRecord@@6B@	primary	
 0x1efba8	0x14	??_7CAnimationSequence@@6B@	primary	
-0x1efbc0	0x28	??_7CResolveNode@@6B@	primary	
+0x1efbc0	0x28	??_7CRenderState@@6B@	primary	
 0x1efbe8	0x44	??_7CImageSet@@6B@	primary	
 0x1efc30	0x24	??_7CWapObj@@6B@	primary	
 0x1efc58	0x20	??_7CDDrawSurfaceMgr@@6B@	primary	

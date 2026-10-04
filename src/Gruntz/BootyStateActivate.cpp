@@ -338,7 +338,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
         return 0;
     }
-    m_world->GetDrawTarget()->TransExit();
+    m_world->GetDrawTarget()->CopyOverlayToBack();
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
@@ -1500,7 +1500,7 @@ i32 CBootyState::RestoreGraphics() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_world->GetDrawTarget()->TransExit();
+    m_world->GetDrawTarget()->CopyOverlayToBack();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
@@ -1641,9 +1641,9 @@ i32 CBootyState::HandleContinueInput() {
                     return 0;
                 }
                 DrawCompletionOverlay();
-                m_world->GetDrawTarget()->TransExit();
+                m_world->GetDrawTarget()->CopyOverlayToBack();
                 m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
-                m_world->GetDrawTarget()->TransTitle();
+                m_world->GetDrawTarget()->CopyBackToOverlay();
                 RetireScene(0x50, 0x3e8, 0, true);
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
@@ -1659,7 +1659,7 @@ i32 CBootyState::HandleContinueInput() {
                 if (!ShowSecretBonusMessage()) {
                     return 0;
                 }
-                m_world->GetDrawTarget()->TransExit();
+                m_world->GetDrawTarget()->CopyOverlayToBack();
                 RetireScene(0x50, 0x3e8, 0, true);
                 m_sequencePhase = BOOTYSEQ_SECRET_PENDING;
                 return 1;
@@ -1672,7 +1672,7 @@ i32 CBootyState::HandleContinueInput() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            m_world->GetDrawTarget()->TransExit();
+            m_world->GetDrawTarget()->CopyOverlayToBack();
             RetireScene(0x50, 0x3e8, 0, true);
             return 1;
         }
@@ -2000,7 +2000,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     if (!ok) {
         return ok;
     }
-    m_world->GetDrawTarget()->TransExit();
+    m_world->GetDrawTarget()->CopyOverlayToBack();
     RetireScene(0x50, 0x3e8, 0, true);
 
     CDDrawSurfaceMgr* host = g_gameReg->World();
@@ -2525,7 +2525,7 @@ i32 CMultiBootyState::RestoreGraphics() {
     }
 
     DrawBattleStats();
-    m_world->GetDrawTarget()->TransExit();
+    m_world->GetDrawTarget()->CopyOverlayToBack();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }

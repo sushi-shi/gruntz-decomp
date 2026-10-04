@@ -46,17 +46,17 @@ public:
     i32 LoadPageImage(struct CRezItm* src, DDrawPageKind pageIndex);
     void BltDirtyChildrenEx();
     void FlipAndNotify();
-    i32 PagesReady();
+    i32 RestoreLostSurfaces();
     i32 ResizePages(i32 w, i32 h, ColorDepth bpp);
     i32 CreateOverlay(i32 copyFromBack, i32 createFlag);
     void UnloadOverlay();
     void ClearAllPages(u32 color);
-    i32 BlitPage(CDDrawSurfacePair* dst);
+    i32 CopyFrontToSurface(CDDrawSurfacePair* dst);
     i32 HasOverlay();
-    i32 PresentBackPage();
-    i32 TransEnter();
-    i32 TransTitle();
-    i32 TransExit();
+    i32 CopyFrontToBackBuffers();
+    i32 CopyFrontToOverlay();
+    i32 CopyBackToOverlay();
+    i32 CopyOverlayToBack();
 
     CDDrawSurfacePair* GetBackPair() const {
         return m_backPair;
@@ -99,7 +99,7 @@ public:
         return m_surface;
     }
 
-    i32 Probe();
+    i32 RestoreIfLost();
     void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
 
     virtual ~CDrawSubWorker() OVERRIDE {

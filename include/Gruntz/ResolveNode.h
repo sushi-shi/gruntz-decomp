@@ -60,7 +60,8 @@ struct WwdDirtyRect {
     i32 m_armed;
 };
 
-class CResolveNode : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CRenderState : public CWapObj {
 public:
     b32 IsHidden() const {
         return HAS(m_stateFlags, SPRITE_STATE_HIDDEN);
@@ -84,19 +85,19 @@ public:
 
     virtual i32 SetPosition(i32 x, i32 y);
 
-    CResolveNode();
+    CRenderState();
 
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     enum EInlineSeed {
         INLINE_SEED
     };
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
+    CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
 
     enum ENoSeed {
         NO_SEED
     };
-    CResolveNode(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
+    CRenderState(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
     i32 Init(
         CDDrawSurfaceMgr* owner,
         i32 id,
@@ -106,13 +107,13 @@ public:
         i32 flags
     );
 
-    virtual ~CResolveNode() OVERRIDE {
+    virtual ~CRenderState() OVERRIDE {
         m_screenX = COORD_UNSET;
         m_dirty.Reset();
     }
 
-    i32 m_plotDX;
-    i32 m_plotDY;
+    i32 m_imageOffsetX;
+    i32 m_imageOffsetY;
 
     WwdDirtyRect m_dirty;
 
@@ -120,10 +121,10 @@ public:
     SpriteStateFlags m_stateFlags;
     i32 m_flashCountdown;
     i32 m_flashInterval;
-    CShadeTable* m_drawFillArg;
-    ShadeMode m_drawFillCmd;
+    CShadeTable* m_shadeTable;
+    ShadeMode m_shadeMode;
     i32 m_fillFraction;
-    b32 m_drawActive;
+    b32 m_hasShadeOverride;
     i32 m_screenX;
 
     i32 m_screenY;
@@ -136,13 +137,13 @@ public:
     (node)->m_screenY = (y)
 
 #define SET_DRAW_FILL_SPLIT(activeNode, node, mode, table)                                         \
-    activeNode->m_drawActive = true;                                                               \
-    node->m_drawFillCmd = mode;                                                                    \
-    node->m_drawFillArg = table
+    activeNode->m_hasShadeOverride = true;                                                         \
+    node->m_shadeMode = mode;                                                                      \
+    node->m_shadeTable = table
 
 #define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode;                                                                    \
+    node->m_hasShadeOverride = true;                                                               \
+    node->m_shadeMode = mode;                                                                      \
     node->m_fillFraction = fraction
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

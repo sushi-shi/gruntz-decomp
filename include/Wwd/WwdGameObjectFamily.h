@@ -29,7 +29,7 @@ class CImage;
 struct SoundCue;
 class CAnimationSequence;
 
-struct CGameObject : public CResolveNode {
+struct CGameObject : public CRenderState {
 public:
     enum EInlineBase {
         INLINE_BASE
@@ -67,7 +67,7 @@ public:
             m_collisionLogic = NULL;
         }
         m_shadow.Reset();
-        CResolveNode::Unload();
+        CRenderState::Unload();
     }
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate);
@@ -309,7 +309,7 @@ inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
 }
 
 inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
-    : CResolveNode(owner, id, objectFlags) {
+    : CRenderState(owner, id, objectFlags) {
     AttachToOwner(owner, id);
 }
 
@@ -319,7 +319,7 @@ inline CGameObject::CGameObject(
     i32 objectFlags,
     EInlineBaseAndRegion
 )
-    : CResolveNode(owner, id, objectFlags), m_region(WwdRegion::BASE_CALL) {
+    : CRenderState(owner, id, objectFlags), m_region(WwdRegion::BASE_CALL) {
     AttachToOwner(owner, id);
 }
 
