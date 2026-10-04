@@ -71,7 +71,6 @@ i32 CPreviewState::NextScreenCmd(i32 unused) {
     while (ShowCursor(false) >= 0) {
     }
     LoadLevelPreviewScreen();
-    m_previewCountdownMs = 60000;
     return 1;
 }
 
@@ -80,6 +79,7 @@ i32 CPreviewState::AcceptPreviewCommand(i32 unused) {
 }
 
 i32 CPreviewState::Tick() {
+    if (IsSceneFading()) return AdvanceSceneFade(m_mgr->Timing().deltaMs()) >= 0;
     IDirectDrawSurface* surf =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (surf == NULL || surf->IsLost() != 0) {
@@ -98,6 +98,7 @@ i32 CPreviewState::Tick() {
 }
 
 i32 CPreviewState::Refade() {
+    CancelSceneFade();
     if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }
@@ -105,20 +106,18 @@ i32 CPreviewState::Refade() {
     }
     i32 r =
         LoadTitlePage((m_previewName), 0, 0, 0, 0, true);
-    RetireScene(0x50, 0x3e8, 0, true);
-    return r;
+    return r && BeginSceneFade(0x50, 0x3e8, 0, true);
 }
 
 i32 CPreviewState::RefadeVirtual() {
-    if (IsActive() == 0) {
-        return 0;
-    }
-    while (ShowCursor(false) >= 0) {
-    }
-    i32 r =
-        LoadTitlePage((m_previewName), 0, 0, 0, 0, true);
-    RetireScene(0x50, 0x3e8, 0, true);
-    return r;
+    return IsActive() && Refade();
+}
+
+i32 CPreviewState::RestoreAfterSceneFade() {
+    if (!m_world->GetDrawTarget()->PagesReady()) return 0;
+    if (!LoadAndPresentTitlePage(m_previewName, 0, 0, 0, 0)) return 0;
+    OnSceneFadeComplete();
+    return 1;
 }
 
 i32 CPreviewState::OnKey(i32 key, i32 unused) {
@@ -137,6 +136,8 @@ i32 CPreviewState::OnLButtonDown(i32, i32, i32) {
 }
 
 void CPreviewState::LoadLevelPreviewScreen() {
+    if (IsSceneFading()) return;
+    m_resetTimerAfterFade = true;
     i32 idx = m_previewIndex;
     m_previewIndex = idx + 1;
     m_previewName = formatText("PREVIEW%i", idx);
@@ -148,18 +149,26 @@ void CPreviewState::LoadLevelPreviewScreen() {
         failed = true;
     } else {
         PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_TELEPORTEROPEN");
-        RetireScene(0x50, 0x3e8, 0, true);
+        if (!BeginSceneFade(0x50, 0x3e8, 0, true)) failed = true;
     }
-    m_previewCountdownMs = 60000;
     if (failed) {
         Cancel();
     }
 }
 
 void CPreviewState::Cancel() {
+    CancelSceneFade();
+    m_resetTimerAfterFade = false;
     if (g_previewCancelQuits) {
         m_mgr->DelayedQuit();
         return;
     }
     PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->GetHwnd())), WM_COMMAND, 0x8027, 0);
+}
+
+void CPreviewState::OnSceneFadeComplete() {
+    if (m_resetTimerAfterFade) {
+        m_previewCountdownMs = 60000;
+        m_resetTimerAfterFade = false;
+    }
 }

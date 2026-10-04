@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
 #include <string>
+#include <Runtime/FadePlayback.h>
 
 #include <Ints.h>
 
@@ -142,6 +143,12 @@ public:
     );
 
     i32 RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay);
+    i32 BeginSceneFade(i32 intensityPercent, u32 durationMs, u32 leadMs, bool useOverlay);
+    i32 AdvanceSceneFade(u32 deltaMs);
+    void CancelSceneFade();
+    bool IsSceneFading() const { return m_sceneFade.active(); }
+    virtual void OnSceneFadeComplete() {}
+    virtual i32 RestoreAfterSceneFade() { return InputVirtual(); }
 
     i32 FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
     i32 FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
@@ -213,10 +220,14 @@ public:
 
     i32 m_cursorSavedSurfaceValid[2];
     i32 m_cursorBufferIndex;
+
+private:
+    FadePlayback m_sceneFade;
 };
 
 inline CState::CState() {
     m_mgr = NULL;
+    m_faderMgr = NULL;
     m_resourceArchive = NULL;
     m_world = NULL;
     m_levelResources = NULL;

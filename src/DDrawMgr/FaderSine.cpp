@@ -28,7 +28,7 @@ inline i32 CFaderSine::AccumulateSampleCount(i32 row, i32 delta, float step) {
 
 inline i32 CFaderSine::AdvanceSampleCursor(i32 row) {
     ++m_sampleCursors[row];
-    if (m_sampleCursors[row] > m_width) {
+    if (m_sampleCursors[row] >= m_width) {
         m_sampleCursors[row] = 0;
     }
     return m_sampleOrder[m_sampleCursors[row]];
@@ -56,6 +56,10 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     m_width = m_targetSurface->GetWidth();
     i32 w = m_targetSurface->GetHeight();
     m_height = w;
+    if (m_width <= 0 || m_width > 2000 || m_height <= 0 || m_height > 2000
+        || (m_restoreSurface && (m_restoreSurface->GetWidth() != m_width
+            || m_restoreSurface->GetHeight() != m_height
+            || m_restoreSurface->m_bytesPerPixel != m_targetSurface->m_bytesPerPixel))) return 0;
     i32 p = cfg->m_intensityPercent;
     if (p < 0 || p > 100) {
         return 0;
@@ -68,22 +72,55 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
         m_sampleOrder[i] = 0;
         m_sampleCursors[i] = GetRandomNumber(0, m_width - 1);
     }
-    ScatterSamples(m_sampleOrder, 0, m_width, 1);
+    if (m_width > 4) ScatterSamples(m_sampleOrder, 0, m_width - 1, 1);
+    else for (i32 sample = 0; sample < m_width; ++sample) m_sampleOrder[sample] = sample;
     return 1;
 }
 
 void CFaderSine::RenderFrame(i32 frame) {
-    if (frame == 0) {
-        return;
-    }
-    if (m_targetSurface != NULL) {
-        m_targetBits = static_cast<u8*>(m_targetSurface->Lock(NULL));
-    }
-    if (m_restoreSurface != NULL) {
+    if (frame <= 0 || frame > GetFrameCount() || !m_targetSurface) return;
+    m_targetBits = static_cast<u8*>(m_targetSurface->Lock(NULL));
+    if (!m_targetBits) return;
+    if (m_restoreSurface) {
         m_restoreBits = static_cast<u8*>(m_restoreSurface->Lock(NULL));
+        if (!m_restoreBits) { m_targetSurface->Unlock(); return; }
+    }
+    RenderLockedFrame(frame);
+}
+
+FadeRenderResult CFaderSine::TryRenderFrame(i32 frame) {
+    if (frame < 0 || frame > GetFrameCount()) return FadeRenderFailed;
+    if (frame == 0) return FadeRendered;
+    if (!m_targetSurface || !m_targetSurface->GetDirectDrawSurface()) return FadeRenderFailed;
+    // Do not wait or trigger restoration callbacks while the effect owns row pointers.
+    HRESULT result = m_targetSurface->GetDirectDrawSurface()->Lock(NULL, &m_targetSurface->m_apiDesc, 0, NULL);
+    if (result == DDERR_WASSTILLDRAWING || result == DDERR_SURFACEBUSY) return FadeRetry;
+    if (result != DD_OK) return FadeRenderFailed;
+    m_targetBits = static_cast<u8*>(m_targetSurface->m_apiDesc.lpSurface);
+    if (m_restoreSurface) {
+        result = m_restoreSurface->GetDirectDrawSurface()
+            ? m_restoreSurface->GetDirectDrawSurface()->Lock(NULL, &m_restoreSurface->m_apiDesc, 0, NULL)
+            : DDERR_INVALIDOBJECT;
+        if (result != DD_OK) {
+            m_targetSurface->Unlock();
+            return result == DDERR_WASSTILLDRAWING || result == DDERR_SURFACEBUSY ? FadeRetry : FadeRenderFailed;
+        }
+        m_restoreBits = static_cast<u8*>(m_restoreSurface->m_apiDesc.lpSurface);
+    }
+    return RenderLockedFrame(frame) ? FadeRendered : FadeRenderFailed;
+}
+
+bool CFaderSine::RenderLockedFrame(i32 frame) {
+    if (!m_targetBits || m_targetSurface->m_bytesPerPixel <= 0 || m_targetSurface->m_bytesPerPixel > 4
+        || m_targetSurface->m_apiDesc.lPitch < m_width * m_targetSurface->m_bytesPerPixel
+        || (m_restoreSurface && (!m_restoreBits
+            || m_restoreSurface->m_apiDesc.lPitch < m_width * m_targetSurface->m_bytesPerPixel))) {
+        if (m_restoreSurface) m_restoreSurface->Unlock();
+        m_targetSurface->Unlock();
+        return false;
     }
     i32 bpp = m_targetSurface->m_bytesPerPixel;
-    float step = static_cast<float>(m_width) / m_fadeRowCount;
+    float step = m_fadeRowCount ? static_cast<float>(m_width) / m_fadeRowCount : 0.0f;
     i32 row = m_height - frame;
     while (row < m_height - frame + m_fadeRowCount) {
         if (row >= 0 && row < m_height) {
@@ -157,6 +194,7 @@ void CFaderSine::RenderFrame(i32 frame) {
     if (m_restoreSurface != NULL) {
         m_restoreSurface->Unlock();
     }
+    return true;
 }
 
 i32 CFaderSine::GetFrameCount() {

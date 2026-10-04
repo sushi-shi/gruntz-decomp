@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 
 #include <vector>
+#include <Runtime/FadePlayback.h>
 
 #include <Ints.h>
 
@@ -58,6 +59,8 @@ public:
     i32 AccumulateSampleCount(i32 row, i32 delta, float step);
     i32 AdvanceSampleCursor(i32 row);
 
+    FadeRenderResult TryRenderFrame(i32 frame);
+    bool RenderLockedFrame(i32 frame);
     CFaderSine();
     virtual ~CFaderSine()  ;
     virtual void RenderFrame(i32 frame)  ;

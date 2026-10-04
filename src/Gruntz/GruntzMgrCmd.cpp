@@ -41,7 +41,7 @@
 #include <string.h>
 
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
-    if (IsQuitPending()) return 1;
+    if (IsQuitPending() || (IsSceneFading() && nID != CMD_QUIT)) return 1;
     switch (nID) {
         case CMD_NEW_GAME:
         case CMD_NEW_GAME_ALT:
