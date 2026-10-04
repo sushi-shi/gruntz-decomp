@@ -572,7 +572,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         if (cell == NULL || cell->IsEntranceCommitted() == false) {
             ok = false;
         } else if (matchActive) {
-            ok = cell->LoadPickupSprites(toyboxPickup, flag, 0, sub, 0);
+            ok = cell->BeginPickupAnimation(toyboxPickup, flag, 0, sub, 0);
         } else {
             ok = cell->LoadGruntTypeTable(toyboxPickup, flag, sub, 0);
         }
@@ -600,7 +600,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     if (cell == NULL || cell->IsEntranceCommitted() == false) {
         ok = false;
     } else {
-        ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);
+        ok = cell->BeginPickupAnimation(cmd, 0, 0, sub, 1);
     }
     reg = g_gameReg;
     if (ok != false) {
@@ -829,7 +829,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        if (!found->LoadPickupSprites(PICKUP_HELPBOX, 0, m_object->m_smarts, 0, 1)) {
+        if (!found->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->m_smarts, 0, 1)) {
             return 0;
         }
 

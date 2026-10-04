@@ -1526,7 +1526,7 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "G", &CGrunt::UpdateToyUseAnimation);
     REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
     REGISTER_ACT(registry, "I", &CGrunt::UpdateToolUseAnimation);
-    REGISTER_ACT(registry, "J", &CGrunt::RunEntranceMove);
+    REGISTER_ACT(registry, "J", &CGrunt::UpdatePickupAnimation);
     REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
     REGISTER_ACT(registry, "L", &CGrunt::UpdateVehicleUseAnimation);
     REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);

@@ -261,7 +261,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     memset(m_poseItem, 0, sizeof(m_poseItem));
     m_poseDeath = NULL;
     memset(m_poseToy, 0, sizeof(m_poseToy));
-    m_pickupGeoSrc = NULL;
+    m_pickupAnimation = NULL;
     m_arrived = false;
     m_wwdObject->m_objectType = WWD_OBJECT_TYPE_GRUNT;
     m_wwdObject->m_hitTypeFlags = 0x3d1;
@@ -1605,7 +1605,7 @@ i32 CGrunt::Place(
     m_blockedVoicePending = true;
     m_struckCount = 0;
     m_toyTileIndex = 0;
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
     m_coordRetryCount = 0;
     m_moveKind = 0;
     m_moveVariantOverride = 0;

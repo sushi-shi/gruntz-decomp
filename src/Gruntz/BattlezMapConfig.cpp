@@ -442,7 +442,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 } else {
                     unit->SetDefenderState(AISTATE_SEEK);
                 }
-                unit->LoadPickupSprites(unit->GetDefenderPickupType(), 1, 0, 0, 1);
+                unit->BeginPickupAnimation(unit->GetDefenderPickupType(), 1, 0, 0, 1);
 
                 switch (mode) {
                     case PICKUP_WINGZ: {
@@ -658,7 +658,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 PickupType st2 = unit->GetEquippedToolType();
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
                                     && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
-                                    unit->LoadPickupSprites(PICKUP_NONE, 1, 0, 0, 1);
+                                    unit->BeginPickupAnimation(PICKUP_NONE, 1, 0, 0, 1);
                                 }
                             }
                         }
@@ -3016,7 +3016,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u->IsInCombat() != false) {
                     continue;
                 }
-                u->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
+                u->BeginPickupAnimation(PICKUP_BRICK, 1, 0, 0, 1);
                 u->SetBattlezTask(BZTASK_CARRY_BRICK);
                 u->RecycleCoords();
             }
@@ -3025,7 +3025,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 
         PickupType cur2 = unit->GetEquippedToolType();
         if (cur2 == PICKUP_NONE) {
-            unit->LoadPickupSprites(mode, 1, 0, 0, 1);
+            unit->BeginPickupAnimation(mode, 1, 0, 0, 1);
             return 1;
         }
         if (mode != PICKUP_TOOB) {
@@ -3060,7 +3060,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         } else {
             mode = roll > m_squeakToyzPct ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
         }
-        unit->LoadPickupSprites(mode, 1, 0, 0, 1);
+        unit->BeginPickupAnimation(mode, 1, 0, 0, 1);
         return 1;
     } else {
 
@@ -3075,7 +3075,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
         if (mode >= PICKUP_BRICKZ_FIRST) {
             unit->m_brickPickupType = mode;
-            unit->m_entrancePickup = PICKUP_INVALID;
+            unit->m_pendingPickupType = PICKUP_INVALID;
         }
         return 1;
     }

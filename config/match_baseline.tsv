@@ -2117,7 +2117,7 @@ gruntentrancemove	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	100.0000	100.0000	1
 gruntentrancemove	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	94.1398	94.1398	22	c8ac666b3a68	0x68880	94.1398	
 gruntentrancemove	?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z	100.0000	100.0000	4	47adeca89d45	0x6b330	100.0000	
 gruntentrancemove	?RearmEntranceDrop@CGrunt@@QAEHXZ	100.0000	100.0000	13	2dd555eaa742	0x68370	100.0000	
-gruntentrancemove	?RunEntranceMove@CGrunt@@QAEHXZ	94.8595	94.8595	14	2aaa24e92a52	0x67850	94.8595	
+gruntentrancemove	?UpdatePickupAnimation@CGrunt@@QAEHXZ	94.8595	94.8595	14	2aaa24e92a52	0x67850	94.8595	
 gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	100.0000	100.0000	20	ef11484c29af	0x68520	100.0000	
 gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	94.2590	94.2590	27	7b38e40f7ce3	0x692f0	94.2590	
 gruntentrancemove	?StepAttackAction@CGrunt@@QAEHXZ	100.0000	100.0000	1	84fd4a8ab460	0x6b260	100.0000	
@@ -2143,7 +2143,7 @@ gruntindicatorlogicdispatch	?DispatchGruntToyTimeSpriteLogic@@YAHPAUCGameObject@
 gruntindicatorlogicdispatch	?DispatchGruntWingzTimeSpriteLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	4	a2498d0e358f	0x7e160	100.0000	
 gruntpeertracking	?StepToyerBehavior@CGrunt@@QAEHXZ	97.9915	97.9915	19	6c2e6b7e7dc7	0xf7d90	97.9915	
 gruntphasestep	?StepTimeBomberBehavior@CGrunt@@QAEHXZ	90.4789	90.4789	53	c6b3c94c0eb3	0xf60f0	90.4789	
-gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHW4PickupType@@HHHH@Z	97.6437	97.6437	36	b78b5e92df56	0x65e80	97.6437	
+gruntpickupload	?BeginPickupAnimation@CGrunt@@QAEHW4PickupType@@HHHH@Z	97.6437	97.6437	36	b78b5e92df56	0x65e80	97.6437	
 gruntpowerupsprite	??0CGruntPowerupSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	233e057d7f68	0x7fdb0	100.0000	
 gruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	cpp:606441ad1fc4	0x12370	100.0000	
 gruntpowerupsprite	??_GCGruntPowerupSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:606441ad1fc4	0x12340	100.0000	

@@ -70,7 +70,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY_BREAK));
     SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM1));
     SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM2));
-    SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupGeoSrc);
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupAnimation);
 
     ar->Read(&m_reserved18c, sizeof(m_reserved18c));
     ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
@@ -78,7 +78,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_activePickupType, sizeof(m_activePickupType));
     ar->Read(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
     ar->Read(&m_savedToolType, sizeof(m_savedToolType));
-    ar->Read(&m_entrancePickup, sizeof(m_entrancePickup));
+    ar->Read(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Read(&m_helpCueId, sizeof(m_helpCueId));
     ar->Read(&m_reserved1a8, sizeof(m_reserved1a8));
     ar->Read(&m_reserved1ac, sizeof(m_reserved1ac));

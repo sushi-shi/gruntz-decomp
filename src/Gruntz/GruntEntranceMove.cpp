@@ -136,9 +136,9 @@ static char s_movingDeathTime[] = "MovingDeathTime";
 
 // @early-stop
 RVA(0x00067850, 0x214)
-i32 CGrunt::RunEntranceMove() {
+i32 CGrunt::UpdatePickupAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (!(cur->IsComplete() || m_entrancePickup == PICKUP_NONE)) {
+    if (!(cur->IsComplete() || m_pendingPickupType == PICKUP_NONE)) {
         return 0;
     }
 
@@ -150,7 +150,7 @@ i32 CGrunt::RunEntranceMove() {
         CreateToySprite();
     }
 
-    PickupType mode = m_entrancePickup;
+    PickupType mode = m_pendingPickupType;
     if (mode == PICKUP_INVALID) {
         return 0;
     }
@@ -159,7 +159,7 @@ i32 CGrunt::RunEntranceMove() {
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
+        m_pendingPickupType = PICKUP_INVALID;
         return 1;
     }
     if (mode < PICKUP_BRICKZ_FIRST) {
@@ -612,7 +612,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (SettleActiveKnockback()) {
         goto finalize;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         goto finalize;
     }
 
@@ -867,7 +867,7 @@ i32 CGrunt::FinishActiveAction() {
     if (SettleActiveKnockback()) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         return 1;
     }
 

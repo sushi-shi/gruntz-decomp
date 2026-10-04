@@ -69,11 +69,11 @@
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
-        CAniElement* geo = MapFind<CAniElement>(                                                   \
+        CAniElement* pickupAnimation = MapFind<CAniElement>(                                       \
             m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
             (key)                                                                                  \
         );                                                                                         \
-        m_pickupGeoSrc = geo;                                                                      \
+        m_pickupAnimation = pickupAnimation;                                                       \
         id = (idv);                                                                                \
     } while (0)
 

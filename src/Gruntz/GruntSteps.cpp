@@ -106,7 +106,7 @@ RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 
     i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
     m_helpCueId = 0;
     return r;
 }
@@ -115,7 +115,7 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
 
     CString name;
 
@@ -784,7 +784,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (eq) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         goto applyTail;
     }
     // Direct comparison keeps the animation-name array access inline at this site.
@@ -1001,14 +1001,14 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseToy, GRUNT_TOY_BREAK));
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM1));
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM2));
-    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupGeoSrc);
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupAnimation);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Write(&m_activePickupType, sizeof(m_activePickupType));
     ar->Write(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
     ar->Write(&m_savedToolType, sizeof(m_savedToolType));
-    ar->Write(&m_entrancePickup, sizeof(m_entrancePickup));
+    ar->Write(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Write(&m_helpCueId, sizeof(m_helpCueId));
     ar->Write(&m_reserved1a8, sizeof(m_reserved1a8));
     ar->Write(&m_reserved1ac, sizeof(m_reserved1ac));

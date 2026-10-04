@@ -4450,7 +4450,7 @@ i32 CPlay::ExecuteCommand(
             if (g2 == NULL || g2->IsEntranceCommitted() == false) {
                 r = 0;
             } else {
-                r = g2->LoadPickupSprites(
+                r = g2->BeginPickupAnimation(
                     static_cast<PickupType>(pickupType & 0xff),
                     0,
                     0,

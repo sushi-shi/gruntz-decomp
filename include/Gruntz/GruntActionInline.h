@@ -15,8 +15,8 @@
 
 #define GRUNT_IS_USING_TOY() (IsAnimationAct("G") || IsAnimationAct("L") || IsAnimationAct("P"))
 
-#define APPLY_ACTIVE_ENTRANCE_PICKUP()                                                             \
-    (IsAnimationAct("J") && (RestorePreviousAppearance(), ApplyEntrancePickup(), true))
+#define COMPLETE_ACTIVE_PICKUP()                                                                   \
+    (IsAnimationAct("J") && (RestorePreviousAppearance(), ApplyPendingPickup(), true))
 
 #define SETTLE_ACTIVE_TUBE_MOVE() (IsAnimationAct("N") && (SettleTubeMove(), true))
 
@@ -41,17 +41,17 @@ inline void CGrunt::RestorePreviousAppearance() {
     }
 }
 
-inline void CGrunt::ApplyEntrancePickup() {
-    PickupType mode = m_entrancePickup;
+inline void CGrunt::ApplyPendingPickup() {
+    PickupType mode = m_pendingPickupType;
     if (mode >= PICKUP_POWERUPZ_FIRST) {
         LoadGruntTypeTable(mode, 1, 0, 1);
-        m_entrancePickup = PICKUP_INVALID;
+        m_pendingPickupType = PICKUP_INVALID;
         m_helpCueId = 0;
         return;
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
+        m_pendingPickupType = PICKUP_INVALID;
         return;
     }
     if (mode >= PICKUP_TOYZ_FIRST) {
@@ -59,7 +59,7 @@ inline void CGrunt::ApplyEntrancePickup() {
         return;
     }
     LoadGruntTypeTable(mode, 1, 0, 1);
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
 }
 
 inline void CGrunt::SettleTubeMove() {

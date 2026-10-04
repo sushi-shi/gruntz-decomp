@@ -370,8 +370,13 @@ public:
 
     i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
 
-    i32
-    LoadPickupSprites(PickupType type, i32 forced, i32 helpCueId, i32 pickupParam, i32 countStats);
+    i32 BeginPickupAnimation(
+        PickupType type,
+        i32 forced,
+        i32 helpCueId,
+        i32 pickupParam,
+        i32 countStats
+    );
 
     i32 BuildGruntLoseItemAnimation();
 
@@ -404,7 +409,7 @@ public:
     PickupType m_brickPickupType;
     PickupType m_vehiclePickupType;
     PickupType m_savedToolType;
-    PickupType m_entrancePickup;
+    PickupType m_pendingPickupType;
     i32 m_helpCueId;
     i32 m_reserved1a8;
     i32 m_reserved1ac;
@@ -574,7 +579,7 @@ public:
     CAniElement* m_poseToy[3];
     CAniElement* m_poseItem[2];
 
-    CAniElement* m_pickupGeoSrc;
+    CAniElement* m_pickupAnimation;
     Coord m_reserved3dc;
     Coord m_moveTile;
     i32 m_health;
@@ -725,11 +730,11 @@ public:
     void RestoreToolAfterToyUse(i32 defer);
 
     void RestorePreviousAppearance();
-    void ApplyEntrancePickup();
+    void ApplyPendingPickup();
 
     i32 StepEntranceReinit();
 
-    i32 RunEntranceMove();
+    i32 UpdatePickupAnimation();
 
     i32 StepWarpExit();
 

@@ -1012,7 +1012,7 @@ i32 CGrunt::StepCombatReaction(
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
         return 0;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         goto tail;
     }
     SETTLE_ACTIVE_TUBE_MOVE();
