@@ -70,7 +70,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (mgr == NULL) {
                 return 1;
             }
-            if (mgr->m_midi == NULL) {
+            if (mgr->GetMidiManager() == NULL) {
                 return 1;
             }
             IgnoreMciNotification(wParam, lParam);

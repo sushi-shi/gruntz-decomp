@@ -263,7 +263,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
 
 RVA(0x000dba30, 0x1ca)
 i32 CPlay::LoadMusicSequences(i32) {
-    m_mgr->m_midi->ClearSequences();
+    m_mgr->GetMidiManager()->ClearSequences();
 
     CRezDir* levelSet = m_levelResources->GetDirFromPath("MIDIZ");
     if (levelSet) {
@@ -271,28 +271,28 @@ i32 CPlay::LoadMusicSequences(i32) {
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "AMBIENT0");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "AMBIENT0");
             }
         }
         e = levelSet->GetRez("AMBIENT1", REZ_TAG_XMI);
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "AMBIENT1");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "AMBIENT1");
             }
         }
         e = levelSet->GetRez("INTRO0", REZ_TAG_XMI);
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "INTRO0");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "INTRO0");
             }
         }
         e = levelSet->GetRez("INTRO1", REZ_TAG_XMI);
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "INTRO1");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "INTRO1");
             }
         }
     }
@@ -303,21 +303,21 @@ i32 CPlay::LoadMusicSequences(i32) {
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "POWERUP");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "POWERUP");
             }
         }
         e = gameSet->GetRez("CURSE", REZ_TAG_XMI);
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "CURSE");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "CURSE");
             }
         }
         e = gameSet->GetRez("MONOLITH", REZ_TAG_XMI);
         if (e) {
             u8* res = e->Load();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "MONOLITH");
+                m_mgr->GetMidiManager()->LoadBuffer(res, e->GetSize(), "MONOLITH");
             }
         }
     }

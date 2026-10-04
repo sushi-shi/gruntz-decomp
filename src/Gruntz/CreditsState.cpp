@@ -92,7 +92,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         if (creditsEntry) {
             u8* creditsData = creditsEntry->Load();
             if (creditsData) {
-                m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->GetSize(), "CREDITZ");
+                m_mgr->GetMidiManager()
+                    ->LoadBuffer(creditsData, creditsEntry->GetSize(), "CREDITZ");
             }
         }
     }
@@ -102,7 +103,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         if (monolithEntry) {
             u8* monolithData = monolithEntry->Load();
             if (monolithData) {
-                m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->GetSize(), "MONOLITH");
+                m_mgr->GetMidiManager()
+                    ->LoadBuffer(monolithData, monolithEntry->GetSize(), "MONOLITH");
             }
         }
     }
@@ -156,8 +158,8 @@ i32 CCreditsState::EnterState(GameStateId previousState) {
 
 RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId nextState) {
-    owner()->m_midi->EndCurrent();
-    owner()->m_midi->ClearSequences();
+    owner()->GetMidiManager()->EndCurrent();
+    owner()->GetMidiManager()->ClearSequences();
     m_stateResources = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     LoadAndPresentTitlePage("TITLE", 0, 0, 1, 0);
     return 1;
@@ -218,12 +220,12 @@ i32 CCreditsState::Render() {
     drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
-        owner()->m_midi->PlaySequence("CREDITZ", true);
+        owner()->GetMidiManager()->PlaySequence("CREDITZ", true);
         m_musicStarted = true;
     }
 
     if (m_fxEnabled) {
-        MidiSequence* monolithSequence = owner()->m_midi->FindSequence("MONOLITH");
+        MidiSequence* monolithSequence = owner()->GetMidiManager()->FindSequence("MONOLITH");
         if (monolithSequence && !monolithSequence->IsPlaying()) {
             LoadCreditzAssets();
         }
@@ -467,26 +469,26 @@ void CCreditsState::LoadCreditzAssets() {
     if (rising) {
         m_flashTimer = 0;
         m_fadeCountdown = 3000;
-        MidiSequence* creditsSequence = m_mgr->m_midi->FindSequence("CREDITZ");
+        MidiSequence* creditsSequence = m_mgr->GetMidiManager()->FindSequence("CREDITZ");
         if (creditsSequence != NULL && creditsSequence->IsPlaying() != 0) {
             creditsSequence->Pause();
         }
-        MidiSequence* monolithSequence = m_mgr->m_midi->FindSequence("MONOLITH");
+        MidiSequence* monolithSequence = m_mgr->GetMidiManager()->FindSequence("MONOLITH");
         if (monolithSequence != NULL) {
-            g_gameReg->m_midi->m_currentSequence = monolithSequence;
-            g_gameReg->m_midi->RestartCurrent(false);
+            g_gameReg->GetMidiManager()->m_currentSequence = monolithSequence;
+            g_gameReg->GetMidiManager()->RestartCurrent(false);
         }
     } else {
         m_fadeCountdown = 0;
-        MidiSequence* currentSequence = m_mgr->m_midi->m_currentSequence;
-        MidiSequence* monolithSequence = g_gameReg->m_midi->FindSequence("MONOLITH");
+        MidiSequence* currentSequence = m_mgr->GetMidiManager()->m_currentSequence;
+        MidiSequence* monolithSequence = g_gameReg->GetMidiManager()->FindSequence("MONOLITH");
         if (currentSequence == monolithSequence && monolithSequence != NULL
             && monolithSequence->IsPlaying() != 0) {
             monolithSequence->End();
         }
-        MidiSequence* creditsSequence = m_mgr->m_midi->FindSequence("CREDITZ");
+        MidiSequence* creditsSequence = m_mgr->GetMidiManager()->FindSequence("CREDITZ");
         if (creditsSequence != NULL && currentSequence != creditsSequence) {
-            m_mgr->m_midi->m_currentSequence = creditsSequence;
+            m_mgr->GetMidiManager()->m_currentSequence = creditsSequence;
             if (creditsSequence->IsPlaying() == 0) {
                 creditsSequence->Resume(0);
             }
