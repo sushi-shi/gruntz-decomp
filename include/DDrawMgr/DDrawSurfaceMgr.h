@@ -100,6 +100,10 @@ public:
         return m_imageRegistry;
     }
 
+    CLogicRecordRegistry* GetLogicRegistry() {
+        return m_logicRegistry;
+    }
+
     AnimationRegistry* GetAnimationRegistry() {
         return m_animRegistry;
     }

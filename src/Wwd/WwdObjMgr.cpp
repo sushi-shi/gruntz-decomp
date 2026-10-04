@@ -117,7 +117,7 @@ CWwdDotObject* CDDrawChildGroup::CreateNamedDotObject(
         x,
         y,
         sortKey,
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name),
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name),
         dotColor,
         objectFlags
     );
@@ -157,7 +157,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateNamedDeferredObject(
     return CreateDeferredObject(
         id,
         sortKey,
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name),
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name),
         objectFlags
     );
 }
@@ -197,7 +197,7 @@ CWwdSpriteObject* CDDrawChildGroup::CreateSprite(
     i32 objectFlags
 ) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
     if (!logicTemplate) {
         return NULL;
     }
@@ -229,7 +229,7 @@ i32 CDDrawChildGroup::AttachSprite(
         return 0;
     }
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
     if (!logicTemplate) {
         return 0;
     }
@@ -283,7 +283,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int objectFlags
 ) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }
@@ -873,7 +873,7 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
 RVA(0x0015a8c0, 0x7d)
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key);
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = NextChild(pos);
@@ -1114,7 +1114,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                     id,
                     sortKey,
                     MapFind<CLogicRecord>(
-                        OwnerMgr()->m_logicRegistry->m_templatesByName,
+                        OwnerMgr()->GetLogicRegistry()->m_templatesByName,
                         desc.m_logicTypeName
                     ),
                     0
@@ -1127,7 +1127,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 i32 x = desc.m_screenX;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = MapFind<CLogicRecord>(
-                    OwnerMgr()->m_logicRegistry->m_templatesByName,
+                    OwnerMgr()->GetLogicRegistry()->m_templatesByName,
                     desc.m_logicTypeName
                 );
                 if (logicTemplate == NULL) {
@@ -1143,7 +1143,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 i32 x = desc.m_screenX;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = MapFind<CLogicRecord>(
-                    OwnerMgr()->m_logicRegistry->m_templatesByName,
+                    OwnerMgr()->GetLogicRegistry()->m_templatesByName,
                     desc.m_logicTypeName
                 );
                 if (logicTemplate == NULL) {

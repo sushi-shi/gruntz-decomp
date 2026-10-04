@@ -153,7 +153,7 @@ RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }
