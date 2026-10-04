@@ -584,7 +584,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    CKeyboardDevice* keyboard = g_inputMgr->m_keyboard;
+    CKeyboardDevice* keyboard = g_inputMgr->GetKeyboard();
     if (keyboard != NULL) {
         keyboard->SetKeyBinding(INPUT_BINDING_BUTTON0, VK_CONTROL);
         keyboard->SetKeyBinding(INPUT_BINDING_BUTTON1, 'X');

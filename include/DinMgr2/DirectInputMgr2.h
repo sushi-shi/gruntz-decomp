@@ -115,6 +115,14 @@ public:
     CPtrArray m_joysticks;
     CPtrList m_deviceGroups;
 
+    CKeyboardDevice* GetKeyboard() const {
+        return m_keyboard;
+    }
+
+    CMouseDevice* GetMouse() const {
+        return m_mouse;
+    }
+
     CJoystickDevice* GetJoystick(i32 index) {
         return (index >= 0 && index < m_joysticks.GetSize())
                    ? static_cast<CJoystickDevice*>(m_joysticks.GetAt(index))
