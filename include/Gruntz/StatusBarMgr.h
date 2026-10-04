@@ -219,6 +219,9 @@ public:
     StatusBarTab GetActiveTab() const {
         return m_activeTab;
     }
+    void SetActiveTab(StatusBarTab tab) {
+        m_activeTab = tab;
+    }
     i32 SetDockState(StatusBarDock state);
     i32 RestoreStatusBar();
     i32 SetCollapsedSpritePosition(i32 x, i32 y);
