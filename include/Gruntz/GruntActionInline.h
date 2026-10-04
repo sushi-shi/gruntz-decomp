@@ -64,11 +64,10 @@ inline void CGrunt::ApplyEntrancePickup() {
 
 inline void CGrunt::SettleTubeMove() {
     CWwdSpriteObject* object = m_object;
-    i32 savedX = m_lastTilePx.m_x;
-    i32 savedY = m_lastTilePx.m_y;
+    Coord saved = LastTilePx();
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(object, pixelX, pixelY)
     i32 redo = 1;
-    if (PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, savedX, savedY)) {
+    if (PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, saved.m_x, saved.m_y)) {
         if (IsDropReady(1)) {
             m_coordToggle = (m_coordToggle == false);
             redo = 0;
