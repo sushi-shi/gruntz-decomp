@@ -34,7 +34,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(0);
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(aux)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 RVA(0x000ad850, 0x102)
