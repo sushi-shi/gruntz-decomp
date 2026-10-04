@@ -5134,6 +5134,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
     if (objects == NULL) {
         return 0;
     }
+    i32 buf[9];
     POSITION pos = objects->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* object = m_world->ChildGroup()->NextChild(pos);
@@ -5154,7 +5155,6 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
         }
         LogicRecordDispatchFn dispatch = object->GetLogicRecord()->GetDispatch();
         if (dispatch == DispatchGiantRockLogic) {
-            i32 buf[9];
             buf[0] = object->m_extent.left;
             buf[1] = object->m_extent.top;
             buf[2] = object->m_extent.right;
@@ -5183,33 +5183,8 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
             object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->GetLevel();
-            i32 x = object->m_screenX;
-            i32 y = object->m_screenY;
-            if (x < 0) {
-                x = 0;
-            } else {
-                i32 lim = ds->m_mainPlane->GetPlanePixelWidth();
-                if (x >= lim) {
-                    x = lim - 1;
-                }
-            }
-            if (y < 0) {
-                y = 0;
-            } else {
-                i32 lim = ds->m_mainPlane->GetPlanePixelHeight();
-                if (y >= lim) {
-                    y = lim - 1;
-                }
-            }
-            CLevelPlane* g = ds->m_mainPlane;
-            i32 shX = g->m_shiftX;
-            i32 tileX = x >> shX;
-            i32 shY = g->m_shiftY;
-            i32 tileY = y >> shY;
-            i32 subX = x - (tileX << shX);
-            i32 subY = y - (tileY << shY);
-            i32 cell = g->m_tileHandles[g->m_tileRowOffsets[tileY] + tileX];
-            TileCollisionKind tile = ds->CollisionAtHandle(cell, subX, subY);
+            TileCollisionKind tile;
+            PROBE_TILE(ds, object->m_screenX, object->m_screenY, tile);
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
