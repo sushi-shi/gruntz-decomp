@@ -290,7 +290,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                 unit->m_routePassableMask = g_battlezRoutePassableMask;
                 Coord goal = marker;
-                Coord currentScreenPos = unit->m_defenderPx;
+                Coord currentScreenPos = unit->DefenderPosition();
                 i32 gx = currentScreenPos.m_x;
                 if (gx == -1) {
                     if (bundle->GetAttackWaypointCount() != 0) {
@@ -301,7 +301,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     unit->SetDefenderState(AISTATE_BATTLEZ_ROUTE_TARGET);
                     return 1;
                 }
-                goal = unit->m_defenderPx;
+                goal = unit->DefenderPosition();
                 unit->GetScreenPos(&currentScreenPos);
                 i32 currentDx = abs(marker.m_x - (currentScreenPos.m_x >> TILE_SHIFT_PX));
                 unit->GetScreenPos(&currentScreenPos);
@@ -323,8 +323,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
                     return 1;
                 }
-                i32 gx = unit->m_defenderPx.m_x;
-                i32 gy = unit->m_defenderPx.m_y;
+                Coord defender = unit->DefenderPosition();
+                i32 gx = defender.m_x;
+                i32 gy = defender.m_y;
                 if (gx == -1 || gy == -1) {
 
                     unit->SetDefenderState(AISTATE_SEEK);
@@ -337,7 +338,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (SquaredDistance(dx, dy) > 0x10) {
                     i32 cfg = unit->m_routeBlockedMask;
                     i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
-                    Coord routeTarget = unit->m_defenderPx;
+                    Coord routeTarget = unit->DefenderPosition();
                     if (unit->TileSwitch(routeTarget.m_x, routeTarget.m_y, 0, cfg, 0, flags) != 0) {
                         goto routeSuccess;
                     }
@@ -388,8 +389,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (unit->GetDefenderState() != AISTATE_BATTLEZ_ROUTE_TARGET) {
         return 1;
     }
-    i32 gx = unit->m_defenderPx.m_x;
-    i32 gy = unit->m_defenderPx.m_y;
+    Coord defender = unit->DefenderPosition();
+    i32 gx = defender.m_x;
+    i32 gy = defender.m_y;
     if (gx == -1 || gy == -1) {
 
         unit->SetDefenderState(AISTATE_SEEK);

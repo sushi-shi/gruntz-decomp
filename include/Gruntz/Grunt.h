@@ -264,6 +264,10 @@ public:
         m_defenderState = state;
     }
 
+    Coord DefenderPosition() const {
+        return m_defenderPx;
+    }
+
     Coord ArrivalCell() {
         return m_arrivalCell;
     }
