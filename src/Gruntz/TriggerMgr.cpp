@@ -184,7 +184,7 @@ i32 CTriggerMgr::RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 rem
             if (m_cameraTargetIdentity == removedIdentity) {
                 StopCameraTracking();
             }
-            CActionOptionsMenuBar* ov = m_overlay;
+            CActionOptionsMenuBar* ov = m_actionOptionsMenu;
             if (ov != NULL) {
                 i32 selectedPlayerIndex = p->m_x;
                 i32 overlayPlayerIndex = ov->GetPlayerIndex();
@@ -408,7 +408,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
 RVA(0x00078a30, 0x10)
 void CTriggerMgr::CloseActionOptionsMenu() {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov) {
         ov->Deactivate();
     }
@@ -423,7 +423,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
         return 1;
     }
 
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov != NULL && ov->m_active != false) {
         ov->UpdateHoverState(x, y);
         return 1;
@@ -827,20 +827,20 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     i32 pointerX,
     i32 pointerY
 ) {
-    if (m_overlay == NULL) {
-        m_overlay = new CActionOptionsMenuBar;
-        if (m_overlay->LoadAssets() == 0) {
-            CActionOptionsMenuBar* o2 = m_overlay;
+    if (m_actionOptionsMenu == NULL) {
+        m_actionOptionsMenu = new CActionOptionsMenuBar;
+        if (m_actionOptionsMenu->LoadAssets() == 0) {
+            CActionOptionsMenuBar* o2 = m_actionOptionsMenu;
             if (o2 != NULL) {
                 o2->Clear();
                 delete o2;
-                m_overlay = NULL;
+                m_actionOptionsMenu = NULL;
             }
             g_gameReg->ReportError(IDX(IDS_INITIALIZE_GAME), 0x3ff);
             return 0;
         }
     }
-    if (m_overlay->m_active != false) {
+    if (m_actionOptionsMenu->m_active != false) {
         return 0;
     }
     CGrunt* selectedGrunt = SoleSelectedGrunt();
@@ -850,7 +850,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     if (selectedGrunt->GetPlayerIndex() != g_curPlayer) {
         return 0;
     }
-    if (m_overlay->Init(
+    if (m_actionOptionsMenu->Init(
             ACTIONOPTION_HIDDEN,
             ACTIONOPTION_HIDDEN,
             selectedWorldX,
@@ -871,7 +871,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
 
 RVA(0x00079b00, 0x15)
 i32 CTriggerMgr::RenderActionOptionsMenu() {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov) {
         return ov->Render();
     }
@@ -1069,7 +1069,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     i32 stop = 0;
     i32 overCapacity = stop;
     i32 replacedExisting = stop;
-    if (m_baseList.GetCount() > 0x3b) {
+    if (m_puddles.GetCount() > 0x3b) {
         overCapacity = 1;
     }
     while (pos != NULL && stop == 0) {
@@ -1100,7 +1100,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
             }
         }
     }
-    m_baseList.AddTail(puddle);
+    m_puddles.AddTail(puddle);
     return 1;
 }
 
@@ -1266,7 +1266,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     }
     ar->Write(&objId, sizeof(objId));
     ar->Write(m_reserved274, 0x10);
-    n = static_cast<u32>(m_baseList.GetCount());
+    n = static_cast<u32>(m_puddles.GetCount());
     ar->Write(&n, sizeof(n));
     b32 hasOv;
     pos = GetPuddleHeadPosition();
@@ -1280,10 +1280,10 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         MapLookupById(lvl->ChildGroup()->m_registeredGameObjectsById, objId, found);
         ar->Write(&objId, sizeof(objId));
     }
-    hasOv = m_overlay != NULL;
+    hasOv = m_actionOptionsMenu != NULL;
     ar->Write(&hasOv, sizeof(hasOv));
-    if (m_overlay != NULL) {
-        if (m_overlay->Serialize(ar) == 0) {
+    if (m_actionOptionsMenu != NULL) {
+        if (m_actionOptionsMenu->Serialize(ar) == 0) {
             goto fail;
         }
     }
@@ -1414,7 +1414,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     }
 
     ar->Read(m_reserved274, 0x10);
-    m_baseList.RemoveAll();
+    m_puddles.RemoveAll();
     ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 key;
@@ -1434,20 +1434,20 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (obj == NULL) {
             return 0;
         }
-        m_baseList.AddTail(obj);
+        m_puddles.AddTail(obj);
     }
 
-    CActionOptionsMenuBar* old = m_overlay;
+    CActionOptionsMenuBar* old = m_actionOptionsMenu;
     if (old != NULL) {
         old->Clear();
         delete old;
-        m_overlay = NULL;
+        m_actionOptionsMenu = NULL;
     }
     b32 hasOverlay;
     ar->Read(&hasOverlay, sizeof(hasOverlay));
     if (hasOverlay != false) {
         CActionOptionsMenuBar* ov = new CActionOptionsMenuBar;
-        m_overlay = ov;
+        m_actionOptionsMenu = ov;
         if (ov->Deserialize(ar) == 0) {
             return 0;
         }
@@ -1469,7 +1469,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     m_targetingCursorId = 0;
     if (ov == NULL || ov->m_active == false) {
         return 0;
@@ -2261,7 +2261,7 @@ i32 CTriggerMgr::SaveSelectionGroup(i32 idx) {
 RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
     ClearSelection();
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov != NULL && ov->m_active != false) {
         CloseActionOptionsMenu();
     }

@@ -112,16 +112,16 @@ public:
     i32 PlacePuddle(CGameObject* sprite, b32 animatePlacement);
 
     POSITION GetPuddleHeadPosition() const {
-        return m_baseList.GetHeadPosition();
+        return m_puddles.GetHeadPosition();
     }
     CGruntPuddle* GetNextPuddle(POSITION& position) {
-        return static_cast<CGruntPuddle*>(m_baseList.GetNext(position));
+        return static_cast<CGruntPuddle*>(m_puddles.GetNext(position));
     }
     CGruntPuddle* GetPuddleAt(POSITION position) {
-        return static_cast<CGruntPuddle*>(m_baseList.GetAt(position));
+        return static_cast<CGruntPuddle*>(m_puddles.GetAt(position));
     }
     void RemovePuddleAt(POSITION position) {
-        m_baseList.RemoveAt(position);
+        m_puddles.RemoveAt(position);
     }
 
     i32 SpawnGrunt(
@@ -251,7 +251,7 @@ public:
         memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
         m_lastRecalledGroup = -1;
         m_cameraSprite = NULL;
-        m_overlay = NULL;
+        m_actionOptionsMenu = NULL;
         m_world = NULL;
         m_countdownActive = true;
         m_playerControlEnabled = true;
@@ -282,7 +282,7 @@ public:
 
     i32 SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, i32 scrollSpell);
 
-    CPtrList m_baseList;
+    CPtrList m_puddles;
     CGrunt* m_units[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
     i32 m_unitCountByPlayer[PLAYER_SLOT_COUNT];
     i32 m_unitExited[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
@@ -314,7 +314,7 @@ public:
         const Coord& identity = *FirstSelectedUnitId();
         return UnitAt(identity.m_x, identity.m_y);
     }
-    CActionOptionsMenuBar* m_overlay;
+    CActionOptionsMenuBar* m_actionOptionsMenu;
     CByteArray m_collectedWarpStoneFragments;
     // @identity-TODO: Save and Load transfer this complete span; no trigger
     // operation accesses its components to prove a scalar array or aggregate type.

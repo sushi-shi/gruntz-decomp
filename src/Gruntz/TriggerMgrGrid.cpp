@@ -68,11 +68,11 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
 
 RVA(0x0006b680, 0x39)
 void CTriggerMgr::Cleanup() {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov != NULL) {
         ov->Clear();
         delete ov;
-        m_overlay = NULL;
+        m_actionOptionsMenu = NULL;
     }
     ClearSelectedUnitIds();
     ClearSelectionGroups();
@@ -1129,9 +1129,9 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 }
                 return 0;
             case PICKUP_GOOBER: {
-                POSITION pos = m_baseList.GetHeadPosition();
+                POSITION pos = m_puddles.GetHeadPosition();
                 while (pos != NULL) {
-                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_puddles.GetNext(pos));
                     if (cand->IsPending() == false && cand->GetTileX() == argTileX
                         && cand->GetTileY() == argTileY) {
                         cell->StartToolUseAnimation(argTileX, argTileY);

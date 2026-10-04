@@ -1495,7 +1495,7 @@ void CPlay::FreeListTeardown() {
 
     triggerManager->m_collectedWarpStoneFragments.RemoveAll();
     triggerManager->m_levelWarpStoneCollected = false;
-    m_mgr->GetTriggerMgr()->m_baseList.RemoveAll();
+    m_mgr->GetTriggerMgr()->m_puddles.RemoveAll();
     m_mgr->GetTriggerMgr()->m_localWarlord = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
     FreeStartMarkers();
@@ -2940,7 +2940,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         m_tileClick.m_x = snapX;
         m_tileClick.m_y = snapY;
         CTriggerMgr* w = m_mgr->GetTriggerMgr();
-        if (w->m_overlay != NULL && w->m_overlay->m_active != false) {
+        if (w->m_actionOptionsMenu != NULL && w->m_actionOptionsMenu->m_active != false) {
             w->CloseActionOptionsMenu();
             return 1;
         }

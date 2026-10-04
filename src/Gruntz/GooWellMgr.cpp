@@ -173,8 +173,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             }
         }
 
-        if (m_overlay) {
-            m_overlay->RefreshIfActive(deltaMs);
+        if (m_actionOptionsMenu) {
+            m_actionOptionsMenu->RefreshIfActive(deltaMs);
         }
         if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
             if (obj->m_winLoseBanner != false && m_unitCountByPlayer[g_curPlayer] == 0) {
