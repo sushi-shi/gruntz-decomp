@@ -3261,7 +3261,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     }
 
     i32 cx = screenX;
-    RECT rc = r->m_rect;
+    RECT rc = r->GetBounds();
     i32 lo = rc.left + 0x1b;
     i32 xHi = rc.right;
     if (screenX < lo) {

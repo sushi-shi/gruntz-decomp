@@ -59,6 +59,10 @@ public:
         return m_enabled;
     }
 
+    const RECT& GetBounds() const {
+        return m_rect;
+    }
+
     void SetBounds(const RECT& rect) {
         m_rect = rect;
     }
