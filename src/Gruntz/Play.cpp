@@ -237,7 +237,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             m_chatBox = NULL;
             return 0;
         }
-        m_chatBox->m_inputActive = false;
+        m_chatBox->SetInputActive(false);
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
         m_statusBar = new CStatusBarMgr;
@@ -277,8 +277,8 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         SetSavedClock(0);
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
-        if (m_mgr->m_loadingSaveGame == false) {
-            m_mgr->m_saveInfoRec = NULL;
+        if (m_mgr->IsLoadingSaveGame() == false) {
+            m_mgr->SetSaveSlot(NULL);
         }
         if (!LoadImageBanks()) {
             return 0;
@@ -1398,13 +1398,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
 
         gameReg = g_gameReg;
-        if (gameReg->m_loadingSaveGame == false) {
+        if (gameReg->IsLoadingSaveGame() == false) {
             CDDSurface* mapHost = self->m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
             mapHost->ShadeRect(0x32, NULL);
             gameReg = g_gameReg;
         }
 
-        if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == false) {
+        if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER
+            && gameReg->IsLoadingSaveGame() == false) {
             CString scr;
             self->m_inGame = true;
             self->m_hudSuppressed = false;
@@ -1659,7 +1660,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     }
 
     if (m_mgr->GetFrameGate() == false) {
-        if (m_chatBox->m_inputActive != false) {
+        if (m_chatBox->IsInputActive() != false) {
             m_mgr->ChatLog()->HandleInputChar(charCode, keyData);
             return 1;
         }
@@ -1779,11 +1780,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == VK_RETURN) {
         CChatBox* rec = this->m_chatBox;
-        if (rec->m_inputActive != false) {
+        if (rec->IsInputActive() != false) {
             rec->HandleTextInputKey('\r', lparam);
         } else {
             rec->m_gameText->EndInput();
-            rec->m_inputActive = true;
+            rec->SetInputActive(true);
             this->m_chatBox->HandleTextInputKey('\r', lparam);
         }
         return 1;
@@ -1793,10 +1794,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         CTriggerMgr* triggerManager = mgr->GetTriggerMgr();
         triggerManager->StopCameraTracking();
         CChatBox* rec = this->m_chatBox;
-        if (rec->m_inputActive != false) {
+        if (rec->IsInputActive() != false) {
             this->FlushPendingOps();
             this->m_chatBox->m_gameText->EndInput();
-            this->m_chatBox->m_inputActive = false;
+            this->m_chatBox->SetInputActive(false);
             return 1;
         }
         if (this->FlushPendingOps() != 0) {
@@ -1811,7 +1812,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (this->m_chatBox->m_inputActive != false) {
+    if (this->m_chatBox->IsInputActive() != false) {
         return 1;
     }
     if (g_gameReg->GetTriggerMgr()->m_groupFlag == false) {
@@ -3872,7 +3873,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_hudRect.bottom = min(m_cursorY, box.bottom);
         m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMaxY);
     }
-    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->m_pendingFxKind == 0) {
+    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->HasPendingFx() == false) {
         FlushPendingOps();
     }
     return 1;
@@ -6931,7 +6932,7 @@ i32 CPlay::FlushPendingOps() {
         changed = true;
     }
     CTriggerMgr* fx = g_gameReg->GetTriggerMgr();
-    if (fx->m_pendingFxKind != 0) {
+    if (fx->HasPendingFx() != false) {
         changed = true;
     }
     fx->m_pendingFxKind = 0;

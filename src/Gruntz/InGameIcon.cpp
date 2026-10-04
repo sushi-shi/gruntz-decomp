@@ -667,10 +667,10 @@ i32 CInGameIcon::Reposition() {
                 && found != NULL) {
                 found->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }
+            reg = g_gameReg;
+            grid = reg->GetTileGrid();
+            grid->SetObjectIdAt(tileX, tileY, 0);
         }
-        reg = g_gameReg;
-        grid = reg->GetTileGrid();
-        grid->SetObjectIdAt(tileX, tileY, 0);
         obj = m_object;
         g_gameReg->GetTileGrid()->SetObjectIdAt(
             obj->m_screenX >> TILE_SHIFT_PX,

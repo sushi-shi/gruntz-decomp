@@ -219,7 +219,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         lat->Clear();
     }
 
-    NetGameMgr()->m_loadingSaveGame = false;
+    NetGameMgr()->SetLoadingSaveGame(false);
     Mgr()->ResetClockGlobals();
     Mgr()->DeactivateAllPlayers();
     ResetPlayerColorAvailability();
@@ -292,7 +292,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         m_chatBox = NULL;
         return 0;
     }
-    m_chatBox->m_inputActive = false;
+    m_chatBox->SetInputActive(false);
     m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
     CStatusBarMgr* sess = new CStatusBarMgr;
@@ -3223,7 +3223,7 @@ void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
 
 RVA(0x000bd210, 0x14d)
 i32 CMulti::OnChar(i32 charCode, i32 keyData) {
-    if (m_chatBox && m_chatBox->m_inputActive) {
+    if (m_chatBox && m_chatBox->IsInputActive()) {
         if (m_connected) {
             if (Mgr()->ChatLog()->HandleInputChar(charCode, keyData)) {
                 CString line = Mgr()->ChatLog()->GetInputText();

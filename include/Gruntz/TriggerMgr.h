@@ -63,6 +63,9 @@ public:
 
     i32 SelectionListFind(i32 playerIndex, i32 unitIndex);
 
+    b32 HasPendingFx() const {
+        return m_pendingFxKind != 0;
+    }
     void StopPendingFx();
 
     void ClearSelections();

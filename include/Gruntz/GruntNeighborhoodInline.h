@@ -13,7 +13,7 @@ static inline Coord ScreenPosition(CGameObject* object) {
 }
 
 static inline RECT AttackTileNeighborhood(CGrunt* grunt) {
-    i32 halfBox = grunt->m_defenderRadius + grunt->m_reachRect.right + 1;
+    i32 halfBox = grunt->GetDefenderRadius() + grunt->m_reachRect.right + 1;
     CGameObject* object = grunt->m_object;
     Coord pt1 = ScreenTile(ScreenPosition(object));
     i32 by = pt1.m_y;

@@ -203,6 +203,16 @@ public:
     i32 ExitModalUI(class CDialog* dlg, b32 notify);
     i32 FinishLevel(b32 pauseGame, b32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
+    void SetSaveSlot(SaveSlot* const& slot) {
+        m_saveInfoRec = slot;
+    }
+    b32 IsLoadingSaveGame() const {
+        return m_loadingSaveGame;
+    }
+    void SetLoadingSaveGame(b32 loading) {
+        m_loadingSaveGame = loading;
+    }
+
     i32 SaveState(CFileMemBase* ar);
     i32 LoadState(CFileMemBase* ar);
 
