@@ -586,7 +586,7 @@ candidateFound:
     } else {
         unit->SetBattlezTask(BZTASK_UNASSIGNED);
     }
-    unit->m_aiType = AI_BATTLEZ_PATH;
+    unit->SetAiType(AI_BATTLEZ_PATH);
     unit->SetAiState(AISTATE_SEEK);
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_unusedBattleCell);
@@ -657,7 +657,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->GetEquippedToolType();
-                                if (st2 == PICKUP_BRICK && unit->m_aiType == AI_DEFENDER
+                                if (st2 == PICKUP_BRICK && unit->GetAiType() == AI_DEFENDER
                                     && unit->m_aiState == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->BeginPickupAnimation(PICKUP_NONE, 1, 0, 0, 1);
                                 }
@@ -3352,7 +3352,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (unit == NULL) {
         return 0;
     }
-    unit->m_aiType = AI_BATTLEZ_PATH;
+    unit->SetAiType(AI_BATTLEZ_PATH);
     UNSET_COORD(unit->m_arrivalCell);
     unit->SetBattlezTargetPlayerIndex(-1);
     UNSET_COORD(unit->m_unusedBattleCell);

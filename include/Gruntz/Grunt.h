@@ -518,6 +518,14 @@ public:
     RECT m_toyUseRect;
     RECT m_toyUseExclusionRect;
     EnemyAiType m_aiType;
+
+    EnemyAiType GetAiType() const {
+        return m_aiType;
+    }
+
+    void SetAiType(EnemyAiType type) {
+        m_aiType = type;
+    }
     GruntAiState m_aiState;
     BattlezTask m_battlezTask;
     i32 m_defenderRadius;
