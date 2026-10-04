@@ -4007,8 +4007,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 cy;
     {
         CRect dst(w->m_level->GetViewportRect());
-        cx = dst.left + (dst.right - dst.left) / 2;
-        cy = dst.top + (dst.bottom - dst.top) / 2;
+        cx = dst.left + dst.Width() / 2;
+        cy = dst.top + dst.Height() / 2;
     }
 
     if (m_quitConfirmationActive != false) {
