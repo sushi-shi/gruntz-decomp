@@ -1356,7 +1356,7 @@ i32 CBootyState::Render() {
             m_activation = BOOTYSEQ_LETTERS;
             SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_BOOM");
-            if (m_initOnce != false && g_gameReg->GetGameStats()->m_currentAreaComplete != false
+            if (m_initOnce != false && g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false
                 && g_levelBias100 == false) {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
@@ -1397,14 +1397,14 @@ i32 CBootyState::Render() {
                 CGameStats* gameStats = g_gameReg->GetGameStats();
                 if (gameStats->GetLevelNumber() > IDX(QUESTLEVEL_LAST)) {
 
-                    if (gameStats->m_currentAreaComplete != false) {
+                    if (gameStats->IsCurrentAreaComplete() != false) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
                     } else {
                         s = "You are closer to achieving mastery! Keep training!";
                     }
                     SetRect(&rc, 0x194, 0xaa, 0x263, SCREEN_H_PX);
                 } else {
-                    if (gameStats->m_currentAreaComplete != false) {
+                    if (gameStats->IsCurrentAreaComplete() != false) {
                         if (gameStats->CurrentAreaHasAllWarpLetters()) {
                             s.Format(
                                 "WARP letterz recovered! Prepare to receive your cheat codez!"
@@ -1490,7 +1490,7 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 
     if (m_levelCompleteGate) {
-        if (g_gameReg->GetGameStats()->m_currentAreaComplete != false) {
+        if (g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
             DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
@@ -1506,14 +1506,14 @@ void CBootyState::ShowLevelCompleteMessage() {
         RECT r;
         CGameStats* gameStats = g_gameReg->GetGameStats();
         if (gameStats->GetLevelNumber() > IDX(QUESTLEVEL_LAST)) {
-            if (gameStats->m_currentAreaComplete != false) {
+            if (gameStats->IsCurrentAreaComplete() != false) {
                 s = "You have completed training! Now, grab the pebble from my hand.";
             } else {
                 s = "You are closer to achieving mastery! Keep training!";
             }
             SetRect(&r, 0x194, 0xaa, 0x263, SCREEN_H_PX);
         } else {
-            if (gameStats->m_currentAreaComplete != false) {
+            if (gameStats->IsCurrentAreaComplete() != false) {
                 if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
                     s.Format("WARP letterz recovered! Prepare to receive your cheat codez!");
                 } else {
@@ -1558,7 +1558,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
         if (m_initOnce == false) {
-            if (gameStats->m_currentAreaComplete != false) {
+            if (gameStats->IsCurrentAreaComplete() != false) {
                 m_initOnce = true;
                 SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
                 ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
@@ -1612,7 +1612,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 1;
             }
         }
-        if (m_initOnce != false && gameStats->m_currentAreaComplete != false
+        if (m_initOnce != false && gameStats->IsCurrentAreaComplete() != false
             && gameStats->GetLevelNumber() < IDX(QUESTLEVEL_LAST)
             && state == BOOTYSEQ_PERFECT_BONUS) {
             if ((gameStats)->CurrentAreaHasAllWarpLetters()) {

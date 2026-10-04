@@ -21,6 +21,9 @@ public:
         return m_levelNumber;
     }
     void SetLevelNumber(i32 levelNumber);
+    b32 IsCurrentAreaComplete() const {
+        return m_currentAreaComplete;
+    }
     void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void ClearFlagCaptures();
 
