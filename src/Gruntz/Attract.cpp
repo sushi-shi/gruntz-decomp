@@ -300,13 +300,12 @@ i32 CState::FadeSineToBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs, b
     if (targetSurface == NULL) {
         return 0;
     }
-    CRenderBuffer* sourceBuffer;
+    CDDSurface* sourceSurface;
     if (useOverlay != false && m_world->GetDisplayBuffers()->HasOverlay() != 0) {
-        sourceBuffer = m_world->GetDisplayBuffers()->GetOverlayBuffer();
+        sourceSurface = m_world->GetDisplayBuffers()->GetOverlayBuffer()->GetSurface();
     } else {
-        sourceBuffer = m_world->GetDisplayBuffers()->GetBackBuffer();
+        sourceSurface = m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     }
-    CDDSurface* sourceSurface = sourceBuffer->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
