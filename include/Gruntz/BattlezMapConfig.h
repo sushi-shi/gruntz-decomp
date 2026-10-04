@@ -56,7 +56,7 @@ public:
 
     i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 blockedMask, i32 passableMask);
     i32 TrySpawnGrunt(b32 allowReserved);
-    i32 CanPlaySpecialAnim(CGrunt*);
+    i32 CanIssueAiOrders(CGrunt*);
     i32 Update();
     i32 ChooseIdleBehavior(CGrunt*);
 

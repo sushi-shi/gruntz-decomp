@@ -573,7 +573,7 @@ battlezrepath	?RepathToFreeCell@CBattlezAiController@@QAEHPAVCGrunt@@@Z	89.5618	
 battlezreserveplace	?ForcePlaceFromReserve@CBattlezAiController@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	6	4aab781e5d77	0x35550	100.0000	
 battlezretarget	?RetargetIdleUnit@CBattlezAiController@@QAEHPAVCGrunt@@@Z	90.8018	90.8018	34	9ffa59e0edcb	0x358a0	91.3524	
 battlezspawncheck	?CheckQueuedSpawnTile@CBattlezAiController@@QAEHPAVCGrunt@@@Z	82.8555	82.8555	21	2639fc67e808	0x34c70	89.3555	
-battlezspecialanim	?CanPlaySpecialAnim@CBattlezAiController@@QAEHPAVCGrunt@@@Z	92.1971	92.1971	15	c9c1a34df129	0x34460	94.2548	
+battlezspecialanim	?CanIssueAiOrders@CBattlezAiController@@QAEHPAVCGrunt@@@Z	92.1971	92.1971	15	c9c1a34df129	0x34460	94.2548	
 battlezspecialanim	?handle_inl@zErrHandling@@QBEXPBDH@Z	100.0000	100.0000	2	f8f0fb8e94d8	0x34960	100.0000	
 battlezunitstep	?AdvanceToEnemyBase@CBattlezAiController@@QAEHPAVCGrunt@@@Z	87.6390	87.6390	45	e99e599a6835	0x32060	87.6390	
 battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	100.0000	100.0000	4	b86e98f08da5	0x31c70	100.0000	
