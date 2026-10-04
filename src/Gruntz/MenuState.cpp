@@ -161,7 +161,7 @@ void CMenuState::ReleaseResources() {
         if (soundRegistry->m_soundStream) {
             soundRegistry->m_soundStream->StopAllStreams();
         }
-        m_world->m_workerList->ClearWorkers();
+        m_world->m_transientDrawList->Clear();
     }
 
     CMenuTree* menuTree = m_menuTree;

@@ -25,18 +25,18 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual CTransientPixel* CreatePixelWorker(i32 x, i32 y, i32 pixelValue);
+    virtual CTransientPixel* AddPixel(i32 x, i32 y, i32 pixelValue);
     virtual CTransientImage*
-    CreateFrameWorker(i32 x, i32 y, const char* workerName, i32 frameIndex, i32 addHead);
+    AddImage(i32 x, i32 y, const char* imageSetName, i32 frameIndex, i32 addHead);
     virtual CTransientImage*
-    CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIndex, i32 addHead);
-    virtual CTransientImage* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
+    AddImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex, i32 addHead);
+    virtual CTransientImage* AddImage(i32 x, i32 y, CImage* image, i32 addHead);
 
-    virtual void RenderAndPruneWorkers(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
+    virtual void RenderAndPrune(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 
-    void ClearWorkers();
+    void Clear();
 
-    CObList m_workers;
+    CObList m_items;
 };
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H

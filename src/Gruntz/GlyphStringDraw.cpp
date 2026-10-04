@@ -46,7 +46,7 @@ i32 DrawGlyphString(
         i32 c = static_cast<signed char>(str[i]);
         CImage* glyph = font->GetAt(c);
         if (glyph) {
-            ctx->m_workerList->CreateFrameWorker(x, y, glyph, 0);
+            ctx->m_transientDrawList->AddImage(x, y, glyph, 0);
         }
         x += advance;
     }

@@ -46,26 +46,23 @@
 
 RVA(0x00163bc0, 0x2c)
 void CTransientDrawList::Unload() {
-    POSITION pos = m_workers.GetHeadPosition();
+    POSITION pos = m_items.GetHeadPosition();
     while (pos) {
-        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_workers.GetNext(pos));
+        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_items.GetNext(pos));
         if (child) {
             delete child;
         }
     }
-    m_workers.RemoveAll();
+    m_items.RemoveAll();
 }
 
 RVA(0x00163bf0, 0x6d)
-void CTransientDrawList::RenderAndPruneWorkers(
-    CDDrawSurfacePair* backBuffer,
-    CDDrawSurfacePair* overlay
-) {
-    POSITION pos = m_workers.GetHeadPosition();
+void CTransientDrawList::RenderAndPrune(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+    POSITION pos = m_items.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
-        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_workers.GetNext(pos));
-        child->RenderFrame(backBuffer, overlay);
+        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_items.GetNext(pos));
+        child->Render(backBuffer, overlay);
         child->m_renderPassesRemaining--;
         if ((overlay->GetSurface() != NULL
              && !HAS(
@@ -73,7 +70,7 @@ void CTransientDrawList::RenderAndPruneWorkers(
                  SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
              ))
             || child->m_renderPassesRemaining <= 0) {
-            m_workers.RemoveAt(cur);
+            m_items.RemoveAt(cur);
             if (child) {
                 delete child;
             }
@@ -82,15 +79,15 @@ void CTransientDrawList::RenderAndPruneWorkers(
 }
 
 RVA(0x00163c60, 0x2c)
-void CTransientDrawList::ClearWorkers() {
-    POSITION pos = m_workers.GetHeadPosition();
+void CTransientDrawList::Clear() {
+    POSITION pos = m_items.GetHeadPosition();
     while (pos) {
-        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_workers.GetNext(pos));
+        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_items.GetNext(pos));
         if (child) {
             delete child;
         }
     }
-    m_workers.RemoveAll();
+    m_items.RemoveAll();
 }
 
 RVA(0x00163c90, 0x116)
@@ -1151,27 +1148,27 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 }
 
 RVA(0x00165fa0, 0x93)
-void CTransientPixel::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CTransientPixel::Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     overlay->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
     backBuffer->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
 
 RVA(0x00166040, 0x66)
-i32 CTransientImage::ResolveFrame(const char* workerName, i32 frameIndex) {
-    CImageSet* p = OwnerMgr()->FindImageSet(workerName);
-    CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
-    m_frame = v;
-    return v != NULL;
+i32 CTransientImage::SetImageByName(const char* imageSetName, i32 frameIndex) {
+    CImageSet* imageSet = OwnerMgr()->FindImageSet(imageSetName);
+    CImage* image = imageSet != NULL ? imageSet->GetAt(frameIndex) : NULL;
+    m_image = image;
+    return image != NULL;
 }
 
 RVA(0x001660b0, 0x33)
-void CTransientImage::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
-    m_frame->RenderImage(this, backBuffer);
+void CTransientImage::Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+    m_image->RenderImage(this, backBuffer);
     if (overlay->GetSurface() != NULL
         && !HAS(
             static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
             SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
         )) {
-        m_frame->RenderImage(this, overlay);
+        m_image->RenderImage(this, overlay);
     }
 }

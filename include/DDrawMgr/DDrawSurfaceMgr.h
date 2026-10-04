@@ -150,7 +150,7 @@ public:
     CDDrawSubMgrPages* m_drawTarget;
 
     CDDrawChildGroup* m_childGroup;
-    CTransientDrawList* m_workerList;
+    CTransientDrawList* m_transientDrawList;
     CImageSetRegistry* m_imageRegistry;
 
     CLogicRecordRegistry* m_logicRegistry;
