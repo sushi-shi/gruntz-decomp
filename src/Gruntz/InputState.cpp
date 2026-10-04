@@ -14,9 +14,7 @@ i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
     if (manager == NULL) {
         return 0;
     }
-    m_pressedButtons = 0;
-    m_heldButtons = 0;
-    m_heldButtonsSnapshot = 0;
+    ClearButtonState();
     m_suppressed = false;
     if (!SelectDevices(manager, selection)) {
         return 0;
@@ -159,9 +157,7 @@ i32 CInputState::ResetInputState() {
             } while (i < group->GetCount());
         }
     }
-    m_pressedButtons = 0;
-    m_heldButtons = 0;
-    m_heldButtonsSnapshot = 0;
+    ClearButtonState();
     return 1;
 }
 

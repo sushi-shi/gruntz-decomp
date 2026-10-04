@@ -41,6 +41,12 @@ public:
 
     i32 ResetInputState();
 
+    void ClearButtonState() {
+        m_pressedButtons = 0;
+        m_heldButtons = 0;
+        m_heldButtonsSnapshot = 0;
+    }
+
     u8 GetDirectionBits();
     i32 SetDirectionBits(i32 flags);
 
