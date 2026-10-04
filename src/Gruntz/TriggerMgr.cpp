@@ -901,7 +901,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     CString name;
     name.Format("Level%i", play->m_levelIndex);
     WarpStoneFragment fragment = static_cast<WarpStoneFragment>(
-        g_buteMgr.GetInt("WarpStone", const_cast<char*>(static_cast<const char*>(name)))
+        g_buteMgr.GetInt("WarpStone", static_cast<const char*>(name))
     );
     if (worldX >= g_gameReg->GetViewBounds()->right || worldX < g_gameReg->GetViewBounds()->left
         || worldY >= g_gameReg->GetViewBounds()->bottom

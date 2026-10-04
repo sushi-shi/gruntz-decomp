@@ -503,7 +503,7 @@ i32 CGrunt::StepCompassMove() {
                 break;
         }
         u32 toyCount =
-            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_toyTiles, 1);
+            g_buteMgr.GetDword(static_cast<LPCTSTR>(str), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_facing.m_direction) {
                 case DIR_NORTH:

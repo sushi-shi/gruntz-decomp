@@ -878,13 +878,13 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 {
                     store->Set(
                         "Player Name",
-                        const_cast<char*>(static_cast<const char*>(PlayerName()))
+                        static_cast<const char*>(PlayerName())
                     );
                 }
                 {
                     store->Set(
                         "Game Name",
-                        const_cast<char*>(static_cast<const char*>(GameName()))
+                        static_cast<const char*>(GameName())
                     );
                 }
             }
@@ -898,7 +898,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 }
                 store->Set(
                     "Player Name",
-                    const_cast<char*>(static_cast<const char*>(PlayerName()))
+                    static_cast<const char*>(PlayerName())
                 );
             }
         }
@@ -1260,7 +1260,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
         return NULL;
     }
 
-    CNetPlayerNode* node = Network()->CreatePlayer(const_cast<char*>("Host"), "", NULL);
+    CNetPlayerNode* node = Network()->CreatePlayer("Host", "", NULL);
     m_localPlayer = node;
     if (node == NULL) {
         ReportNetError(0);
@@ -1954,7 +1954,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
-        ->AddMessage(const_cast<char*>(static_cast<const char*>(line)), GAME_TEXT_SHADOW, 0x11);
+        ->AddMessage(static_cast<const char*>(line), GAME_TEXT_SHADOW, 0x11);
 
     if (player != NULL) {
         Network()->RemovePlayer(player);

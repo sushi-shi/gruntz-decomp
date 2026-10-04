@@ -342,7 +342,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_reserved418 = 0;
 
     m_timePerTile = g_buteMgr.GetDword(
-        const_cast<char*>(static_cast<const char*>(m_animSetName)),
+        static_cast<const char*>(m_animSetName),
         "TimePerTile",
         1000
     );
