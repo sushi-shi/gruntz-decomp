@@ -816,7 +816,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
                                             CGrunt* other = m_triggerMgr->UnitAt(j, k);
                                             if (other != NULL) {
-                                                if (unit->RectContains(
+                                                if (unit->IsWithinReach(
                                                         other->m_object->m_screenX,
                                                         other->m_object->m_screenY
                                                     )
@@ -1458,7 +1458,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     i32 ox = cand->GetTileX();
                     i32 oy = cand->GetTileY();
                     if ((static_cast<CGrunt*>(unit))
-                            ->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
+                            ->IsWithinReach(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                         != 0) {
                         m_triggerMgr->UseEquippedToolAt(
                             unit->GetPlayerIndex(),
@@ -2256,7 +2256,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                 return 1;
                             }
                             DECLARE_TILE_CENTER_PIXEL_PAIR(hitX, hitY, col, row)
-                            if (g->RectContains(hitX, hitY) != 0) {
+                            if (g->IsWithinReach(hitX, hitY) != 0) {
                                 m_triggerMgr->UseEquippedToolAt(
                                     g->GetPlayerIndex(),
                                     g->GetUnitIndex(),

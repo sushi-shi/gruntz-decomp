@@ -145,7 +145,7 @@ L_ed006b:
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
     if (m_inCombat != false) {
@@ -192,7 +192,7 @@ L_scanb:
             if (gg->IsPending() == false) {
                 i32 gx = gg->GetTileX();
                 i32 gy = gg->GetTileY();
-                if (RectContains(
+                if (IsWithinReach(
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     )

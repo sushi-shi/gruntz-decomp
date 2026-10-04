@@ -45,7 +45,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     i32 inRange = 0;
     if (occ != NULL && IsGruntAtSavedScreenPos(occ)
-        && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
+        && IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
         inRange = 1;
     }
 
@@ -96,7 +96,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     return 1;
                 }
                 if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
-                    && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
+                    && IsWithinReach(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                     COMMIT_GRUNT_NEIGHBOR(o);
                     return 1;
                 }
@@ -155,7 +155,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
+            if (IsWithinReach(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
                 return 1;
             }
             if (!IsGruntAtSavedScreenPos(o)) {
@@ -182,7 +182,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 return 1;
             }
             if (m_inCombat == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
-                && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
+                && IsWithinReach(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(o);
                 m_aiState = AISTATE_ATTACK;
             }

@@ -381,7 +381,7 @@ public:
     i32 StartDeathMovement();
     void LoadAnimationSet(i32 toyMode, i32 mobileToy);
 
-    i32 RectContains(i32 x, i32 y);
+    i32 IsWithinReach(i32 x, i32 y);
 
     void RecycleCoords();
     void RecycleHeadCoord();

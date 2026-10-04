@@ -1096,7 +1096,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         }
         i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        if (cell->RectContains(bx, by) == 0) {
+        if (cell->IsWithinReach(bx, by) == 0) {
             goto outOfRange;
         }
         cell->m_arrivalAction = 0;

@@ -138,7 +138,7 @@ inflight: {
     if (cur != NULL) {
         {
             CGameObject* s = cur->m_object;
-            if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
+            if (g->IsWithinReach(s->m_screenX, s->m_screenY) != 0) {
 
                 g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
@@ -204,7 +204,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         CGrunt* target = m_triggerMgr->UnitAt(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y);
         if (target != NULL) {
             CGameObject* lvl = target->m_object;
-            if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
+            if ((static_cast<CGrunt*>(unit))->IsWithinReach(lvl->m_screenX, lvl->m_screenY) != 0) {
                 unit->RecycleCoords();
                 UNSET_COORD(unit->m_arrivalCell);
                 HandleUnitContact(unit, target);

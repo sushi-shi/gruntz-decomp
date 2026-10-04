@@ -307,23 +307,23 @@ void CGrunt::SnapToLastTile(i32 clearArrivalState) {
 }
 
 RVA(0x00051850, 0x165)
-i32 CGrunt::RectContains(i32 x, i32 y) {
-    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
-    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
+i32 CGrunt::IsWithinReach(i32 x, i32 y) {
+    i32 originTileX = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 originTileY = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
 
-    RECT r1 = m_reachRect;
-    RECT r2 = m_reachExclusionRect;
-    OFFSET_RECT_COMPONENTS(r1, dx, dy);
-    r1.right++;
-    r1.bottom++;
-    OFFSET_RECT_COMPONENTS(r2, dx, dy);
+    RECT reachBounds = m_reachRect;
+    RECT exclusionBounds = m_reachExclusionRect;
+    OFFSET_RECT_COMPONENTS(reachBounds, originTileX, originTileY);
+    reachBounds.right++;
+    reachBounds.bottom++;
+    OFFSET_RECT_COMPONENTS(exclusionBounds, originTileX, originTileY);
 
-    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
-        if (IsRectEmpty(&r2)) {
+    if (IsRectEmpty(&reachBounds) || IsRectEmpty(&exclusionBounds)) {
+        if (IsRectEmpty(&exclusionBounds)) {
 
-            if (::PtInRect(&r1, x, y)) {
+            if (::PtInRect(&reachBounds, x, y)) {
                 return 1;
             }
             return 0;
@@ -331,9 +331,9 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (::PtInRect(&r1, x, y)) {
+    if (::PtInRect(&reachBounds, x, y)) {
 
-        if (!::PtInRect(&r2, x, y)) {
+        if (!::PtInRect(&exclusionBounds, x, y)) {
             return 1;
         }
     }

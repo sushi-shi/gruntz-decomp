@@ -112,7 +112,7 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
             m_attackQueued = false;
             CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
             if (n != NULL && n->IsEntranceCommitted() != false) {
-                if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+                if (IsWithinReach(n->m_object->m_screenX, n->m_object->m_screenY)) {
                     CommitNeighbor(
                         m_neighborPlayerIndex,
                         m_neighborUnitIndex,
@@ -1067,7 +1067,7 @@ tail:
                 i32 cx = oh->m_screenX;
                 i32 cy = oh->m_screenY;
                 if (m_neighborScanEnabled != false && m_entranceCommitted != false
-                    && RectContains(cx, cy)) {
+                    && IsWithinReach(cx, cy)) {
                     if (!(g_gameReg->GetTileGrid()->CellFlagsAt(
                               m_lastTilePx.m_x >> TILE_SHIFT_PX,
                               m_lastTilePx.m_y >> TILE_SHIFT_PX

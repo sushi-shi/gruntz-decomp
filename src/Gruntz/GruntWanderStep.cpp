@@ -88,7 +88,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             Coord c;
             if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_HIT_AND_RUN_ATTACK(g);
                 return 1;
             }
@@ -126,7 +126,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
+            if (IsWithinReach(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 return 1;
             }
             if (!IsGruntAtSavedScreenPos(slot)) {
@@ -155,7 +155,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
+            if (IsWithinReach(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 goto ph1;
             }
             if (!IsGruntAtSavedScreenPos(slot)) {

@@ -61,7 +61,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 if (m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
+                if (IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
                     && IsGruntAtSavedScreenPos(occ)) {
                     if (m_carriedToyType == PICKUP_SCROLL) {
                         g_gameReg->GetTriggerMgr()->UseToyAt(
@@ -100,7 +100,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+            if (IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
             if (m_carriedToyType == PICKUP_SCROLL) {
@@ -124,7 +124,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             occ = m_triggerMgr->FindNearestEnemy(this);
             if (occ != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(occ)
-                && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
+                && IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_carriedToyType == PICKUP_SCROLL) {
                     g_gameReg->GetTriggerMgr()->UseToyAt(
                         m_playerIndex,

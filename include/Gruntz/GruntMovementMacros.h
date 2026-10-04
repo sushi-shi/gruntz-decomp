@@ -68,7 +68,7 @@
 #define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)                                              \
     if (grunt != NULL) {                                                                           \
         if (IsGruntAtSavedScreenPos(grunt)                                                         \
-            && RectContains(grunt->m_object->m_screenX, grunt->m_object->m_screenY) != 0) {        \
+            && IsWithinReach(grunt->m_object->m_screenX, grunt->m_object->m_screenY) != 0) {       \
             atTarget = 1;                                                                          \
         }                                                                                          \
     }

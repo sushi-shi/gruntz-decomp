@@ -929,7 +929,7 @@ i32 CGrunt::HandleCombatContact(
                     }
                     applied = m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, sx, sy);
                 } else {
-                    if (RectContains(xMasked, yMasked) != 0) {
+                    if (IsWithinReach(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
                     applied = m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, sx, sy);
@@ -1497,7 +1497,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
                 return NULL;
             }
         }
-        if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+        if (IsWithinReach(n->m_object->m_screenX, n->m_object->m_screenY)) {
             CommitNeighbor(
                 m_neighborPlayerIndex,
                 m_neighborUnitIndex,
@@ -2424,10 +2424,10 @@ void CGrunt::AdvanceMotion() {
 
                             Coord last = other->LastTilePx();
                             Coord target = last;
-                            if (RectContains(x, y) != 0) {
+                            if (IsWithinReach(x, y) != 0) {
                                 target.m_x = otherPxX;
                                 target.m_y = otherPxY;
-                            } else if (RectContains(last.m_x, last.m_y) != 0) {
+                            } else if (IsWithinReach(last.m_x, last.m_y) != 0) {
                                 other->SnapToLastTile(0);
                             } else {
                                 target = m_arrivalTargetPx;

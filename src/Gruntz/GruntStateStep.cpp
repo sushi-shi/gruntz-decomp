@@ -93,7 +93,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
             m_triggerMgr->UnitAt(defender->ArrivalCell().m_x, defender->ArrivalCell().m_y);
         if (target != NULL) {
             CGameObject* targetSprite = target->m_object;
-            if (defender->RectContains(targetSprite->m_screenX, targetSprite->m_screenY) != 0) {
+            if (defender->IsWithinReach(targetSprite->m_screenX, targetSprite->m_screenY) != 0) {
 
                 defender->RecycleCoords();
                 UNSET_COORD(defender->m_arrivalCell);

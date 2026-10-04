@@ -4927,7 +4927,7 @@ class ValueTempLivenessControls(unittest.TestCase):
         return out
 
     def test_the_overwritten_temp_is_dead_even_though_the_slot_escapes(self):
-        """The known positive (CGrunt::RectContains).  Retail materialises the
+        """The known positive (CGrunt::IsWithinReach).  Retail materialises the
         by-value Coord, then overwrites BOTH halves with the real value and
         takes the slot's address - so the temp is dead and the `lea` observes
         only its successor."""

@@ -112,7 +112,7 @@ i32 CGrunt::StepDiggerBehavior() {
     }
     if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
         && g->m_object->m_screenY == g->m_lastTilePx.m_y
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
         m_dwell = 0;
         return 1;

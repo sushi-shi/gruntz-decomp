@@ -25,7 +25,7 @@ either - the two sides put `this` in different registers - so a member pair is
 keyed on its member offset alone.
 
 DEAD is decided by the EVENT ORDER on the slot: a store is dead when the next
-event on its slot is another store (the RectContains form, where the real value
+event on its slot is another store (the IsWithinReach form, where the real value
 overwrites the temp) or nothing at all (the GetModeSize form). Three things make
 the order the only workable rule.
 
@@ -38,7 +38,7 @@ An ADDRESS-TAKEN aggregate names only its BASE, so a per-dword read scan calls
 its interior fields dead; an `lea` observes the whole object it points at, and
 it keeps observing it, because the pointer outlives the `lea`.
 
-And a store is only dead against its OWN slot's later events - the RectContains
+And a store is only dead against its OWN slot's later events - the IsWithinReach
 temp escapes the same slot its successor already killed.
 
 Each row also carries where the POINTER came from, because that is a second cl
@@ -50,7 +50,7 @@ only the rows whose pair reaches its member through a global.
 rows on 100.00% functions, where the two sides ARE the same bytes and any row is
 a detector bug. A clean zero from a detector nobody has seen fire is not a
 result - `--control` re-proves it against the rows both mechanisms were
-established on (the temp on RectContains/RectContainsGated, the global pointer
+established on (the temp on IsWithinReach/IsInToyUseRange, the global pointer
 on SaveScreenshot), and the header line's provenance histogram says how big each
 class is, so a `--global` zero is a measurement rather than an empty query.
 
@@ -90,15 +90,15 @@ FS_INSTALL = "DWORD PTR fs:0x0,esp"      # the /GX registration node going live
 # target-only while esp tracking ignored callee-popped arguments, and under a
 # correct frame level retail's two stores are a live local Coord whose address
 # it passes (`lea edx,[esp+0x20]` at slot -0x8), not a dead by-value temp.
-CONTROL = (("gruntsteps", "?RectContains@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
-           ("gruntsteps", "?RectContainsGated@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
+CONTROL = (("gruntsteps", "?IsWithinReach@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
+           ("gruntsteps", "?IsInToyUseRange@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("triggermgrgrid", "?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z", 0x17C, ""))
 # (unit, symbol, member offset, provenance). The PROVENANCE walker's own known
 # positive: SaveScreenshot reaches its pair through a pointer read from a global,
 # which is the alias fact that keeps the store alive. It is at 100.00%, so both
 # sides carry it and this controls the walker, not the asymmetry.
 PROV_CONTROL = (("savescreenshot",
-                 "?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@"
+                 "?SaveScreenshot@@YAHPAVCDDSurface@@PAVCRegMgr@@"
                  "PAVCGruntzMgr@@HHPADH@Z", 0x8C, "glob"),)
 LOOKBACK = 40
 # One temp is emitted as one run, so its two dead stores are neighbours. Without
@@ -240,9 +240,9 @@ def _pairs(ins):
     adjacent store pair fed by [b+N],[b+N+4].
 
     A store is dead when the next event on its slot is another store - the
-    RectContains form, where the real value overwrites the temp - or when the
+    IsWithinReach form, where the real value overwrites the temp - or when the
     slot is never observed at all. Order is what separates a kill from a read,
-    and it is why an escape cannot be a set: RectContains OVERWRITES the temp
+    and it is why an escape cannot be a set: IsWithinReach OVERWRITES the temp
     slot and then takes that slot's address, so a set-based escape screen loses
     the established positive. But an escape is not a point event either. The
     pointer outlives the `lea`, so a slot whose address is taken ANYWHERE is

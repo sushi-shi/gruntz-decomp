@@ -47,7 +47,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
     b32 hitGate = false;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
-        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g) && RectContains(gp->m_screenX, gp->m_screenY)) {
+        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
+            && IsWithinReach(gp->m_screenX, gp->m_screenY)) {
             hitGate = true;
         }
     }
@@ -96,7 +97,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
             if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 return 1;
             }
@@ -154,7 +155,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
             }
             RepathToward(t);
             if (m_inCombat == false && m_stamina >= STAMINA_FULL
-                && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && IsWithinReach(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && IsGruntAtSavedScreenPos(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
                 m_aiState = AISTATE_ATTACK;
@@ -176,7 +177,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                if (IsWithinReach(t->m_object->m_screenX, t->m_object->m_screenY) == 0
                     || !IsGruntAtSavedScreenPos(t)) {
                     m_aiState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;

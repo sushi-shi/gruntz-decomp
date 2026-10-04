@@ -483,7 +483,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
                 reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
             );
             u16 color;
-            if (cell->RectContains(x, y)) {
+            if (cell->IsWithinReach(x, y)) {
                 color = PackRgb16(0xff, 0, 0);
                 world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
             } else {
@@ -629,7 +629,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
                     dx += plane->m_viewportRect.left - plane->m_planeViewRect.left;
                     dy += plane->m_viewportRect.top - plane->m_planeViewRect.top;
                     u16 color;
-                    if (cell->RectContains(x, y)) {
+                    if (cell->IsWithinReach(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
                         world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     } else {

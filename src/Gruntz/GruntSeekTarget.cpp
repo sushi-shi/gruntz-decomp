@@ -142,7 +142,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             i32 x = g->m_object->m_screenX;
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
-                && RectContains(x, g->m_object->m_screenY) != 0) {
+                && IsWithinReach(x, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
             }
         }
