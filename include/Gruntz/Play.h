@@ -428,7 +428,13 @@ extern b32 g_levelBias100;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 
-void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX);
+void StartScreenShake(
+    i32 durationMs,
+    i32 amplitudeX,
+    i32 amplitudeY,
+    i32 minDelayMs,
+    i32 maxDelayMs
+);
 CString GetColorName(i32 colorIdx, b32 upper);
 CString GetDifficultyName(i32 diffIdx, b32 upper);
 

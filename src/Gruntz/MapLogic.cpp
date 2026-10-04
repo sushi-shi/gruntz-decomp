@@ -25,16 +25,16 @@ i32 SerializeScrollState(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     }
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&g_scrollClock, sizeof(g_scrollClock));
-            ar->Write(&g_scrollTimer, sizeof(g_scrollTimer));
+            ar->Write(&g_screenShakeEndTime, sizeof(g_screenShakeEndTime));
+            ar->Write(&g_screenShakeDelayRemainingMs, sizeof(g_screenShakeDelayRemainingMs));
             ar->Write(&g_serializedScrollReservedFirst, sizeof(g_serializedScrollReservedFirst));
             ar->Write(&g_serializedScrollReservedSecond, sizeof(g_serializedScrollReservedSecond));
             ar->Write(&g_lastScrollX, sizeof(g_lastScrollX));
             ar->Write(&g_lastScrollY, sizeof(g_lastScrollY));
             break;
         case SERIAL_LOAD:
-            ar->Read(&g_scrollClock, sizeof(g_scrollClock));
-            ar->Read(&g_scrollTimer, sizeof(g_scrollTimer));
+            ar->Read(&g_screenShakeEndTime, sizeof(g_screenShakeEndTime));
+            ar->Read(&g_screenShakeDelayRemainingMs, sizeof(g_screenShakeDelayRemainingMs));
             ar->Read(&g_serializedScrollReservedFirst, sizeof(g_serializedScrollReservedFirst));
             ar->Read(&g_serializedScrollReservedSecond, sizeof(g_serializedScrollReservedSecond));
             ar->Read(&g_lastScrollX, sizeof(g_lastScrollX));

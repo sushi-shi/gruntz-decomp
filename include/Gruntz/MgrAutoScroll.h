@@ -3,10 +3,10 @@
 
 #include <rva.h>
 
-extern i32 g_jitterX;
-extern i32 g_jitterY;
-extern i32 g_panMinX;
-extern i32 g_panMaxX;
+extern i32 g_screenShakeAmplitudeX;
+extern i32 g_screenShakeAmplitudeY;
+extern i32 g_screenShakeMinDelayMs;
+extern i32 g_screenShakeMaxDelayMs;
 class CDDrawWorkerHost;
 extern CDDrawWorkerHost* g_backView;
 #endif // GRUNTZ_GRUNTZ_MGRAUTOSCROLL_H

@@ -2163,9 +2163,9 @@ DATA(0x002453d8)
 CButeMgr g_buteMgr;
 
 DATA(0x00245508)
-i32 g_panMinX;
+i32 g_screenShakeMinDelayMs;
 DATA(0x0024550c)
-i32 g_panMaxX;
+i32 g_screenShakeMaxDelayMs;
 
 RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
 RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)

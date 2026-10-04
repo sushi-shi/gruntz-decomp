@@ -25,8 +25,8 @@
 
 RVA(0x000ebd30, 0x21)
 void Cmd_ResetScroll() {
-    g_scrollClock = 0;
-    g_scrollTimer = 0;
+    g_screenShakeEndTime = 0;
+    g_screenShakeDelayRemainingMs = 0;
     g_scrollPace.m_lastTime = 0;
     g_scrollPace.m_period = 0;
 }
@@ -36,12 +36,13 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     i32 scrollX = v->GetScrollPixelX();
     i32 scrollY = v->GetScrollPixelY();
 
-    if (g_scrollClock > g_frameTime) {
-        CountDown(g_scrollTimer, g_frameDelta);
-        if (g_scrollTimer == 0) {
-            g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
-            i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
-            i32 jitterY = RandRange(pm, -g_jitterY, g_jitterY);
+    if (g_screenShakeEndTime > g_frameTime) {
+        CountDown(g_screenShakeDelayRemainingMs, g_frameDelta);
+        if (g_screenShakeDelayRemainingMs == 0) {
+            g_screenShakeDelayRemainingMs =
+                RandRange(pm, g_screenShakeMinDelayMs, g_screenShakeMaxDelayMs);
+            i32 jitterX = RandRange(pm, -g_screenShakeAmplitudeX, g_screenShakeAmplitudeX);
+            i32 jitterY = RandRange(pm, -g_screenShakeAmplitudeY, g_screenShakeAmplitudeY);
             scrollX += jitterX;
             scrollY += jitterY;
         }
@@ -105,19 +106,25 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
 }
 
 RVA(0x000ec1c0, 0x43)
-void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX) {
-    i32 t = durationMs + g_frameTime;
-    g_scrollClock = max(g_scrollClock, static_cast<u32>(t));
-    g_jitterX = jitterX;
-    g_jitterY = jitterY;
-    g_panMinX = panMinX;
-    g_panMaxX = panMaxX;
+void StartScreenShake(
+    i32 durationMs,
+    i32 amplitudeX,
+    i32 amplitudeY,
+    i32 minDelayMs,
+    i32 maxDelayMs
+) {
+    i32 endTime = durationMs + g_frameTime;
+    g_screenShakeEndTime = max(g_screenShakeEndTime, static_cast<u32>(endTime));
+    g_screenShakeAmplitudeX = amplitudeX;
+    g_screenShakeAmplitudeY = amplitudeY;
+    g_screenShakeMinDelayMs = minDelayMs;
+    g_screenShakeMaxDelayMs = maxDelayMs;
 }
 DATA(0x002452a4)
-i32 g_jitterX;
+i32 g_screenShakeAmplitudeX;
 
 DATA(0x002452cc)
-i32 g_jitterY;
+i32 g_screenShakeAmplitudeY;
 
 DATA(0x0024c27c)
 CDDrawWorkerHost* g_backView;
@@ -127,10 +134,10 @@ DATA(0x0024cfb0)
 ScrollPace g_scrollPace;
 
 DATA(0x0024cfc0)
-u32 g_scrollClock;
+u32 g_screenShakeEndTime;
 
 DATA(0x0024cfc4)
-u32 g_scrollTimer;
+u32 g_screenShakeDelayRemainingMs;
 
 DATA(0x0024cfc8)
 i32 g_serializedScrollReservedFirst;

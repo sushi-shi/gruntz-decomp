@@ -6371,7 +6371,7 @@ i32 CPlay::SetMonitorCurse(b32 active) {
     if (active != false) {
         m_monitorCurseActive = true;
         PlayCurseMusic();
-        Cmd_ApplyScrollParams(CURSE_DURATION_MS, 6, 6, 0, 0x2d);
+        StartScreenShake(CURSE_DURATION_MS, 6, 6, 0, 0x2d);
     } else {
         m_monitorCurseActive = false;
         RestoreMusicAfterCurses();
