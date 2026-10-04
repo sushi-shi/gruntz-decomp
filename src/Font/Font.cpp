@@ -170,46 +170,60 @@ void FontRenderer::SetColor(i32 color) {
 }
 
 RVA(0x00179c30, 0xdb)
-void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
-    CSize ext = MeasureText(text);
+void FontRenderer::DrawLine(CString text, CDDSurface* surface, i32 x, i32 y, i32 blendGlyphs) {
+    CSize textExtent = MeasureText(text);
     if (m_font == NULL) {
         return;
     }
-    i32 limit = surf->GetHeight();
-    if (m_font->GetMaxHeight() + y > limit) {
+    i32 surfaceHeight = surface->GetHeight();
+    if (m_font->GetMaxHeight() + y > surfaceHeight) {
         return;
     }
-    DrawLineClipped(text, surf, CRect(0, 0, ext.cx, ext.cy), x, y, z);
+    DrawLineClipped(text, surface, CRect(0, 0, textExtent.cx, textExtent.cy), x, y, blendGlyphs);
 }
 
 RVA(0x00179d10, 0x15c)
-void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLineClipped(
+    CString text,
+    CDDSurface* surface,
+    CRect clipRect,
+    i32 x,
+    i32 y,
+    i32 blendGlyphs
+) {
     i32 savedColor = m_color;
     if (m_highlightEnabled) {
         SetColor(RGB(255, 255, 255));
-        DrawGlyphRun(text, surf, rc, x, y, z);
+        DrawGlyphRun(text, surface, clipRect, x, y, blendGlyphs);
         x++;
         y++;
     }
     if (m_shadowEnabled) {
         SetColor(RGB(0, 0, 0));
         x += 2;
-        DrawGlyphRun(text, surf, rc, x, y, z);
+        DrawGlyphRun(text, surface, clipRect, x, y, blendGlyphs);
         x -= 2;
     }
     SetColor(savedColor);
-    DrawGlyphRun(text, surf, rc, x, y, z);
+    DrawGlyphRun(text, surface, clipRect, x, y, blendGlyphs);
 }
 
 RVA(0x00179e70, 0x5ec)
-void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
+void FontRenderer::DrawGlyphRun(
+    CString text,
+    CDDSurface* surface,
+    CRect clipRect,
+    i32 x,
+    i32 y,
+    i32 blendGlyphs
+) {
     if (m_font == NULL) {
         return;
     }
-    if (rc.left < 0) {
+    if (clipRect.left < 0) {
         return;
     }
-    if (rc.top < 0) {
+    if (clipRect.top < 0) {
         return;
     }
     if (x < 0) {
@@ -219,31 +233,31 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    if (RunRightEdge(rc, x) > surf->GetWidth()) {
-        rc.right = rc.right + rc.Width() + x - surf->GetWidth();
+    if (RunRightEdge(clipRect, x) > surface->GetWidth()) {
+        clipRect.right = clipRect.right + clipRect.Width() + x - surface->GetWidth();
     }
-    if (y + rc.Height() > surf->GetHeight()) {
-        rc.bottom = rc.bottom + rc.Height() + y - surf->GetHeight();
+    if (y + clipRect.Height() > surface->GetHeight()) {
+        clipRect.bottom = clipRect.bottom + clipRect.Height() + y - surface->GetHeight();
     }
 
-    CSize m = MeasureText(text);
+    CSize measuredExtent = MeasureText(text);
     {
-        CRect extent(CPoint(0, 0), m);
-        if (!rc.IntersectRect(&rc, &extent)) {
+        CRect textBounds(CPoint(0, 0), measuredExtent);
+        if (!clipRect.IntersectRect(&clipRect, &textBounds)) {
             return;
         }
     }
-    CLAMP_UPPER_INPLACE(rc.right, m.cx);
-    CLAMP_UPPER_INPLACE(rc.bottom, m.cy);
+    CLAMP_UPPER_INPLACE(clipRect.right, measuredExtent.cx);
+    CLAMP_UPPER_INPLACE(clipRect.bottom, measuredExtent.cy);
 
-    u16* bits = static_cast<u16*>(surf->Lock(NULL));
-    i32 pitch = surf->m_apiDesc.lPitch;
-    if (bits == NULL) {
+    u16* pixels = static_cast<u16*>(surface->Lock(NULL));
+    i32 pitchBytes = surface->m_apiDesc.lPitch;
+    if (pixels == NULL) {
         return;
     }
 
-    CPoint dest(x, y);
-    i32 acc = 0;
+    CPoint drawPosition(x, y);
+    i32 cumulativeWidth = 0;
     i32 red = GetRValue(m_color);
     i32 green = GetGValue(m_color);
     i32 blue = GetBValue(m_color);
@@ -252,222 +266,255 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         | (static_cast<u8>((static_cast<u8>(green) >> static_cast<u8>(g_gDown))) << g_gUp)
         | (static_cast<u8>(blue) >> static_cast<u8>(g_bDown));
 
-    i32 rightPartial = 0;
-    i32 firstCol = 0;
-    i32 startChar;
-    if (rc.left != 0) {
-        i32 prev = 0;
-        startChar = 0;
-        while (acc < rc.left) {
-            CSize g;
-            prev = acc;
-            acc += m_font->GetGlyphSize(g, text[startChar]).cx;
-            startChar++;
+    i32 rightClipPixels = 0;
+    i32 firstGlyphColumn = 0;
+    i32 firstCharacterIndex;
+    if (clipRect.left != 0) {
+        i32 previousWidth = 0;
+        firstCharacterIndex = 0;
+        while (cumulativeWidth < clipRect.left) {
+            CSize glyphExtent;
+            previousWidth = cumulativeWidth;
+            cumulativeWidth += m_font->GetGlyphSize(glyphExtent, text[firstCharacterIndex]).cx;
+            firstCharacterIndex++;
         }
-        --startChar;
-        firstCol = rc.left - prev;
+        --firstCharacterIndex;
+        firstGlyphColumn = clipRect.left - previousWidth;
     } else {
-        startChar = 0;
+        firstCharacterIndex = 0;
     }
 
-    i32 endChar;
-    acc = 0;
+    i32 endCharacterIndex;
+    cumulativeWidth = 0;
 
-    if (rc.right != m.cx) {
-        i32 j = 0;
-        endChar = 0;
-        if (rc.right >= 0) {
+    if (clipRect.right != measuredExtent.cx) {
+        i32 scanIndex = 0;
+        endCharacterIndex = 0;
+        if (clipRect.right >= 0) {
             do {
-                CSize g;
-                acc += m_font->GetGlyphSize(g, text[j]).cx;
-                j++;
-            } while (acc <= rc.right);
-            endChar = j;
+                CSize glyphExtent;
+                cumulativeWidth += m_font->GetGlyphSize(glyphExtent, text[scanIndex]).cx;
+                scanIndex++;
+            } while (cumulativeWidth <= clipRect.right);
+            endCharacterIndex = scanIndex;
         }
-        rightPartial = acc - rc.right;
+        rightClipPixels = cumulativeWidth - clipRect.right;
     } else {
-        endChar = text.GetLength();
+        endCharacterIndex = text.GetLength();
     }
 
-    for (i32 ci = startChar; ci < endChar; ci++) {
-        CSize g;
-        m = m_font->GetGlyphSize(g, text[ci]);
+    for (i32 characterIndex = firstCharacterIndex; characterIndex < endCharacterIndex;
+         characterIndex++) {
+        CSize glyphExtent;
+        measuredExtent = m_font->GetGlyphSize(glyphExtent, text[characterIndex]);
         i32 row;
         i32 col;
-        i32 clippedW;
-        if (ci == endChar - 1) {
-            clippedW = m.cx - rightPartial;
+        i32 clippedGlyphWidth;
+        if (characterIndex == endCharacterIndex - 1) {
+            clippedGlyphWidth = measuredExtent.cx - rightClipPixels;
         } else {
-            clippedW = m.cx;
+            clippedGlyphWidth = measuredExtent.cx;
         }
-        u8* glyphBuf = m_font->GetGlyphBitmap(text[ci])[0];
-        if (blend) {
-            for (row = rc.top; row < rc.bottom; row++) {
-                u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
-                for (col = firstCol; col < clippedW; col++) {
-                    u8 cover = glyphBuf[row * m.cx + col];
+        u8* glyphBitmap = m_font->GetGlyphBitmap(text[characterIndex])[0];
+        if (blendGlyphs) {
+            for (row = clipRect.top; row < clipRect.bottom; row++) {
+                u16* destination = pixels + ((row - clipRect.top + drawPosition.y) * pitchBytes) / 2
+                                   + drawPosition.x;
+                for (col = firstGlyphColumn; col < clippedGlyphWidth; col++) {
+                    u8 coverage = glyphBitmap[row * measuredExtent.cx + col];
 
-                    if (cover == 0) {
-                    } else if (cover != UCHAR_MAX) {
-                        *dst = BlendPixel16(*dst, cover, red, green, blue);
+                    if (coverage == 0) {
+                    } else if (coverage != UCHAR_MAX) {
+                        *destination = BlendPixel16(*destination, coverage, red, green, blue);
                     } else {
-                        *dst = packedColor;
+                        *destination = packedColor;
                     }
-                    dst++;
+                    destination++;
                 }
             }
         } else {
-            for (row = rc.top; row < rc.bottom; row++) {
-                u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
-                for (col = firstCol; col < clippedW; col++) {
-                    if (glyphBuf[row * m.cx + col] != 0) {
-                        *dst = packedColor;
+            for (row = clipRect.top; row < clipRect.bottom; row++) {
+                u16* destination = pixels + ((row - clipRect.top + drawPosition.y) * pitchBytes) / 2
+                                   + drawPosition.x;
+                for (col = firstGlyphColumn; col < clippedGlyphWidth; col++) {
+                    if (glyphBitmap[row * measuredExtent.cx + col] != 0) {
+                        *destination = packedColor;
                     }
-                    dst++;
+                    destination++;
                 }
             }
         }
-        dest.x += clippedW - firstCol;
-        firstCol = 0;
+        drawPosition.x += clippedGlyphWidth - firstGlyphColumn;
+        firstGlyphColumn = 0;
     }
 
-    surf->Unlock();
+    surface->Unlock();
 }
 
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
-    CString text,
-    CDDSurface* surf,
-    CRect rc,
-    i32 z,
-    i32 hcenter,
-    i32 spacing
+    CString remainingText,
+    CDDSurface* surface,
+    CRect bounds,
+    i32 blendGlyphs,
+    i32 centerText,
+    i32 lineSpacing
 ) {
-    i32 lineAdvance = m_font->GetMaxHeight() + spacing;
-    if (hcenter) {
-        CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + rc.Height() / 2 - m.cy / 2;
+    i32 lineAdvance = m_font->GetMaxHeight() + lineSpacing;
+    if (centerText) {
+        CSize textExtent = MeasureWrapped(remainingText, bounds);
+        bounds.top = bounds.top + bounds.Height() / 2 - textExtent.cy / 2;
     }
 
-    i32 y = rc.top;
-    i32 x = rc.left;
+    i32 y = bounds.top;
+    i32 x = bounds.left;
 
     CString line;
-    while (y < rc.bottom) {
-        i32 len = text.GetLength();
-        if (len <= 0) {
+    while (y < bounds.bottom) {
+        i32 textLength = remainingText.GetLength();
+        if (textLength <= 0) {
             break;
         }
 
-        i32 nl = 0;
-        for (i32 k = 0; k < len; k++) {
-            if (text[k] == '\n') {
-                nl = 1;
+        i32 hasNewline = 0;
+        for (i32 characterIndex = 0; characterIndex < textLength; characterIndex++) {
+            if (remainingText[characterIndex] == '\n') {
+                hasNewline = 1;
                 break;
             }
         }
 
-        CSize size;
-        size = MeasureText(text);
-        if (size.cx + x <= rc.right && !nl) {
-            line += text;
-            text = "";
-            if (y + lineAdvance <= rc.bottom) {
-                if (hcenter) {
-                    CSize le = MeasureText(line);
-                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
-                    x = rc.left + rc.Width() / 2 - le.cx;
+        CSize measuredExtent;
+        measuredExtent = MeasureText(remainingText);
+        if (measuredExtent.cx + x <= bounds.right && !hasNewline) {
+            line += remainingText;
+            remainingText = "";
+            if (y + lineAdvance <= bounds.bottom) {
+                if (centerText) {
+                    CSize lineExtent = MeasureText(line);
+                    DrawLine(
+                        line,
+                        surface,
+                        bounds.left + bounds.Width() / 2 - lineExtent.cx / 2,
+                        y,
+                        blendGlyphs
+                    );
+                    x = bounds.left + bounds.Width() / 2 - lineExtent.cx;
                 } else {
-                    DrawLine(line, surf, rc.left, y, z);
+                    DrawLine(line, surface, bounds.left, y, blendGlyphs);
                 }
             }
             line = "";
         } else {
-            i32 i = 0;
-            i32 breakNL = 0;
+            i32 wordLength = 0;
+            i32 newlineAfterWord = 0;
 
-            while (i < text.GetLength()) {
-                u8 ch = text[i];
-                if (ch == ' ' || ch == '\n') {
+            while (wordLength < remainingText.GetLength()) {
+                u8 character = remainingText[wordLength];
+                if (character == ' ' || character == '\n') {
                     break;
                 }
-                i++;
+                wordLength++;
             }
-            if (i < text.GetLength() && text[i] == '\n') {
-                breakNL = 1;
+            if (wordLength < remainingText.GetLength() && remainingText[wordLength] == '\n') {
+                newlineAfterWord = 1;
             }
-            CString head;
-            if (breakNL) {
-                head = text.Left(i);
+            CString word;
+            if (newlineAfterWord) {
+                word = remainingText.Left(wordLength);
             } else {
-                head = text.Left(i + 1);
+                word = remainingText.Left(wordLength + 1);
             }
-            size = MeasureText(head);
-            i32 headW = size.cx;
-            text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < rc.right) {
-                line += head;
-                x = headW + x;
-            } else if (headW < rc.Width()) {
-                if (hcenter) {
-                    CSize le = MeasureText(line);
-                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
+            measuredExtent = MeasureText(word);
+            i32 wordWidth = measuredExtent.cx;
+            remainingText = remainingText.Right(remainingText.GetLength() - wordLength - 1);
+            if (wordWidth + x < bounds.right) {
+                line += word;
+                x = wordWidth + x;
+            } else if (wordWidth < bounds.Width()) {
+                if (centerText) {
+                    CSize lineExtent = MeasureText(line);
+                    DrawLine(
+                        line,
+                        surface,
+                        bounds.left + bounds.Width() / 2 - lineExtent.cx / 2,
+                        y,
+                        blendGlyphs
+                    );
                 } else {
-                    DrawLine(line, surf, rc.left, y, z);
+                    DrawLine(line, surface, bounds.left, y, blendGlyphs);
                 }
                 y = y + lineAdvance;
-                x = rc.left;
+                x = bounds.left;
                 line = "";
-                if (lineAdvance + y < rc.bottom) {
-                    line += head;
-                    x += headW;
+                if (lineAdvance + y < bounds.bottom) {
+                    line += word;
+                    x += wordWidth;
                 }
             } else {
 
                 // The signed length guard is required; IsEmpty emits a zero-only test.
-                while (head.GetLength() > 0) {
-                    if (y >= rc.bottom) {
+                while (word.GetLength() > 0) {
+                    if (y >= bounds.bottom) {
                         break;
                     }
-                    size = MeasureText(CString(head.GetAt(0), 1));
-                    i32 chW = size.cx;
-                    if (chW + x > rc.right) {
+                    measuredExtent = MeasureText(CString(word.GetAt(0), 1));
+                    i32 glyphWidth = measuredExtent.cx;
+                    if (glyphWidth + x > bounds.right) {
                         y = y + lineAdvance;
-                        x = rc.left;
-                        if (hcenter) {
-                            CSize le = MeasureText(line);
-                            DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
+                        x = bounds.left;
+                        if (centerText) {
+                            CSize lineExtent = MeasureText(line);
+                            DrawLine(
+                                line,
+                                surface,
+                                bounds.left + bounds.Width() / 2 - lineExtent.cx / 2,
+                                y,
+                                blendGlyphs
+                            );
                         } else {
-                            DrawLine(line, surf, x, y, z);
+                            DrawLine(line, surface, x, y, blendGlyphs);
                         }
                         line = "";
                     }
-                    if (lineAdvance + y >= rc.bottom) {
+                    if (lineAdvance + y >= bounds.bottom) {
                         break;
                     }
-                    line += head[0];
-                    x += chW;
+                    line += word[0];
+                    x += glyphWidth;
                 }
             }
-            if (breakNL) {
-                if (hcenter) {
-                    CSize le = MeasureText(line);
-                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
+            if (newlineAfterWord) {
+                if (centerText) {
+                    CSize lineExtent = MeasureText(line);
+                    DrawLine(
+                        line,
+                        surface,
+                        bounds.left + bounds.Width() / 2 - lineExtent.cx / 2,
+                        y,
+                        blendGlyphs
+                    );
                 } else {
-                    DrawLine(line, surf, rc.left, y, z);
+                    DrawLine(line, surface, bounds.left, y, blendGlyphs);
                 }
                 y = y + lineAdvance;
-                x = rc.left;
+                x = bounds.left;
                 line = "";
             }
         }
     }
-    if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
-        if (hcenter) {
-            CSize le = MeasureText(line);
-            DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
+    if (y + lineAdvance <= bounds.bottom && line.GetLength() > 0) {
+        if (centerText) {
+            CSize lineExtent = MeasureText(line);
+            DrawLine(
+                line,
+                surface,
+                bounds.left + bounds.Width() / 2 - lineExtent.cx / 2,
+                y,
+                blendGlyphs
+            );
         } else {
-            DrawLine(line, surf, rc.left, y, z);
+            DrawLine(line, surface, bounds.left, y, blendGlyphs);
         }
     }
 }
