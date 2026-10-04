@@ -146,12 +146,12 @@ public:
 
     i32 StartGruntOven(i32);
     void UpdateRezConveyorStatusBar();
-    void LoadRezMachineConfig();
-    void UpdateRezMachineSnoozeStatusBar();
-    void LoadChipMachineConfig();
-    i32 UpdateFallingItemStatusBar(i32 item, i32 x, i32 y);
+    void UpdateResourceMachineAnimation();
+    void ResetResourceMachine();
+    void UpdateResourceDeliveryAnimation();
+    i32 StartResourceGrinderDrop(i32 item, i32 x, i32 y);
     i32 RequestResourceDelivery();
-    void LoadMultiplayerBattlezConfig(i32);
+    void ResetForLevel(i32);
 
     void ResetConveyorBelts();
 
@@ -204,7 +204,7 @@ public:
     }
     i32 ClearUnitSample(i32 unitIndex);
     void FinishResourcePlacement(i32 consumed, i32 pickupValue);
-    void InitTabRects();
+    void ResetResourceSlots();
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
     void CloseLevelOverlay();
     i32 SelectGruntOvenForPlacement(i32 idx);

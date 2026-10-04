@@ -2588,8 +2588,8 @@ void CStatusBarMgr::UpdateStatusSystems() {
     UpdateGruntOvenStatusBar();
     TickGruntWell();
     UpdateRezConveyorStatusBar();
-    LoadRezMachineConfig();
-    LoadChipMachineConfig();
+    UpdateResourceMachineAnimation();
+    UpdateResourceDeliveryAnimation();
     UpdateChipGrinderStatusBar();
     UpdateDestructWarningAnimation();
 }
@@ -2600,8 +2600,8 @@ void CStatusBarMgr::Reset() {
     m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
     m_gruntWellLevel = GRUNT_WELL_EMPTY;
     ResetConveyorBelts();
-    UpdateRezMachineSnoozeStatusBar();
-    InitTabRects();
+    ResetResourceMachine();
+    ResetResourceSlots();
     m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
     m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
 }
@@ -2625,7 +2625,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                         clock->Start(
                             g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldDelay", 0x1f4)
                         );
-                        UpdateFallingItemStatusBar(
+                        StartResourceGrinderDrop(
                             m_machineItem,
                             m_machineItemRect.left + 0xc,
                             m_machineItemRect.top + 0xc
@@ -2685,7 +2685,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 }
 
 RVA(0x00105e40, 0x63c)
-void CStatusBarMgr::LoadRezMachineConfig() {
+void CStatusBarMgr::UpdateResourceMachineAnimation() {
     CSbiMachineRow* rightMachine = &m_rightMachine;
     CSbiMachineRow* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
@@ -2842,7 +2842,7 @@ void CStatusBarMgr::ResetConveyorBelts() {
 }
 
 RVA(0x00106660, 0x68)
-void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
+void CStatusBarMgr::ResetResourceMachine() {
     SetLeftRezMachineAnimation(
         1,
         MACHINE_SNOOZING,
@@ -2925,7 +2925,7 @@ void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
 }
 
 RVA(0x00106900, 0x8d)
-void CStatusBarMgr::InitTabRects() {
+void CStatusBarMgr::ResetResourceSlots() {
     for (i32 i = 0; i < 4; i++) {
         StatusBarHighlightRow row = static_cast<StatusBarHighlightRow>(i);
         ClearResourceSlot(0, row);
@@ -3013,7 +3013,7 @@ i32 CStatusBarMgr::AddResourceToSlot(i32 category, i32 pickupValue, i32 row) {
 }
 
 RVA(0x00106bb0, 0x7d8)
-void CStatusBarMgr::LoadChipMachineConfig() {
+void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
     ClockInterval* belt = &m_beltClock;
@@ -3164,7 +3164,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 
 // @early-stop
 RVA(0x00107590, 0xc4)
-i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
+i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
     m_fallingItem = item;
     m_fallActive = FALLING_ITEM_DESCENDING;
     m_fallClock.Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
@@ -3263,7 +3263,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     }
     i32 localX = cx - m_barRect.left;
     i32 localY = 0x1b3 - m_barRect.top;
-    UpdateFallingItemStatusBar(itemFrame, localX, localY);
+    StartResourceGrinderDrop(itemFrame, localX, localY);
     FinishResourcePlacement(1, itemFrame);
     return 1;
 }
@@ -3296,7 +3296,7 @@ void CStatusBarMgr::ToggleUnitSample(i32 unitIndex) {
 }
 
 RVA(0x00107ae0, 0x1aa)
-void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
+void CStatusBarMgr::ResetForLevel(i32) {
     BuildGameTabPauseButton();
     if (m_position == STATUSBAR_HIDDEN) {
         RestoreStatusBar();
@@ -4484,7 +4484,7 @@ i32 CStatusBarMgr::SelectGruntOvenForPlacement(i32 idx) {
 
 RVA(0x0010bb50, 0x24)
 void CStatusBarMgr::DiscardSelectedResource(i32 pickupValue) {
-    UpdateFallingItemStatusBar(pickupValue, 0x4f, 0x1b3);
+    StartResourceGrinderDrop(pickupValue, 0x4f, 0x1b3);
     FinishResourcePlacement(1, pickupValue);
 }
 

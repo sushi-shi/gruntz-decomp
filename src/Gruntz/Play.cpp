@@ -1320,7 +1320,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
             bm->AddWarpStoneFragment(static_cast<WarpStoneFragment>(v));
         }
-        self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
+        self->m_statusBar->ResetForLevel(self->m_levelIndex);
 
         CWwdSpriteObject* scrollSink = self->m_world->ChildGroup()->CreateSprite(
             0,
