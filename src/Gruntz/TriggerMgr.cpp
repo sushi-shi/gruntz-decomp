@@ -1214,8 +1214,8 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
             CGrunt* g = *cell;
             i32 id = 0;
             if (g != NULL) {
-                id = g->m_object->GetObjectId();
                 CGameObject* found = NULL;
+                id = g->m_object->GetObjectId();
                 lvl->ChildGroup()->LookupRegisteredObject(id, found);
             }
             ar->Write(&id, sizeof(id));
