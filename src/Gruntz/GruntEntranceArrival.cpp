@@ -1244,7 +1244,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
                 CreateStaminaSprite();
             }
             if (m_activePickupType == PICKUP_WAND) {
-                LoadGruntAbilityTuning(m_moveVariant);
+                CastSpell(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = Max(0, hp);
                 if (m_health <= 0) {

@@ -366,7 +366,7 @@ public:
 
     i32 LoadWingzGruntSprites(b32 enable);
 
-    i32 LoadGruntAbilityTuning(i32 forced);
+    i32 CastSpell(i32 spellOverride);
 
     i32 UpdateDeathAnimation();
     i32 UpdateDecayFade();

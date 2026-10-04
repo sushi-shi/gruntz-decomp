@@ -2053,7 +2053,7 @@ gruntcombat	?FinalizeStep@CGrunt@@UAEXPAD@Z	96.3685	96.3685	17	e531c37b7fb9	0x5e
 gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	12	fc43e08a2786	0x5b6f0	100.0000	
 gruntcombat	?FireActivation@CGrunt@@UAEXH@Z	100.0000	100.0000	4	a551b1c6a238	0x5bcd0	100.0000	
 gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	97.4074	97.4074	21	2ae270fead4c	0x59230	99.1168	
-gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	23	0da8b6ead477	0x57100	100.0000	
+gruntcombat	?CastSpell@CGrunt@@QAEHH@Z	100.0000	100.0000	23	0da8b6ead477	0x57100	100.0000	
 gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.8815	73.8815	52	d6969694cd0b	0x597a0	75.8557	
 gruntcombat	?Lookup@SoundCueRegistry@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	2d2eb61ed13a	0x5b7e0	100.0000	
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	100.0000	100.0000	10	4dba3c3e4480	0x588f0	100.0000	

@@ -544,9 +544,9 @@ i32 CGrunt::UpdateScrollUseAnimation() {
         m_toyBreakStarted = true;
         i32 v = m_moveVariant;
         if (v != 0) {
-            LoadGruntAbilityTuning(v);
+            CastSpell(v);
         } else {
-            LoadGruntAbilityTuning(m_moveKind);
+            CastSpell(m_moveKind);
         }
         return 0;
     }
