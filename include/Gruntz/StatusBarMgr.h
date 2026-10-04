@@ -128,7 +128,7 @@ public:
     void SetLeftMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void SetRightMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void FinishGruntPlacement(b32 placed);
-    void ClearResourceSlot(i32 category, StatusBarHighlightRow row);
+    void ClearResourceSlot(i32 category, ResourceSlotRow row);
     i32 AddResourceToSlot(i32 category, i32 pickupValue, i32 row);
     i32 AddResourceToRow(i32 pickupValue, i32 row);
     i32 ConsumeReadyGrunt();
@@ -171,9 +171,9 @@ public:
     void Teardown();
     i32 TryActivate();
     i32 RequestRedraw();
-    i32 SelectToolResource(StatusBarHighlightRow row);
-    i32 SelectToyResource(StatusBarHighlightRow row);
-    i32 SelectBrickResource(StatusBarHighlightRow row);
+    i32 SelectToolResource(ResourceSlotRow row);
+    i32 SelectToyResource(ResourceSlotRow row);
+    i32 SelectBrickResource(ResourceSlotRow row);
     i32 SetGameTabContent(GameTabContent content, b32 forceReload);
     i32 ClearButtonHighlights(StatusBarTab idx);
     i32 HitTestSideTabs(i32 x, i32 y);
@@ -285,7 +285,7 @@ public:
     b32 m_gameplayControlsDisabled;
     b32 m_tabsBuilt;
     i32 m_selectedGruntOvenSlot;
-    StatusBarHighlightRow m_selectedResourceRow;
+    ResourceSlotRow m_selectedResourceRow;
     CStatusBarItem* m_resourceMainBackground;
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;

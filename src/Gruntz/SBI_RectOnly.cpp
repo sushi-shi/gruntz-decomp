@@ -112,7 +112,7 @@ i32 CStatusBarMgr::Initialize(CGameWorld* world) {
         return 0;
     }
     m_selectedGruntOvenSlot = -1;
-    m_selectedResourceRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = RESOURCE_ROW_NONE;
     m_resourceDeliveryActive = false;
     m_pendingResourceDeliveries = 0;
     m_levelOverlayActive = false;
@@ -579,32 +579,28 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 screenX, i32 screenY) {
                 break;
             }
             switch (command) {
-                case SBICMD_TOOL_RESOURCE_CATEGORY:
-                case SBICMD_TOOL_RESOURCE_UPPER:
-                case SBICMD_TOOL_RESOURCE_MIDDLE:
-                case SBICMD_TOOL_RESOURCE_LOWER:
+                case SBICMD_TOOL_RESOURCE_TOP:
+                case SBICMD_TOOL_RESOURCE_UPPER_MIDDLE:
+                case SBICMD_TOOL_RESOURCE_LOWER_MIDDLE:
+                case SBICMD_TOOL_RESOURCE_BOTTOM:
                     SelectToolResource(
-                        static_cast<StatusBarHighlightRow>(
-                            IDX(command) - IDX(SBICMD_TOOL_RESOURCE_FIRST)
-                        )
+                        static_cast<ResourceSlotRow>(IDX(command) - IDX(SBICMD_TOOL_RESOURCE_FIRST))
                     );
                     return 1;
-                case SBICMD_TOY_RESOURCE_CATEGORY:
-                case SBICMD_TOY_RESOURCE_UPPER:
-                case SBICMD_TOY_RESOURCE_MIDDLE:
-                case SBICMD_TOY_RESOURCE_LOWER:
+                case SBICMD_TOY_RESOURCE_TOP:
+                case SBICMD_TOY_RESOURCE_UPPER_MIDDLE:
+                case SBICMD_TOY_RESOURCE_LOWER_MIDDLE:
+                case SBICMD_TOY_RESOURCE_BOTTOM:
                     SelectToyResource(
-                        static_cast<StatusBarHighlightRow>(
-                            IDX(command) - IDX(SBICMD_TOY_RESOURCE_FIRST)
-                        )
+                        static_cast<ResourceSlotRow>(IDX(command) - IDX(SBICMD_TOY_RESOURCE_FIRST))
                     );
                     return 1;
-                case SBICMD_BRICK_RESOURCE_CATEGORY:
-                case SBICMD_BRICK_RESOURCE_UPPER:
-                case SBICMD_BRICK_RESOURCE_MIDDLE:
-                case SBICMD_BRICK_RESOURCE_LOWER:
+                case SBICMD_BRICK_RESOURCE_TOP:
+                case SBICMD_BRICK_RESOURCE_UPPER_MIDDLE:
+                case SBICMD_BRICK_RESOURCE_LOWER_MIDDLE:
+                case SBICMD_BRICK_RESOURCE_BOTTOM:
                     SelectBrickResource(
-                        static_cast<StatusBarHighlightRow>(
+                        static_cast<ResourceSlotRow>(
                             IDX(command) - IDX(SBICMD_BRICK_RESOURCE_FIRST)
                         )
                     );
@@ -2904,7 +2900,7 @@ void CStatusBarMgr::FinishGruntPlacement(b32 placed) {
 
 RVA(0x00106820, 0xa8)
 void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
-    if (m_selectedResourceRow == STATUS_HL_ROW_NONE) {
+    if (m_selectedResourceRow == RESOURCE_ROW_NONE) {
         return;
     }
     PickupType item = static_cast<PickupType>(pickupValue);
@@ -2929,13 +2925,13 @@ void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
         m_resourceSlots[IDX(m_selectedResourceRow) + category * 4].m_value = pickupValue;
     }
     RefreshResourceImages();
-    m_selectedResourceRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = RESOURCE_ROW_NONE;
 }
 
 RVA(0x00106900, 0x8d)
 void CStatusBarMgr::ResetResourceSlots() {
     for (i32 i = 0; i < 4; i++) {
-        StatusBarHighlightRow row = static_cast<StatusBarHighlightRow>(i);
+        ResourceSlotRow row = static_cast<ResourceSlotRow>(i);
         ClearResourceSlot(0, row);
         ClearResourceSlot(1, row);
         ClearResourceSlot(2, row);
@@ -2946,11 +2942,11 @@ void CStatusBarMgr::ResetResourceSlots() {
     m_grinderPickupType = 0;
     SetRect(&m_grinderItemRect, 0, 0, 1, 1);
     SetRect(&m_deliveryItemRect, 0x49, 0xd7, 0x61, 0xef);
-    m_selectedResourceRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = RESOURCE_ROW_NONE;
 }
 
 RVA(0x001069c0, 0x2e)
-void CStatusBarMgr::ClearResourceSlot(i32 category, StatusBarHighlightRow row) {
+void CStatusBarMgr::ClearResourceSlot(i32 category, ResourceSlotRow row) {
     i32 idx = IDX(row) + category * 4;
     m_resourceSlots[idx].m_state = IDX(HLROW_OFF);
     m_resourceSlots[idx].m_value = 0;
@@ -3248,7 +3244,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
 RVA(0x00107920, 0xb7)
 i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
-    if (m_selectedResourceRow == STATUS_HL_ROW_NONE) {
+    if (m_selectedResourceRow == RESOURCE_ROW_NONE) {
         return 0;
     }
     CStatusBarItem* r = HitTestItems(screenX, screenY);
@@ -4419,7 +4415,7 @@ void CStatusBarMgr::CycleMultiplayerPlayer(i32 reverse) {
 }
 
 RVA(0x0010b5d0, 0xdd)
-i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectToolResource(ResourceSlotRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
@@ -4437,7 +4433,7 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b6f0, 0xdd)
-i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectToyResource(ResourceSlotRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
@@ -4455,7 +4451,7 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b810, 0xdd)
-i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectBrickResource(ResourceSlotRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {

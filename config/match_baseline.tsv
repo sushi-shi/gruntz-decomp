@@ -3768,7 +3768,7 @@ sbi_rectonly	?BuildSideTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	6	85a8772011
 sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	18	ca9747fe08b4	0xffde0	100.0000	
 sbi_rectonly	?ClearActiveTabContent@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	8	81e689699ab5	0x100b00	100.0000	
 sbi_rectonly	?ClearButtonHighlights@CStatusBarMgr@@QAEHW4StatusBarTab@@@Z	100.0000	100.0000	3	371a5cc3fb75	0x101420	100.0000	
-sbi_rectonly	?ClearResourceSlot@CStatusBarMgr@@QAEXHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	3	b3a48f1e410e	0x1069c0	100.0000	
+sbi_rectonly	?ClearResourceSlot@CStatusBarMgr@@QAEXHW4ResourceSlotRow@@@Z	100.0000	100.0000	3	b3a48f1e410e	0x1069c0	100.0000	
 sbi_rectonly	?ClearUnitSample@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	12	c8eb0be5c10e	0x104f90	100.0000	
 sbi_rectonly	?CloseLevelOverlay@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	13	bf0ecd45bce7	0x10b210	100.0000	
 sbi_rectonly	?ConsumeReadyGrunt@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	2	a4bbda3bf5bf	0x109a90	100.0000	
@@ -3818,10 +3818,10 @@ sbi_rectonly	?ResetResourceMachine@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	b7b
 sbi_rectonly	?ResetResourceSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	3	73901f133b97	0x106900	100.0000	
 sbi_rectonly	?ResetWidgets@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	14	089c9415bb81	0x100930	100.0000	
 sbi_rectonly	?RestoreStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	4	f456b527a0dc	0xfe670	100.0000	
-sbi_rectonly	?SelectBrickResource@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	13	6c8d5f0ba453	0x10b810	100.0000	
+sbi_rectonly	?SelectBrickResource@CStatusBarMgr@@QAEHW4ResourceSlotRow@@@Z	100.0000	100.0000	13	6c8d5f0ba453	0x10b810	100.0000	
 sbi_rectonly	?SelectGruntOvenForPlacement@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	12	ec7db01aa079	0x10b930	100.0000	
-sbi_rectonly	?SelectToolResource@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	13	bafc7673ce2d	0x10b5d0	100.0000	
-sbi_rectonly	?SelectToyResource@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	13	1e17f1a5f300	0x10b6f0	100.0000	
+sbi_rectonly	?SelectToolResource@CStatusBarMgr@@QAEHW4ResourceSlotRow@@@Z	100.0000	100.0000	13	bafc7673ce2d	0x10b5d0	100.0000	
+sbi_rectonly	?SelectToyResource@CStatusBarMgr@@QAEHW4ResourceSlotRow@@@Z	100.0000	100.0000	13	1e17f1a5f300	0x10b6f0	100.0000	
 sbi_rectonly	?Serialize@CStatusBarMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	17	627f254f2053	0x1090a0	100.0000	
 sbi_rectonly	?SerializeDispatch@CStatusBarMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	90.4315	90.4315	15	05a50b606a38	0x1084d0	90.4315	
 sbi_rectonly	?SerializeDispatch@CWarpStoneFly@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	16	0ba0987e77b5	0x109e00	100.0000	

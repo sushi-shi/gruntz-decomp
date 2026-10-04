@@ -2264,7 +2264,7 @@ recorder_place:
         goto tail_default2;
     }
     i32 st = this->m_selectedCursorId;
-    StatusBarHighlightRow ph = this->m_statusBar->m_selectedResourceRow;
+    ResourceSlotRow ph = this->m_statusBar->m_selectedResourceRow;
     i32 lvl;
     if (st >= 0x22) {
         lvl = 2;
@@ -2280,13 +2280,13 @@ recorder_place:
     statusBar->FinishResourcePlacement(0, st);
     this->SelectCursor(0);
     if (lvl == 0) {
-        if (ph == STATUS_HL_ROW_CATEGORY) {
+        if (ph == RESOURCE_ROW_TOP) {
             if (vk != VK_NUMLOCK) {
                 goto tail_default;
             }
             return 1;
         }
-        if (ph == STATUS_HL_ROW_UPPER) {
+        if (ph == RESOURCE_ROW_UPPER_MIDDLE) {
             if (vk == VK_NUMPAD7) {
                 return 1;
             }
@@ -2295,7 +2295,7 @@ recorder_place:
             }
             return 1;
         }
-        if (ph == STATUS_HL_ROW_MIDDLE) {
+        if (ph == RESOURCE_ROW_LOWER_MIDDLE) {
             if (vk == VK_NUMPAD4) {
                 return 1;
             }
@@ -2313,13 +2313,13 @@ recorder_place:
         return 1;
     }
     if (lvl == 1) {
-        if (ph == STATUS_HL_ROW_CATEGORY) {
+        if (ph == RESOURCE_ROW_TOP) {
             if (vk != VK_DIVIDE) {
                 goto tail_default;
             }
             return 1;
         }
-        if (ph == STATUS_HL_ROW_UPPER) {
+        if (ph == RESOURCE_ROW_UPPER_MIDDLE) {
             if (vk == VK_NUMPAD8) {
                 return 1;
             }
@@ -2328,7 +2328,7 @@ recorder_place:
             }
             return 1;
         }
-        if (ph == STATUS_HL_ROW_MIDDLE) {
+        if (ph == RESOURCE_ROW_LOWER_MIDDLE) {
             if (vk != VK_CLEAR) {
                 goto tail_default;
             }
@@ -2342,13 +2342,13 @@ recorder_place:
         }
         return 1;
     }
-    if (ph == STATUS_HL_ROW_CATEGORY) {
+    if (ph == RESOURCE_ROW_TOP) {
         if (vk != VK_MULTIPLY) {
             goto tail_default;
         }
         return 1;
     }
-    if (ph == STATUS_HL_ROW_UPPER) {
+    if (ph == RESOURCE_ROW_UPPER_MIDDLE) {
         if (vk == VK_NUMPAD9) {
             return 1;
         }
@@ -2357,7 +2357,7 @@ recorder_place:
         }
         return 1;
     }
-    if (ph == STATUS_HL_ROW_MIDDLE) {
+    if (ph == RESOURCE_ROW_LOWER_MIDDLE) {
         if (vk == VK_NUMPAD6) {
             return 1;
         }
@@ -2392,48 +2392,48 @@ tail_default2:
         switch (vk) {
             case VK_END:
             case VK_NUMPAD1:
-                lv->SelectToolResource(STATUS_HL_ROW_LOWER);
+                lv->SelectToolResource(RESOURCE_ROW_BOTTOM);
                 return 1;
             case VK_DOWN:
             case VK_NUMPAD2:
-                lv->SelectToyResource(STATUS_HL_ROW_LOWER);
+                lv->SelectToyResource(RESOURCE_ROW_BOTTOM);
                 return 1;
             case VK_NEXT:
             case VK_NUMPAD3:
-                lv->SelectBrickResource(STATUS_HL_ROW_LOWER);
+                lv->SelectBrickResource(RESOURCE_ROW_BOTTOM);
                 return 1;
             case VK_LEFT:
             case VK_NUMPAD4:
-                lv->SelectToolResource(STATUS_HL_ROW_MIDDLE);
+                lv->SelectToolResource(RESOURCE_ROW_LOWER_MIDDLE);
                 return 1;
             case VK_CLEAR:
             case VK_NUMPAD5:
-                lv->SelectToyResource(STATUS_HL_ROW_MIDDLE);
+                lv->SelectToyResource(RESOURCE_ROW_LOWER_MIDDLE);
                 return 1;
             case VK_RIGHT:
             case VK_NUMPAD6:
-                lv->SelectBrickResource(STATUS_HL_ROW_MIDDLE);
+                lv->SelectBrickResource(RESOURCE_ROW_LOWER_MIDDLE);
                 return 1;
             case VK_HOME:
             case VK_NUMPAD7:
-                lv->SelectToolResource(STATUS_HL_ROW_UPPER);
+                lv->SelectToolResource(RESOURCE_ROW_UPPER_MIDDLE);
                 return 1;
             case VK_UP:
             case VK_NUMPAD8:
-                lv->SelectToyResource(STATUS_HL_ROW_UPPER);
+                lv->SelectToyResource(RESOURCE_ROW_UPPER_MIDDLE);
                 return 1;
             case VK_PRIOR:
             case VK_NUMPAD9:
-                lv->SelectBrickResource(STATUS_HL_ROW_UPPER);
+                lv->SelectBrickResource(RESOURCE_ROW_UPPER_MIDDLE);
                 return 1;
             case VK_NUMLOCK:
-                lv->SelectToolResource(STATUS_HL_ROW_CATEGORY);
+                lv->SelectToolResource(RESOURCE_ROW_TOP);
                 return 1;
             case VK_DIVIDE:
-                lv->SelectToyResource(STATUS_HL_ROW_CATEGORY);
+                lv->SelectToyResource(RESOURCE_ROW_TOP);
                 return 1;
             case VK_MULTIPLY:
-                lv->SelectBrickResource(STATUS_HL_ROW_CATEGORY);
+                lv->SelectBrickResource(RESOURCE_ROW_TOP);
                 return 1;
             case VK_INSERT:
                 lv->SelectGruntOvenForPlacement(-1);
