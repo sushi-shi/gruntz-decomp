@@ -679,7 +679,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
-                                unit->m_routePassableMask = 0;
+                                unit->SetRoutePassableMask(0);
                                 unit->m_defenderState = AISTATE_SEEK;
                             }
                         }
@@ -691,7 +691,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
-                                unit->m_routePassableMask = 0;
+                                unit->SetRoutePassableMask(0);
                                 unit->m_defenderState = AISTATE_SEEK;
                             }
                         }
@@ -717,7 +717,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (!unit->CoordsEmpty()) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
-                                unit->m_routePassableMask = 0;
+                                unit->SetRoutePassableMask(0);
                                 unit->m_defenderState = AISTATE_SEEK;
                             }
                         }
@@ -2750,7 +2750,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) != 0) {
                 if (unit->GetDefenderState() != AISTATE_RETURN) {
                     unit->SetDefenderState(AISTATE_SEEK);
-                    unit->m_routePassableMask = 0;
+                    unit->SetRoutePassableMask(0);
                 }
                 if (unit->m_blockedVoicePending != false) {
                     __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeTiming.m_start;
@@ -3349,8 +3349,8 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         u->SetBattlezTask(BZTASK_ASSIGNED_TARGET);
         u->m_arrivalCell.m_y = targetUnit;
         u->SetDefenderState(AISTATE_ATTACK);
-        u->m_routeBlockedMask = 0xd87;
-        u->m_routePassableMask = 0;
+        u->SetRouteBlockedMask(0xd87);
+        u->SetRoutePassableMask(0);
     }
     return 1;
 }

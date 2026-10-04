@@ -252,6 +252,22 @@ public:
         m_battleState = task;
     }
 
+    i32 GetRouteBlockedMask() const {
+        return m_routeBlockedMask;
+    }
+
+    i32 GetRoutePassableMask() const {
+        return m_routePassableMask;
+    }
+
+    void SetRouteBlockedMask(i32 mask) {
+        m_routeBlockedMask = mask;
+    }
+
+    void SetRoutePassableMask(i32 mask) {
+        m_routePassableMask = mask;
+    }
+
     i32 GetTargetTeam() const {
         return m_targetTeam;
     }

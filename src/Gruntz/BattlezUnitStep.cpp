@@ -213,8 +213,8 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             CMapMgr* board = m_board;
             board->Clip(NULL);
             if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordsEmpty()) {
-                i32 flags = unit->m_routeBlockedMask;
-                unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
+                i32 flags = unit->GetRouteBlockedMask();
+                unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                 CGameObject* tl = target->m_object;
                 unit->TileSwitch(
                     tl->m_screenX >> TILE_SHIFT_PX,
@@ -276,8 +276,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             UNSET_COORD(unit->m_defenderPx);
             unit->m_targetTeam = -1;
             unit->SetDefenderState(AISTATE_SEEK);
-            unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
-            unit->m_routePassableMask = g_battlezRoutePassableMask;
+            unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
+            unit->SetRoutePassableMask(g_battlezRoutePassableMask);
             return 1;
         }
     }
@@ -287,8 +287,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (unit->CoordsEmpty()) {
         switch (unit->GetDefenderState()) {
             case AISTATE_SEEK: {
-                unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
-                unit->m_routePassableMask = g_battlezRoutePassableMask;
+                unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
+                unit->SetRoutePassableMask(g_battlezRoutePassableMask);
                 Coord goal = marker;
                 Coord currentScreenPos = unit->DefenderPosition();
                 i32 gx = currentScreenPos.m_x;
@@ -314,8 +314,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     unit->SetDefenderState(AISTATE_BATTLEZ_ROUTE_TARGET);
                 } else {
                     unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
-                    unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
-                    unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+                    unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
+                    unit->SetRoutePassableMask(BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED);
                 }
                 return 1;
             }
@@ -336,50 +336,50 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 dx = abs(gx - unit->GetScreenTileX());
                 i32 dy = abs(gy - unit->GetScreenTileY());
                 if (SquaredDistance(dx, dy) > 0x10) {
-                    i32 cfg = unit->m_routeBlockedMask;
-                    i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
+                    i32 cfg = unit->GetRouteBlockedMask();
+                    i32 flags = unit->AddBattlezTraversalFlags(unit->GetRoutePassableMask());
                     Coord routeTarget = unit->DefenderPosition();
                     if (unit->TileSwitch(routeTarget.m_x, routeTarget.m_y, 0, cfg, 0, flags) != 0) {
                         goto routeSuccess;
                     }
-                    i32 st = unit->m_routePassableMask;
+                    i32 st = unit->GetRoutePassableMask();
                     if (st == g_battlezRoutePassableMask) {
-                        unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL;
+                        unit->SetRoutePassableMask(BATTLEZ_ROUTE_WINGZ_SHOVEL);
                     } else if (st == BATTLEZ_ROUTE_WINGZ_SHOVEL) {
-                        unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+                        unit->SetRoutePassableMask(BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED);
                     } else if (st == BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED) {
-                        unit->m_routePassableMask = BATTLEZ_ROUTE_OTHER_TOOLS;
+                        unit->SetRoutePassableMask(BATTLEZ_ROUTE_OTHER_TOOLS);
                     } else if (st == BATTLEZ_ROUTE_OTHER_TOOLS) {
-                        unit->m_routePassableMask = BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED;
+                        unit->SetRoutePassableMask(BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED);
                     } else if (st == BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED) {
-                        unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED;
+                        unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED);
                     } else if (st == BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED) {
-                        unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
+                        unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                     }
                     unit->m_dwell = 0;
                     return 1;
                 }
                 unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
-                unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
-                unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+                unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
+                unit->SetRoutePassableMask(BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED);
                 return 1;
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
                 board->Clip(NULL);
-                i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
+                i32 flags = unit->AddBattlezTraversalFlags(unit->GetRoutePassableMask());
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;
                 }
                 unit->m_dwell = 0;
-                unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
+                unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                 return 1;
             }
         }
         return 1;
     routeSuccess:
-        unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
-        unit->m_routePassableMask = g_battlezRoutePassableMask;
+        unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
+        unit->SetRoutePassableMask(g_battlezRoutePassableMask);
         unit->m_dwell = 0;
         return 1;
     }
@@ -406,7 +406,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     }
     unit->RecycleCoords();
     unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
-    unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
-    unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+    unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
+    unit->SetRoutePassableMask(BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED);
     return 1;
 }
