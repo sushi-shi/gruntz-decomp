@@ -4197,7 +4197,7 @@ i32 CPlay::ExecuteCommand(
                 if (g->IsGuarding() != true) {
                     BEGIN_GUARD(g);
                 }
-                g->m_arrivalNotified = false;
+                g->m_guardCommandPending = false;
             }
             return 1;
         }

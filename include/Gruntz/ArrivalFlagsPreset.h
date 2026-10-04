@@ -36,7 +36,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
 #define BEGIN_GUARD(grunt)                                                                         \
     {                                                                                              \
         (grunt)->m_arrivalRerollTiming.Clear();                                                    \
-        (grunt)->m_tileClaimed = true;                                                             \
+        (grunt)->m_guarding = true;                                                                \
         (grunt)->m_defenderPx = (grunt)->m_lastTilePx;                                             \
         PickupType kind = (grunt)->m_activePickupType;                                             \
                                                                                                    \
@@ -66,7 +66,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
 #define END_GUARD(grunt)                                                                           \
     {                                                                                              \
         (grunt)->m_arrivalRerollTiming.Clear();                                                    \
-        (grunt)->m_tileClaimed = false;                                                            \
+        (grunt)->m_guarding = false;                                                               \
         (grunt)->m_aiType = AI_NONE;                                                               \
         (grunt)->m_arrivalFlags &= 0xe7fbfbfd;                                                     \
         (grunt)->SetEntrancePos(1, 1);                                                             \

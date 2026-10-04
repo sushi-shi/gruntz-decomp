@@ -156,7 +156,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
     ar->Read(&m_pendingTrigger, sizeof(m_pendingTrigger));
     ar->Read(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
-    ar->Read(&m_tileClaimed, sizeof(m_tileClaimed));
+    ar->Read(&m_guarding, sizeof(m_guarding));
     ar->Read(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Read(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
     ar->Read(&m_routeBlockedMask, sizeof(m_routeBlockedMask));

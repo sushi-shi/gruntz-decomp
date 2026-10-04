@@ -713,15 +713,15 @@ i32 CGrunt::UpdateIdleAnimation() {
         if (mode != GAMEMODE_QUESTZ) {
             GruntzPlayer* slot = &g->m_players[m_playerIndex];
             if (slot != NULL && slot->IsHumanControlled() != false) {
-                if (m_tileClaimed == false && m_arrivalNotified == false
+                if (m_guarding == false && m_guardCommandPending == false
                     && mode == GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
                     && m_selected == false) {
                     m_triggerMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
-                    m_arrivalNotified = true;
+                    m_guardCommandPending = true;
                     goto tail;
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
-                    && m_selected == false && m_tileClaimed != true) {
+                    && m_selected == false && m_guarding != true) {
                     BEGIN_GUARD(this);
                 }
             }

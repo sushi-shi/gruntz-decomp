@@ -1086,7 +1086,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
     ar->Write(&m_pendingTrigger, sizeof(m_pendingTrigger));
     ar->Write(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
-    ar->Write(&m_tileClaimed, sizeof(m_tileClaimed));
+    ar->Write(&m_guarding, sizeof(m_guarding));
     ar->Write(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Write(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
     ar->Write(&m_routeBlockedMask, sizeof(m_routeBlockedMask));

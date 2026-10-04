@@ -1663,7 +1663,7 @@ void CGrunt::Activate() {
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
     m_deathAnimStarted = false;
-    m_tileClaimed = false;
+    m_guarding = false;
 }
 
 DATA(0x001e9a68)

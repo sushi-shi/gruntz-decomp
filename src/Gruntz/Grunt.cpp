@@ -318,7 +318,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_walkVoiceTiming.Clear();
     m_arrivalRerollTiming.Clear();
     m_unusedBattleCell.Set(-1, -1);
-    m_arrivalNotified = false;
+    m_guardCommandPending = false;
     m_aiState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
     {
@@ -666,9 +666,9 @@ i32 CGrunt::Select() {
         return 1;
     }
 
-    if (m_tileClaimed != false && g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
+    if (m_guarding != false && g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
         m_triggerMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
-    } else if (m_tileClaimed != false) {
+    } else if (m_guarding != false) {
         END_GUARD(this);
     }
     CreateSelectedSprite();
@@ -1623,7 +1623,7 @@ i32 CGrunt::Place(
     m_daFlag = 1;
     m_arrivalPhase = 0;
     m_toolConfigured = true;
-    m_tileClaimed = false;
+    m_guarding = false;
     m_neighborScanEnabled = true;
     m_tileMoveCommitted = false;
     m_entranceArmed = false;

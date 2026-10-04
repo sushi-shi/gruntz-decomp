@@ -201,7 +201,7 @@ public:
         return m_inCombat;
     }
     b32 IsGuarding() const {
-        return m_tileClaimed;
+        return m_guarding;
     }
     b32 IsSpawnProtected() const {
         return m_spawnProtectionActive;
@@ -596,7 +596,7 @@ public:
     double m_movePosY;
     i32 m_reserved418;
     u32 m_timePerTile;
-    b32 m_tileClaimed;
+    b32 m_guarding;
     SoundBuffer* m_vehicleLoopSound;
     SoundBuffer* m_powerupLoopSound;
     i32 m_reserved42c;
@@ -610,7 +610,7 @@ public:
     b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
     b32 m_lowStaminaCued;
-    b32 m_arrivalNotified;
+    b32 m_guardCommandPending;
 
     CGruntCellRec m_cells[9];
 
