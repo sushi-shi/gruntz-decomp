@@ -132,7 +132,8 @@ are rejected explicitly. Paths are supplied by callers in the platform encoding.
 
 Font, palette, image, level, FEC, save, and logging callers no longer use MFC file
 or archive objects. The Windows Smacker backend borrows a native handle at its
-existing decoder boundary; the portable file layer contains no Windows APIs.
+existing decoder boundary. Binary codecs contain no Windows APIs; path resolution
+and file replacement isolate their native filesystem operations in `Io/File.cpp`.
 
 Run `ASAN_OPTIONS=detect_leaks=0 nix develop --command python3 check-io.py` for
 native file ownership/error tests. This does not launch the game.
@@ -183,3 +184,30 @@ Existing registry values are not imported. Optional `CdRom Drive` and
 process launch, and URL association handling remain platform-backend work.
 Browser hosts can supply a path in a mounted persistent filesystem or persist the
 encoded bytes; browser persistence synchronization is separate from `save()`.
+
+### Linux and WebAssembly verification
+
+Run the identical component suite on native Linux and real wasm32:
+
+```sh
+ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-io.py --target all
+```
+
+The dedicated shell provides pinned Clang, Emscripten, Node and Python without
+requiring the historical Windows toolchain. `--target native` (the default) runs
+ASan/UBSan; `--target wasm` compiles and executes in Node with Emscripten MEMFS.
+Compiler and runtime failures fail the command. `CXX`, `EMXX`, `NODE` and `EM_CACHE`
+can override tools/cache paths. Outputs and compiler caches stay under `build/`.
+The LeakSanitizer override above is needed only for ptrace-based runners; omit it
+elsewhere to retain leak checking.
+
+Both runs exercise file modes and errors, exact little-endian bytes, font and shade
+file/memory parity, truncated/oversized inputs, owned memory, borrowed snapshots,
+typed configuration persistence, corrupt input, failed-save preservation and stable
+configuration paths across directory changes. Pointer-width output confirms native
+64-bit and wasm32 execution. No game executable is launched.
+
+This verifies the portable components. It does not establish browser persistence,
+asset downloads, rendering, audio, gameplay, or whole-game Linux/WASM support.
+Browser storage integration must synchronize persistence explicitly; see the
+[Emscripten filesystem documentation](https://emscripten.org/docs/porting/files/file_systems_overview.html).
