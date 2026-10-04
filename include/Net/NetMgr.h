@@ -219,6 +219,9 @@ GruntRec* AllocateGruntRecord(i32 clear);
 void RecycleGruntRecord(GruntRec* cmd);
 
 struct CNetSession {
+    void SetLocalPlayer(CNetPlayerNode* player) {
+        m_localPlayer = player;
+    }
     i32 GetCommandTick() const {
         return m_commandTick;
     }

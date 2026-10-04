@@ -2705,7 +2705,7 @@ i32 CMulti::CreateSession() {
         return 0;
     }
 
-    Session()->m_localPlayer = LocalPlayer();
+    Session()->SetLocalPlayer(LocalPlayer());
     i32 commandTickSnapshot = m_session->GetCommandTick();
     u8 b = static_cast<u8>(commandTickSnapshot);
     if (b == 0) {
