@@ -78,7 +78,11 @@ i32 CGruntToySprite::Update() {
         m_lastLayer = layer;
         m_object->SetImageFrame(IDX(layer));
     }
-    SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY - 0x20);
+    SET_SCREEN_POS(
+        m_object,
+        e->GetSpriteObject()->m_screenX,
+        e->GetSpriteObject()->m_screenY - 0x20
+    );
     return 0;
 }
 

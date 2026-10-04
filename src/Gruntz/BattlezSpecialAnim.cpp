@@ -56,7 +56,7 @@ i32 CBattlezAiController::CanIssueAiOrders(CGrunt* unit) {
     if (unit == NULL) {
         return 0;
     }
-    CGameObject* object = unit->m_object;
+    CGameObject* object = unit->GetSpriteObject();
     if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(object, unit)) {
         goto fail;
     }

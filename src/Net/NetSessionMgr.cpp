@@ -143,8 +143,8 @@ void CNetSession::BuildGruntzCrcInfo() {
                 player,
                 g,
                 grunt->GetHealth(),
-                grunt->m_object->m_screenX,
-                grunt->m_object->m_screenY,
+                grunt->GetSpriteObject()->m_screenX,
+                grunt->GetSpriteObject()->m_screenY,
                 grunt->m_facing.m_direction,
                 grunt->GetStamina(),
                 grunt->GetToyTimePercent(),
@@ -694,8 +694,9 @@ i32 CNetSession::ComputeChecksum() {
             if (grunt != NULL) {
                 sum += IDX(grunt->m_facing.m_direction) + grunt->GetStamina()
                        + grunt->GetToyTimePercent() + grunt->GetHealth()
-                       + grunt->m_object->m_screenY + grunt->m_object->GetSortKey()
-                       + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
+                       + grunt->GetSpriteObject()->m_screenY
+                       + grunt->GetSpriteObject()->GetSortKey()
+                       + grunt->GetSpriteObject()->m_screenX + grunt->LastTilePx().m_x
                        + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->GetActivePickupType();

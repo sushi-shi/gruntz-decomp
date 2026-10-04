@@ -1813,7 +1813,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_chatBox->IsInputActive() != false) {
         return 1;
     }
-    if (g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
+    if (g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() == false) {
         return 1;
     }
 
@@ -2485,7 +2485,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     }
 
     if (m_levelOverlayOpen != false
-        || g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
+        || g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() == false) {
         return m_statusBar->HandleClick(eventArg, x, y);
     }
 
@@ -2759,7 +2759,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     if (m_levelOverlayOpen != false
-        || g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
+        || g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() == false) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
     if (m_gruntPlacementActive != false || m_pickupPlacementActive != false) {
@@ -2882,7 +2882,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_levelOverlayOpen != false) {
         return 1;
     }
-    if (g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
+    if (g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() == false) {
         return 1;
     }
     if (m_mgr->GetFrameGate() != false) {
@@ -4210,8 +4210,8 @@ i32 CPlay::ExecuteCommand(
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->GetSpriteObject()->m_screenX,
+                    node->GetSpriteObject()->m_screenY
                 );
             } else {
                 g->ClearGruntActionTarget();
@@ -4263,8 +4263,8 @@ i32 CPlay::ExecuteCommand(
                 g->ClearGruntActionTarget();
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
+            i32 sx = g2->GetSpriteObject()->m_screenX;
+            i32 sy = g2->GetSpriteObject()->m_screenY;
             g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
@@ -4323,8 +4323,8 @@ i32 CPlay::ExecuteCommand(
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->GetSpriteObject()->m_screenX,
+                    node->GetSpriteObject()->m_screenY
                 );
             } else {
                 g->ClearGruntActionTarget();
@@ -4376,8 +4376,8 @@ i32 CPlay::ExecuteCommand(
                 g->ClearGruntActionTarget();
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
+            i32 sx = g2->GetSpriteObject()->m_screenX;
+            i32 sy = g2->GetSpriteObject()->m_screenY;
             g->SetGruntActionTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
@@ -6953,7 +6953,7 @@ i32 CPlay::CanQuickSave() {
         && m_defeatCountdownActive == false && m_statusBar->m_layoutLocked == false
         && m_statusBar->m_levelOverlayActive == false
         && m_statusBar->m_quitConfirmationActive == false && g_gameReg->GetFrameGate() == false
-        && g_gameReg->GetTriggerMgr()->m_playerControlEnabled != false) {
+        && g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() != false) {
         return 1;
     }
     return 0;

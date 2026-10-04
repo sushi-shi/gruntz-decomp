@@ -100,7 +100,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             Coord c;
             if (g != NULL && this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && IsWithinReach(g->GetSpriteObject()->m_screenX, g->GetSpriteObject()->m_screenY)
+                       != 0) {
                 ATTACK_GRUNT(g);
                 break;
             }
@@ -170,7 +171,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         0x20
                     );
                     if (this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
-                        && IsWithinReach(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                        && IsWithinReach(
+                               slot->GetSpriteObject()->m_screenX,
+                               slot->GetSpriteObject()->m_screenY
+                           ) != 0
                         && IsGruntAtSavedScreenPos(slot)) {
                         ATTACK_GRUNT(slot);
                         this->m_aiState = AISTATE_ATTACK;
@@ -193,7 +197,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     break;
                 }
-                if (IsWithinReach(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                if (IsWithinReach(
+                        slot->GetSpriteObject()->m_screenX,
+                        slot->GetSpriteObject()->m_screenY
+                    ) != 0
                     && IsGruntAtSavedScreenPos(slot)) {
                     ATTACK_GRUNT(slot);
                     break;

@@ -108,9 +108,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
     i32 atTarget = 0;
     if (best != NULL) {
-        i32 x = best->m_object->m_screenX;
+        i32 x = best->GetSpriteObject()->m_screenX;
         if (GRUNT_X_AT_SAVED_POS(x, best) && best->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, best)
-            && this->IsWithinReach(x, best->m_object->m_screenY) != 0) {
+            && this->IsWithinReach(x, best->GetSpriteObject()->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -165,8 +165,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pb;
                     PRIO(pb, best->GetActivePickupType());
                     if (pa <= pb
-                        && this->IsWithinReach(best->m_object->m_screenX, best->m_object->m_screenY)
-                               != 0) {
+                        && this->IsWithinReach(
+                               best->GetSpriteObject()->m_screenX,
+                               best->GetSpriteObject()->m_screenY
+                           ) != 0) {
                         ATTACK_GRUNT(best);
                         return 1;
                     }
@@ -253,7 +255,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (m_inCombat != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
-                    if (this->IsWithinReach(sg->m_object->m_screenX, sg->m_object->m_screenY)
+                    if (this->IsWithinReach(
+                            sg->GetSpriteObject()->m_screenX,
+                            sg->GetSpriteObject()->m_screenY
+                        )
                         == 0) {
                         return 1;
                     }
@@ -288,8 +293,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                             || m_stamina < STAMINA_FULL) {
                             return 1;
                         }
-                        if (this->IsWithinReach(sg->m_object->m_screenX, sg->m_object->m_screenY)
-                                != 0
+                        if (this->IsWithinReach(
+                                sg->GetSpriteObject()->m_screenX,
+                                sg->GetSpriteObject()->m_screenY
+                            ) != 0
                             && IsGruntAtSavedScreenPos(sg)) {
                             ATTACK_GRUNT(sg);
                             return 1;

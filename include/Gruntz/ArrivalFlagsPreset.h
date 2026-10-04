@@ -59,7 +59,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
         UNSET_COORD((grunt)->m_arrivalCell);                                                       \
         (grunt)->ClearGruntActionTarget();                                                         \
         (grunt)->m_arrivalFlags |= 0x18040402;                                                     \
-        SET_RECT_XY_EXTENTS((grunt)->m_object->m_extent, 0, 0, 0, 0);                              \
+        SET_RECT_XY_EXTENTS((grunt)->GetSpriteObject()->m_extent, 0, 0, 0, 0);                     \
         (grunt)->SetEntrancePos(1, 1);                                                             \
     }
 

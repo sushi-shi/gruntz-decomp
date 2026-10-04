@@ -145,7 +145,7 @@ L_ed006b:
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && IsWithinReach(g->GetSpriteObject()->m_screenX, g->GetSpriteObject()->m_screenY) != 0) {
         ATTACK_GRUNT(g);
     }
     if (m_inCombat != false) {

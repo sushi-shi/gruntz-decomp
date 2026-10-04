@@ -32,7 +32,7 @@ i32 CBattlezAiController::RerouteSwitchSeeker(CGrunt* grunt) {
         return 1;
     }
 
-    Coord center = ScreenPosition(grunt->m_object);
+    Coord center = ScreenPosition(grunt->GetSpriteObject());
     RECT box = AdjacentTileNeighborhood(grunt);
     for (i32 row = box.top; row < box.bottom; row++) {
         for (i32 col = box.left; col < box.right; col++) {

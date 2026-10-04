@@ -140,10 +140,10 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_inCombat == false && this->m_stamina >= STAMINA_FULL) {
-            i32 x = g->m_object->m_screenX;
+            i32 x = g->GetSpriteObject()->m_screenX;
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
-                && IsWithinReach(x, g->m_object->m_screenY) != 0) {
+                && IsWithinReach(x, g->GetSpriteObject()->m_screenY) != 0) {
                 ATTACK_GRUNT(g);
             }
         }

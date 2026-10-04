@@ -65,7 +65,7 @@ i32 CBattlezAiController::RouteToNearestGooPuddle(CGrunt* unit) {
             if (cand->IsPending() == false) {
                 i32 candX = cand->GetTileX();
                 i32 candY = cand->GetTileY();
-                CGameObject* object = unit->m_object;
+                CGameObject* object = unit->GetSpriteObject();
                 i32 screenX = object->m_screenX;
                 i32 screenY = object->m_screenY;
                 Coord current = ScreenTile(unit);

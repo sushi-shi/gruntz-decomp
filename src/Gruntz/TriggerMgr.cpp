@@ -122,7 +122,7 @@ void CTriggerMgr::SelectUnitsInRect(RECT selectionRect, b32 preserveSelection) {
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             CGrunt* grunt = UnitAt(playerIndex, unitIndex);
             if (grunt) {
-                CGameObject* object = grunt->m_object;
+                CGameObject* object = grunt->GetSpriteObject();
                 i32 centerX = object->m_screenX;
                 i32 centerY = object->m_screenY;
                 RECT gruntBounds;
@@ -361,7 +361,7 @@ void CTriggerMgr::ClearSelectedUnitIds() {
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::UpdateCameraTracking() {
     CGameObject* targetObject =
-        UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
+        UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->GetSpriteObject();
     i32 y = targetObject->m_screenY;
     i32 x = targetObject->m_screenX;
     CLevelPlane* mainPlane = m_world->GetLevel()->m_mainPlane;
@@ -478,7 +478,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
                 return 1;
             }
 
-            POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+            POINT source = {cell->GetSpriteObject()->m_screenX, cell->GetSpriteObject()->m_screenY};
             m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
             m_world->GetLevel()->m_mainPlane->WorldToViewport(
                 reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
@@ -598,7 +598,10 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
             case PICKUP_WELDER:
             case PICKUP_WINGZ:
                 if (targetingCursorId != 0) {
-                    POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+                    POINT source = {
+                        cell->GetSpriteObject()->m_screenX,
+                        cell->GetSpriteObject()->m_screenY
+                    };
                     m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
                     CLevelPlane* plane = m_world->GetLevel()->m_mainPlane;
                     i32 dx = x;
@@ -694,7 +697,7 @@ i32 CTriggerMgr::HandleTargetSelection(
             if (hit == selectedGrunt) {
                 m_targetingCursorId = 0;
                 (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->LoadCursorSprites(0, false);
-                CGameObject* sprite = hit->m_object;
+                CGameObject* sprite = hit->GetSpriteObject();
 
                 this->OpenActionOptionsMenu(
                     sprite->m_screenX,
@@ -1216,7 +1219,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
             i32 id = 0;
             if (g != NULL) {
                 CGameObject* found = NULL;
-                id = g->m_object->GetObjectId();
+                id = g->GetSpriteObject()->GetObjectId();
                 lvl->ChildGroup()->LookupRegisteredObject(id, found);
             }
             ar->Write(&id, sizeof(id));
@@ -1261,8 +1264,8 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     ar->Write(&objId, sizeof(objId));
     CWarlord* ov = m_localWarlord;
     objId = 0;
-    if (ov != NULL && ov->m_object != NULL) {
-        objId = ov->m_object->GetObjectId();
+    if (ov != NULL && ov->GetSpriteObject() != NULL) {
+        objId = ov->GetSpriteObject()->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
     ar->Write(m_reserved274, 0x10);
@@ -1275,7 +1278,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         if (obj == NULL) {
             goto fail;
         }
-        objId = obj->m_object->GetObjectId();
+        objId = obj->GetSpriteObject()->GetObjectId();
         CGameObject* found = NULL;
         lvl->ChildGroup()->LookupRegisteredObject(objId, found);
         ar->Write(&objId, sizeof(objId));
@@ -1496,7 +1499,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
 
         PickupType alt = cell->GetCarriedToyType();
         if (alt == PICKUP_SCROLL) {
-            CGameObject* o = cell->m_object;
+            CGameObject* o = cell->GetSpriteObject();
             g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                 o->m_screenX,
                 o->m_screenY,
@@ -1668,8 +1671,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt->IsSpawnProtected() != false) {
                 continue;
             }
-            i32 gruntX = grunt->m_object->m_screenX;
-            i32 gruntY = grunt->m_object->m_screenY;
+            i32 gruntX = grunt->GetSpriteObject()->m_screenX;
+            i32 gruntY = grunt->GetSpriteObject()->m_screenY;
             i32 gruntLeft = gruntX - 7;
             i32 gruntTop = gruntY - 7;
             i32 gruntRight = gruntLeft + 14;
@@ -1764,7 +1767,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                             break;
                         }
                         grunt->BeginFreezeAnimation();
-                        CGameObject* object = grunt->m_object;
+                        CGameObject* object = grunt->GetSpriteObject();
                         CreateLightFx(
                             g_gameReg->World()->ChildGroup(),
                             object->m_screenX,
@@ -1918,7 +1921,7 @@ i32 CTriggerMgr::ConvertGrunt(
     if (freeUnitIndex >= TM_UNITS_PER_PLAYER) {
         return 0;
     }
-    CGameObject* sourceObject = sourceGrunt->m_object;
+    CGameObject* sourceObject = sourceGrunt->GetSpriteObject();
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(sourceObject, spawnX, spawnY)
     PickupType toolType = EQUIPPED_TOOL_TERNARY_GT(sourceGrunt);
     PickupType carriedToyType = sourceGrunt->GetCarriedToyType();
@@ -2293,7 +2296,7 @@ i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
         if (cell != NULL) {
             SelectUnit(payload->m_x, payload->m_y, 1, 0);
             if (m_lastRecalledGroup == slot) {
-                CGameObject* disp = cell->m_object;
+                CGameObject* disp = cell->GetSpriteObject();
                 i32 x = disp->m_screenX;
                 i32 y = disp->m_screenY;
                 bbox.left = min(x, bbox.left);
@@ -2337,7 +2340,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
         CGrunt* cell = UnitAt(k->m_x, k->m_y);
         if (cell != NULL) {
             count++;
-            CGameObject* g = cell->m_object;
+            CGameObject* g = cell->GetSpriteObject();
             i32 gx = g->m_screenX;
             i32 gy = g->m_screenY;
             bbox.left = min(gx, bbox.left);
@@ -2416,7 +2419,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
             do {
                 CGrunt* g = *units;
                 if (g != NULL && g->IsEntranceCommitted() != false) {
-                    CGameObject* o = g->m_object;
+                    CGameObject* o = g->GetSpriteObject();
                     i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
                     i32 d = abs(SquaredDistance(dx, dy));
@@ -2559,7 +2562,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
         } else {
             PickupType kind = cell->GetCarriedToyType();
             if (kind == PICKUP_SCROLL) {
-                CGameObject* o = cell->m_object;
+                CGameObject* o = cell->GetSpriteObject();
                 g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                     o->m_screenX,
                     o->m_screenY,

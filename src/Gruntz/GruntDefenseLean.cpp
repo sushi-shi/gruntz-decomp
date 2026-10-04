@@ -62,7 +62,10 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 if (m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
+                if (IsWithinReach(
+                        occ->GetSpriteObject()->m_screenX,
+                        occ->GetSpriteObject()->m_screenY
+                    ) != 0
                     && IsGruntAtSavedScreenPos(occ)) {
                     ATTACK_GRUNT(occ);
                     return 1;
@@ -98,7 +101,8 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+            if (IsWithinReach(occ->GetSpriteObject()->m_screenX, occ->GetSpriteObject()->m_screenY)
+                == 0) {
                 return 1;
             }
             if (!IsGruntAtSavedScreenPos(occ)) {

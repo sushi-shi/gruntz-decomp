@@ -73,6 +73,10 @@ public:
 
     i32 GetUnitSelectionGroupMarker(i32 playerIndex, i32 unitIndex);
 
+    b32 IsPlayerControlEnabled() const {
+        return m_playerControlEnabled;
+    }
+
     b32 IsTargeting() const {
         return m_targetingCursorId != 0;
     }

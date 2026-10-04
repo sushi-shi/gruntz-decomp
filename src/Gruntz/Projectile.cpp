@@ -583,8 +583,8 @@ void CProjectile::ScanTargets(i32 impact) {
             if (g->IsEntranceCommitted() == false) {
                 continue;
             }
-            i32 gx = g->m_object->m_screenX - 7;
-            i32 gy = g->m_object->m_screenY - 7;
+            i32 gx = g->GetSpriteObject()->m_screenX - 7;
+            i32 gy = g->GetSpriteObject()->m_screenY - 7;
             i32 gxhi = gx + 0xe;
             i32 gyhi = gy + 0xe;
             if (box.left > gxhi) {

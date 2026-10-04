@@ -115,8 +115,8 @@ i32 CExitTrigger::SerializeDispatch(
             } else {
                 g_serialCounter++;
                 i32 id = 0;
-                if (m_warlordLogic->m_object != NULL) {
-                    id = m_warlordLogic->m_object->GetObjectId();
+                if (m_warlordLogic->GetSpriteObject() != NULL) {
+                    id = m_warlordLogic->GetSpriteObject()->GetObjectId();
                 }
                 arc->Write(&id, sizeof(id));
             }

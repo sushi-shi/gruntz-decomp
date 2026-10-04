@@ -144,7 +144,7 @@ inflight: {
 
     if (target != NULL) {
         {
-            CGameObject* s = target->m_object;
+            CGameObject* s = target->GetSpriteObject();
             if (unit->IsWithinReach(s->m_screenX, s->m_screenY) != 0) {
 
                 unit->RecycleCoords();
@@ -212,7 +212,7 @@ i32 CBattlezAiController::TrackAssignedEnemy(CGrunt* unit) {
     if (unit->ArrivalCell().m_x != -1 && unit->ArrivalCell().m_y != -1) {
         CGrunt* target = m_triggerMgr->UnitAt(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y);
         if (target != NULL) {
-            CGameObject* lvl = target->m_object;
+            CGameObject* lvl = target->GetSpriteObject();
             if ((static_cast<CGrunt*>(unit))->IsWithinReach(lvl->m_screenX, lvl->m_screenY) != 0) {
                 unit->RecycleCoords();
                 UNSET_COORD(unit->m_arrivalCell);
@@ -225,7 +225,7 @@ i32 CBattlezAiController::TrackAssignedEnemy(CGrunt* unit) {
             if (static_cast<u32>(unit->GetDwell()) > DWELL_REPATH_MS && unit->CoordsEmpty()) {
                 i32 flags = unit->GetRouteBlockedMask();
                 unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
-                CGameObject* tl = target->m_object;
+                CGameObject* tl = target->GetSpriteObject();
                 unit->MoveToTile(
                     tl->m_screenX >> TILE_SHIFT_PX,
                     tl->m_screenY >> TILE_SHIFT_PX,

@@ -115,7 +115,7 @@ i32 CBattlezAiController::RetargetIdleUnit(CGrunt* unit) {
     if (unit->ArrivalCell().m_y == 1) {
         return 1;
     }
-    CGameObject* lvl = unit->m_object;
+    CGameObject* lvl = unit->GetSpriteObject();
     i32 px = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 py = lvl->m_screenY >> TILE_SHIFT_PX;
     i32 nearBand = 0;

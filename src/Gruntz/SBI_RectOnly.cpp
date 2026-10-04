@@ -674,7 +674,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     switch (r->GetTab()) {
         case TAB_STATZ:
             if (m_gameplayControlsDisabled == false
-                && g_gameReg->GetTriggerMgr()->m_playerControlEnabled != false
+                && g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() != false
                 && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
                 PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
@@ -2570,7 +2570,10 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
         CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
-                ->SetCameraPosition(entry->m_object->m_screenX, entry->m_object->m_screenY);
+                ->SetCameraPosition(
+                    entry->GetSpriteObject()->m_screenX,
+                    entry->GetSpriteObject()->m_screenY
+                );
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
                 if (obj->IsUnitSelected(playerIndex, unitIndex)) {

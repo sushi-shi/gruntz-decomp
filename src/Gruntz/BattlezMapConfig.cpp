@@ -386,7 +386,7 @@ i32 CBattlezAiController::Update() {
                 if (unit == NULL) {
                     continue;
                 }
-                CGameObject* lvl = unit->m_object;
+                CGameObject* lvl = unit->GetSpriteObject();
                 if (!(GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, unit))) {
                     continue;
                 }
@@ -739,8 +739,8 @@ i32 CBattlezAiController::UpdateUnits() {
                         }
                         {
                             if (BattlezActDiffersFromCRCGLPJ(unit)) {
-                                if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
-                                    && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
+                                if (unit->GetSpriteObject()->m_screenX == unit->m_lastTilePx.m_x
+                                    && unit->GetSpriteObject()->m_screenY == unit->m_lastTilePx.m_y
                                     && unit->IsEntranceCommitted() != false
                                     && unit->IsDeathAnimationStarted() == false
                                     && unit->m_busy == false) {
@@ -821,8 +821,8 @@ i32 CBattlezAiController::UpdateUnits() {
                                             CGrunt* other = m_triggerMgr->UnitAt(j, k);
                                             if (other != NULL) {
                                                 if (unit->IsWithinReach(
-                                                        other->m_object->m_screenX,
-                                                        other->m_object->m_screenY
+                                                        other->GetSpriteObject()->m_screenX,
+                                                        other->GetSpriteObject()->m_screenY
                                                     )
                                                     != 0) {
                                                     if (unit->GetPowerupType() != PICKUP_GHOST) {
@@ -877,8 +877,8 @@ i32 CBattlezAiController::UpdateUnits() {
                                 if (rand() % g_battlezWandUseChanceDenominator == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
                                     RECT spell;
-                                    i32 px = unit->m_object->m_screenX;
-                                    i32 py = unit->m_object->m_screenY;
+                                    i32 px = unit->GetSpriteObject()->m_screenX;
+                                    i32 py = unit->GetSpriteObject()->m_screenY;
                                     SET_RECT_COMPONENTS(
                                         spell,
                                         (px >> TILE_SHIFT_PX) - r,
@@ -894,8 +894,10 @@ i32 CBattlezAiController::UpdateUnits() {
                                                     POINT pt;
                                                     SET_POINT_COMPONENTS(
                                                         pt,
-                                                        o->m_object->m_screenX >> TILE_SHIFT_PX,
-                                                        o->m_object->m_screenY >> TILE_SHIFT_PX
+                                                        o->GetSpriteObject()->m_screenX
+                                                            >> TILE_SHIFT_PX,
+                                                        o->GetSpriteObject()->m_screenY
+                                                            >> TILE_SHIFT_PX
                                                     );
                                                     if (PtInRect(&spell, pt) != false) {
                                                         goto spellHit;
@@ -921,8 +923,8 @@ i32 CBattlezAiController::UpdateUnits() {
                                 ResolveArrival(unit);
                             }
                         }
-                        if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
-                            && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
+                        if (unit->GetSpriteObject()->m_screenX == unit->m_lastTilePx.m_x
+                            && unit->GetSpriteObject()->m_screenY == unit->m_lastTilePx.m_y
                             && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
                             && unit->IsInCombat() == false) {
@@ -987,8 +989,8 @@ i32 CBattlezAiController::UpdateUnits() {
                 Coord* gc = unit->GetHeadCoord();
                 i32 gx = gc->m_x;
                 i32 gy = gc->m_y;
-                i32 sx = unit->m_object->m_screenX >> TILE_SHIFT_PX;
-                i32 sy = unit->m_object->m_screenY >> TILE_SHIFT_PX;
+                i32 sx = unit->GetSpriteObject()->m_screenX >> TILE_SHIFT_PX;
+                i32 sy = unit->GetSpriteObject()->m_screenY >> TILE_SHIFT_PX;
                 if (abs(gx - sx) >= 2 || abs(gy - sy) >= 2) {
                     goto dropCoords;
                 }
@@ -1677,10 +1679,10 @@ i32 CBattlezAiController::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     }
     i32 roll = GetRandom(3);
     if (actor->GetCarriedToyType() != PICKUP_NONE && roll == 0) {
-        CGameObject* ul = other->m_object;
+        CGameObject* ul = other->GetSpriteObject();
         if ((static_cast<CGrunt*>(actor))->IsInToyUseRange(ul->m_screenX, ul->m_screenY) != 0) {
             if (actor->GetCarriedToyType() == PICKUP_SCROLL) {
-                CGameObject* tl = actor->m_object;
+                CGameObject* tl = actor->GetSpriteObject();
                 m_triggerMgr->UseToyAt(
                     actor->GetPlayerIndex(),
                     actor->GetUnitIndex(),
@@ -1688,7 +1690,7 @@ i32 CBattlezAiController::HandleUnitContact(CGrunt* actor, CGrunt* other) {
                     tl->m_screenY
                 );
             } else {
-                CGameObject* ul2 = other->m_object;
+                CGameObject* ul2 = other->GetSpriteObject();
                 m_triggerMgr->UseToyAt(
                     actor->GetPlayerIndex(),
                     actor->GetUnitIndex(),
@@ -1699,7 +1701,7 @@ i32 CBattlezAiController::HandleUnitContact(CGrunt* actor, CGrunt* other) {
             return 1;
         }
     }
-    CGameObject* ul3 = other->m_object;
+    CGameObject* ul3 = other->GetSpriteObject();
     (static_cast<CGrunt*>(actor))
         ->AttackGrunt(
             other->GetPlayerIndex(),
@@ -2711,7 +2713,7 @@ i32 CBattlezAiController::RouteToNearbyEnemy(CGrunt* unit) {
                         static_cast<__int64>(g_frameTime) - m_routeTiming.GetStartTime();
                     if (elapsed >= m_routeTiming.GetInterval()) {
                         unit->SetBlockedVoicePending(false);
-                        CGameObject* lvl = unit->m_object;
+                        CGameObject* lvl = unit->GetSpriteObject();
 
                         RECT* hit = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
                         if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
@@ -3053,7 +3055,7 @@ i32 CBattlezAiController::RouteUnitTo(
     i32 clearEndpointFlags
 ) {
     CPtrList list(10);
-    CGameObject* lvl = unit->m_object;
+    CGameObject* lvl = unit->GetSpriteObject();
     i32 screenX = lvl->m_screenX;
     if (unit->GetScreenTileX() != goalCol || unit->GetScreenTileY() != goalRow) {
         if ((m_tileGrid)
@@ -3482,7 +3484,7 @@ RVA(0x00030f20, 0x16d)
 Coord CBattlezAiController::PickAttackWaypoint(CGrunt* unit, i32 targetPlayerIndex) {
     Coord result;
     if (targetPlayerIndex < 0 || targetPlayerIndex >= 4) {
-        CGameObject* object = unit->m_object;
+        CGameObject* object = unit->GetSpriteObject();
         i32 currentTileX = object->m_screenX >> TILE_SHIFT_PX;
         i32 currentTileY = object->m_screenY >> TILE_SHIFT_PX;
         result.Set(currentTileX, currentTileY);

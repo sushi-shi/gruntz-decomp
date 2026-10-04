@@ -121,7 +121,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         goto L_ed153;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && IsWithinReach(g->GetSpriteObject()->m_screenX, g->GetSpriteObject()->m_screenY) != 0) {
         ATTACK_GRUNT(g);
         m_dwell = 0;
         return 1;

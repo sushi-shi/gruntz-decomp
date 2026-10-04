@@ -121,8 +121,8 @@ i32 CGrunt::StepDefenderBehavior() {
     }
 
     if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-        i32 occTX = occ->m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 occTY = occ->m_object->m_screenY >> TILE_SHIFT_PX;
+        i32 occTX = occ->GetSpriteObject()->m_screenX >> TILE_SHIFT_PX;
+        i32 occTY = occ->GetSpriteObject()->m_screenY >> TILE_SHIFT_PX;
         i32 dx = abs(occTX - defenderTile.m_x);
         i32 dy = abs(occTY - defenderTile.m_y);
         i32 radius = Max(dx, dy);

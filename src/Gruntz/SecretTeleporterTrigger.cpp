@@ -202,7 +202,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->SetScore(m_object->GetScore());
             spr->SetPoints(m_object->GetPoints());
             spr->SetHealth(0);
-            CWwdSpriteObject* eo = hit->m_object;
+            CWwdSpriteObject* eo = hit->GetSpriteObject();
             CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
