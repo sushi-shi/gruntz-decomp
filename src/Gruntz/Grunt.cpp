@@ -1111,10 +1111,8 @@ i32 CGrunt::StepGruntMovement() {
     CGruntzMapMgr* tileGrid;
 
     {
-        i32 destinationX = m_entrancePx.m_x;
-        i32 lastTileX = m_lastTilePx.m_x;
-        i32 destinationY = m_entrancePx.m_y;
-        if (destinationX == lastTileX && m_lastTilePx.m_y == destinationY) {
+        Coord destinationPixel = EntrancePx();
+        if (m_lastTilePx.m_x == destinationPixel.m_x && m_lastTilePx.m_y == destinationPixel.m_y) {
             return 1;
         }
     }
