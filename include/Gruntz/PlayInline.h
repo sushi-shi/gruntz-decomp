@@ -25,7 +25,7 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     m_monitorCurseActive = false;
     m_randomColorsCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
-    m_hudSuppressed = true;
+    m_inputBlocked = true;
     m_cameraBookmarkIndex = -1;
     m_defeatCountdownActive = false;
     m_scrollEdgeActive = 0;
@@ -63,17 +63,17 @@ inline void CPlay::FreePlacedObjectCells(i32 group) {
 }
 
 inline void CPlay::UpdateAmbientMusic() {
-    if (m_ambientInitDone == false) {
-        if (m_ambientTiming.Expired()) {
+    if (m_introMusicComplete == false) {
+        if (m_introMusicTimer.Expired()) {
             char sequenceName[0x40];
-            wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+            wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
             if (g_gameReg->m_musicEnabled != false) {
                 m_mgr->m_midi->PlaySequence(sequenceName, true);
             } else {
                 m_mgr->m_midi->SelectSequence(sequenceName);
                 m_mgr->m_midi->SetCurrentLooping(true);
             }
-            m_ambientInitDone = true;
+            m_introMusicComplete = true;
         }
     }
 }
@@ -88,7 +88,7 @@ inline void CPlay::DrawVisibleWorld() {
 
 inline void CPlay::DrawWorldView() {
     if (m_darknessCurseActive != false) {
-        NotifyVisibleEntities();
+        DrawDarknessView();
     } else {
         DrawVisibleWorld();
     }
@@ -98,8 +98,8 @@ inline void CPlay::SetInitialFramePending(b32 pending) {
     m_initialFramePending = pending;
 }
 
-inline void CPlay::SetNotifyLatch(b32 notify) {
-    m_notifyLatch = notify;
+inline void CPlay::SetReturningToMenu(b32 returning) {
+    m_returningToMenu = returning;
 }
 
 inline void CPlay::SetCompletedFinalLevel(b32 completed) {

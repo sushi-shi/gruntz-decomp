@@ -55,7 +55,7 @@ public:
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
 
     virtual void ReleaseResources() OVERRIDE;
-    virtual GameStateId Update() OVERRIDE;
+    virtual GameStateId GetStateId() OVERRIDE;
 
     virtual i32 Render() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;

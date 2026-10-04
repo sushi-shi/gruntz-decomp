@@ -21,13 +21,13 @@ public:
     virtual void ReleaseResources() OVERRIDE;
 
     RVA(0x0008cd40, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_ATTRACT;
     }
     virtual i32 Render() OVERRIDE;
     virtual i32 RestoreDisplay() OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;

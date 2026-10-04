@@ -76,7 +76,7 @@
 #define RESTART(N)                                                                                 \
     {                                                                                              \
         CMenuState* mus = 0;                                                                       \
-        GameStateId st = m_curState->Update();                                                     \
+        GameStateId st = m_curState->GetStateId();                                                 \
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
@@ -95,7 +95,7 @@
 #define RESTART2(N)                                                                                \
     {                                                                                              \
         CMenuState* mus = 0;                                                                       \
-        GameStateId st = m_curState->Update();                                                     \
+        GameStateId st = m_curState->GetStateId();                                                 \
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \

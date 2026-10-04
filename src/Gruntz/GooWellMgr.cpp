@@ -177,7 +177,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             m_actionOptionsMenu->RefreshIfActive(deltaMs);
         }
         if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
-            if (obj->m_winLoseBanner != false && m_unitCountByPlayer[g_curPlayer] == 0) {
+            if (obj->m_levelTimeExpired != false && m_unitCountByPlayer[g_curPlayer] == 0) {
                 BeginLevelFinish(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
@@ -186,7 +186,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             if (m_unitCountByPlayer[g_curPlayer] != 0) {
                 return 0;
             }
-            if (obj->m_winLoseBanner != false) {
+            if (obj->m_levelTimeExpired != false) {
                 BeginLevelFinish(FINISH_REASON_TIME_EXPIRED);
             } else {
                 BeginLevelFinish(FINISH_REASON_NO_GRUNTZ_REMAIN);

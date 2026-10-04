@@ -31,7 +31,7 @@ DATA(0x002111b0)
 char g_titleBuf[] = "HELP";
 
 RVA(0x0008cee0, 0x6)
-GameStateId CHelpState::Update() {
+GameStateId CHelpState::GetStateId() {
     return GAMESTATE_HELP;
 }
 
@@ -41,7 +41,7 @@ CHelpState::~CHelpState() {
 }
 
 RVA(0x0008cfb0, 0x6)
-GameStateId CSplashState::Update() {
+GameStateId CSplashState::GetStateId() {
     return GAMESTATE_SPLASH;
 }
 
@@ -51,7 +51,7 @@ CSplashState::~CSplashState() {
 }
 
 RVA(0x0008d080, 0x6)
-GameStateId CDemo::Update() {
+GameStateId CDemo::GetStateId() {
     return GAMESTATE_DEMO;
 }
 
@@ -67,7 +67,7 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (!m_stateResources) {
         return 0;
     }
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
 
@@ -101,7 +101,7 @@ i32 CHelpState::Render() {
     IDirectDrawSurface* busy =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x445);
             return 0;
         }
@@ -127,7 +127,7 @@ i32 CHelpState::Render() {
 }
 
 RVA(0x00095320, 0x56)
-i32 CHelpState::InputVirtual() {
+i32 CHelpState::RestoreGraphics() {
     if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }

@@ -450,7 +450,7 @@ public:
 
 extern i32 g_roundStartTimeMs;
 
-i32 PumpIdleFrame();
+i32 RestoreGameGraphics();
 
 extern b32 g_monologoShown;
 

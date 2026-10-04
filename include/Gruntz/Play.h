@@ -54,7 +54,7 @@ public:
     inline void SetSavedClock(u32 clock);
     inline void ClearSaveSlot();
     inline void SetCompletedFinalLevel(b32 completed);
-    inline void SetNotifyLatch(b32 notify);
+    inline void SetReturningToMenu(b32 returning);
     inline void SetInitialFramePending(b32 pending);
     inline void ResetAssetLoadState(GruntzPlayer* player);
 
@@ -74,7 +74,7 @@ public:
     virtual ~CPlay() OVERRIDE;
 
     RVA(0x0008c910, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_PLAY;
     }
     virtual i32 Render() OVERRIDE;
@@ -85,7 +85,7 @@ public:
 
     virtual i32 RestoreDisplay() OVERRIDE;
 
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnChar(i32 charCode, i32 keyData) OVERRIDE;
@@ -132,7 +132,7 @@ public:
     RVA(0x000d0030, 0x1)
     virtual void PostLoadImageBanks() {}
 
-    virtual void PostSetup(HDC dc);
+    virtual void DrawChatMessages(HDC dc);
 
     virtual void TickStateMgrs();
 
@@ -187,7 +187,7 @@ public:
     i32 LoadGruntAssetNamespaces(CMulti* multiplayerSession);
 
     i32 StepViewportResize();
-    i32 GetAmbientId();
+    i32 GetMusicVariant();
     inline void UpdateAmbientMusic();
     inline void DrawVisibleWorld();
     inline void DrawWorldView();
@@ -199,7 +199,7 @@ public:
 
     i32 ShrinkViewport(i32 step);
     i32 ExpandViewport(i32 step);
-    i32 NotifyVisibleEntities();
+    i32 DrawDarknessView();
 
     i32 ResetViewport();
 
@@ -227,7 +227,7 @@ public:
     i32 ValidateLevelTiles();
 
     i32 AdvanceLoadingBar(b32 final);
-    i32 RegisterInputBindings();
+    i32 DiscardQueuedInput();
 
     i32 LoadLevelAnims(i32 force);
 
@@ -238,7 +238,7 @@ public:
     i32 ForwardReady();
     void ResetRightClickState();
 
-    i32 QuitToMenu();
+    i32 PrepareReturnToMenu();
 
     i32 SelectCursor(i32 cursorId);
 
@@ -277,7 +277,7 @@ public:
     i32 LoadGruntAnimationNamespaces(CMulti* multiplayerSession);
 
     i32 EnterMode(GameStateId mode);
-    i32 ResetPlayState();
+    i32 StartLevelPlay();
 
     i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY);
 
@@ -331,8 +331,8 @@ public:
     CMinimap* m_minimap;
     ClockInterval m_carriedGruntVoiceTimer;
 
-    ClockInterval m_ambientTiming;
-    b32 m_ambientInitDone;
+    ClockInterval m_introMusicTimer;
+    b32 m_introMusicComplete;
     ClockInterval m_syncTiming;
     Coord m_tileClick;
     b32 m_gruntPlacementActive;
@@ -367,7 +367,7 @@ public:
     b32 m_monitorCurseActive;
     b32 m_randomColorsCurseActive;
     ViewportResizeMode m_viewportResizeMode;
-    b32 m_hudSuppressed;
+    b32 m_inputBlocked;
 
     CPtrArray m_cameraBookmarks;
     i32 m_cameraBookmarkIndex;
@@ -390,10 +390,10 @@ public:
     b32 m_cursorAnimationActive;
     b32 m_renderDisabled;
     b32 m_playerCommandPending;
-    b32 m_winLoseBanner;
-    b32 m_inGame;
+    b32 m_levelTimeExpired;
+    b32 m_waitingForStart;
     b32 m_levelOverlayOpen;
-    b32 m_paused;
+    b32 m_helpMessageActive;
     b32 m_cursorTargetValid;
     i32 m_lastScrollTimeX;
     i32 m_lastScrollTimeY;
@@ -478,7 +478,7 @@ inline CPlay::CPlay() {
     m_minimap = NULL;
     m_cursorUsesPlayerTint = false;
     m_defeatCountdownActive = false;
-    m_ambientInitDone = true;
+    m_introMusicComplete = true;
     m_stepCountdown = 0;
     m_savedMusicSequence = NULL;
     m_selectionDragActive = false;

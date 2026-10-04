@@ -289,7 +289,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     while (ShowCursor(false) >= 0) {
     }
 
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
 
     m_secretHudHandled = false;
 
@@ -1323,7 +1323,7 @@ i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
             return 0;
         }
@@ -1440,8 +1440,8 @@ i32 CBootyState::Render() {
 }
 
 RVA(0x0001c8a0, 0xec)
-i32 CBootyState::InputVirtual() {
-    if (CState::InputVirtual() == 0) {
+i32 CBootyState::RestoreGraphics() {
+    if (CState::RestoreGraphics() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {
@@ -1709,7 +1709,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
@@ -2421,7 +2421,7 @@ i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
             return 0;
         }
@@ -2451,8 +2451,8 @@ i32 CMultiBootyState::Render() {
 }
 
 RVA(0x0001f6f0, 0x10b)
-i32 CMultiBootyState::InputVirtual() {
-    if (!CState::InputVirtual()) {
+i32 CMultiBootyState::RestoreGraphics() {
+    if (!CState::RestoreGraphics()) {
         return 0;
     }
 

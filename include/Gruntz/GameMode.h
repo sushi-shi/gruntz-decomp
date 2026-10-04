@@ -40,7 +40,7 @@ public:
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
@@ -49,7 +49,7 @@ public:
 
     virtual ~CMenuState() OVERRIDE;
     RVA(0x0008ce10, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_MENU;
     }
     virtual i32 Render() OVERRIDE;
@@ -91,12 +91,12 @@ public:
     virtual ~CCreditsState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
     RVA(0x0008d590, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_CREDITS;
     }
     virtual i32 Render() OVERRIDE;
     virtual i32 RestoreDisplay() OVERRIDE;
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
@@ -161,13 +161,13 @@ public:
     virtual ~CBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
     RVA(0x0008d3f0, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_BOOTY;
     }
     virtual i32 Render() OVERRIDE;
     virtual i32 RestoreDisplay() OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
@@ -246,13 +246,13 @@ public:
     virtual ~CMultiBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
     RVA(0x0008d4c0, 0x6)
-    virtual GameStateId Update() OVERRIDE {
+    virtual GameStateId GetStateId() OVERRIDE {
         return GAMESTATE_MULTIBOOTY;
     }
     virtual i32 Render() OVERRIDE;
     virtual i32 RestoreDisplay() OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;

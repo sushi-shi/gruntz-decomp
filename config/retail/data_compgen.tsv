@@ -576,7 +576,7 @@ rva	size	name	owner	class
 0x0024c010	0xc	?s_gruntDirWest_24c010@@3UGruntDirectionCell@@A	play	copy
 0x0024c01c	0x1	_?$S@?1??LoadScrollSpeedOptions@CPlay@@QAEHXZ@4EA$S	play	copy
 0x0024c220	0xc	?s_gruntDirNorthEast_24c220@@3UGruntDirectionCell@@A	play	copy
-0x0024c22c	0x1	_?$S@?4??GetAmbientId@CPlay@@QAEHXZ@4EA$S	play	copy
+0x0024c22c	0x1	_?$S@?4??GetMusicVariant@CPlay@@QAEHXZ@4EA$S	play	copy
 0x0024c230	0xc	?s_gruntDirNorthWest_24c230@@3UGruntDirectionCell@@A	play	copy
 0x0024c240	0xc	?s_gruntDirSouthEast_24c240@@3UGruntDirectionCell@@A	play	copy
 0x0024c250	0xc	?s_gruntDirCenter_24c250@@3UGruntDirectionCell@@A	play	copy

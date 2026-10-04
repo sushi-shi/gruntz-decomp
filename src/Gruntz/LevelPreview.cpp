@@ -59,7 +59,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     }
     m_previewName = "PREVIEW0";
     m_previewIndex = 0;
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
 
@@ -101,7 +101,7 @@ i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (surf == NULL || surf->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }

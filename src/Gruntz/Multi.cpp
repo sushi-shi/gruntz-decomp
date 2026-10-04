@@ -179,7 +179,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_darknessCurseActive = false;
     m_monitorCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
-    m_hudSuppressed = true;
+    m_inputBlocked = true;
     m_cameraBookmarkIndex = -1;
     m_defeatCountdownActive = false;
     m_scrollEdgeActive = 0;
@@ -193,7 +193,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_colorSelectionRejected = false;
     m_gameFull = false;
     m_outOfSync = false;
-    m_notifyLatch = false;
+    m_returningToMenu = false;
     m_completedFinalLevel = false;
     m_syncGate = false;
     m_connected = false;
@@ -412,8 +412,8 @@ RVA(0x000b63f0, 0x11b)
 i32 CMulti::LeaveState(GameStateId nextState) {
     m_mgr->VoiceMgr()->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
-    if (m_notifyLatch) {
-        QuitToMenu();
+    if (m_returningToMenu) {
+        PrepareReturnToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
@@ -480,7 +480,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             e->GetBattlezConfig()->Clear();
         }
     }
-    ResetPlayState();
+    StartLevelPlay();
     srand(m_rngSeed);
     g_frameDelta = 0;
     g_lastNow = 0;
@@ -2588,7 +2588,7 @@ i32 CMulti::WaitForOtherPlayers() {
 
             if (g_gameReg->m_musicEnabled != false) {
                 char buf[0x40];
-                wsprintfA(buf, "AMBIENT%d", GetAmbientId());
+                wsprintfA(buf, "AMBIENT%d", GetMusicVariant());
                 NetGameMgr()->m_midi->PlaySequence(buf, true);
             }
             return 1;

@@ -74,7 +74,7 @@ void CGruntzCmdMgr::Shutdown() {
 
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
-    b32 isMultiplayer = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
+    b32 isMultiplayer = (m_manager->m_curState->GetStateId() == GAMESTATE_MULTI);
     CState* state = m_manager->m_curState;
     CGruntzCommand* commandsByPlayer[4];
     commandsByPlayer[0] = NULL;
@@ -201,9 +201,9 @@ void CGruntzCmdMgr::EnqueueCommand(b32 isLocalCommand, CGruntzCommand* command) 
         return;
     }
     if (isLocalCommand) {
-        if (m_manager->m_curState->Update() == GAMESTATE_PLAY) {
+        if (m_manager->m_curState->GetStateId() == GAMESTATE_PLAY) {
             command->m_submitFlags = COMMAND_SUBMIT_IMMEDIATE;
-        } else if (m_manager->m_curState->Update() == GAMESTATE_MULTI) {
+        } else if (m_manager->m_curState->GetStateId() == GAMESTATE_MULTI) {
             command->m_submitFlags = COMMAND_SUBMIT_PENDING_SLOT;
         }
         m_pendingLocalCommands.AddTail(command);
