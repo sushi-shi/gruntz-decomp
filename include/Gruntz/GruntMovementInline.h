@@ -13,21 +13,20 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
            && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y;
 }
 
-inline void ClearMoveTileFx(CGrunt* grunt) {
-    grunt->m_triggerMgr->LoadTileArrivalFx(
-        grunt->GetPlayerIndex(),
-        grunt->GetUnitIndex(),
-        grunt->m_moveTile.m_x,
-        grunt->m_moveTile.m_y,
-        grunt->GetActivePickupType(),
+inline void CGrunt::ClearMoveTileFx() {
+    m_triggerMgr->LoadTileArrivalFx(
+        GetPlayerIndex(),
+        GetUnitIndex(),
+        m_moveTile.m_x,
+        m_moveTile.m_y,
+        GetActivePickupType(),
         WWDDRAW_NO_ANIMATION
     );
 }
 
-inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
-    if (grunt->IsUnregisteredFromBoard() == false) {
-        grunt->m_triggerMgr
-            ->UnregisterUnit(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), exitedLevel);
+inline void CGrunt::UnregisterFromBoard(i32 exitedLevel) {
+    if (IsUnregisteredFromBoard() == false) {
+        m_triggerMgr->UnregisterUnit(GetPlayerIndex(), GetUnitIndex(), exitedLevel);
     }
 }
 
@@ -94,9 +93,9 @@ inline Coord CGrunt::ScanCell() {
     return t;
 }
 
-inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
-    grunt->m_entranceActive = true;
-    grunt->m_triggerMgr->RemoveUnitFromSelection(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
+inline void CGrunt::BeginGruntEntranceAndReleaseCell() {
+    m_entranceActive = true;
+    m_triggerMgr->RemoveUnitFromSelection(GetPlayerIndex(), GetUnitIndex(), 1);
 }
 
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

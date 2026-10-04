@@ -756,7 +756,7 @@ i32 CGrunt::StartWalkAnimation() {
     m_neighborScanEnabled = false;
 
     if (IsAnimationAct("I")) {
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
     }
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
@@ -926,7 +926,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         RESET_GRUNT_COMBAT_STATE(this)
     }
 
-    BeginGruntEntranceAndReleaseCell(this);
+    BeginGruntEntranceAndReleaseCell();
 
     SET_ANIMATION_ACT("B");
 
@@ -965,7 +965,7 @@ i32 CGrunt::StepWarpExit() {
                 PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
             }
         }
-        UnregisterFromBoard(this, 1);
+        UnregisterFromBoard(1);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
@@ -1001,7 +1001,7 @@ i32 CGrunt::StepCombatReaction(
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
         goto tail;
     }
     if (GRUNT_IS_USING_TOY()) {
@@ -1163,7 +1163,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     if (IsAnimationAct("I")) {
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
     } else {
         PLAY_GRUNT_CUE_IF_VISIBLE(8);
     }

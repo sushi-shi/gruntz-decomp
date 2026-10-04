@@ -1414,7 +1414,7 @@ i32 CGrunt::CommitNeighbor(
 
     eq = IsAnimationAct("I");
     if (eq) {
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
     } else {
         eq = IsAnimationAct("N");
         if (eq) {

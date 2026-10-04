@@ -886,7 +886,6 @@ i32 CPlay::ProfileDeltaFrame() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
@@ -927,8 +926,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
         if (g_gameReg->GetFrameGate() != false) {
-            g_gameReg->m_frameGate ^= 1;
-            g_gameReg->FinishLevel(g_gameReg->GetFrameGate(), true);
+            g_gameReg->FinishLevel(g_gameReg->ToggleFrameGate(), true);
         }
     }
 
@@ -1880,8 +1878,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         if (h->GetFrameGate() != false) {
-            h->m_frameGate ^= 1;
-            this->m_mgr->FinishLevel(h->GetFrameGate(), true);
+            this->m_mgr->FinishLevel(h->ToggleFrameGate(), true);
         }
         this->m_mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->OpenLevelOverlay(true);

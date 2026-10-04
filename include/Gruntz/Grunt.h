@@ -176,6 +176,9 @@ class CGrunt : public CMovingLogic, public CWapX {
 public:
     inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
     inline PickupType GetEquippedToolType() const;
+    inline void ClearMoveTileFx();
+    inline void UnregisterFromBoard(i32 exitedLevel);
+    inline void BeginGruntEntranceAndReleaseCell();
 
     PickupType GetPowerupType() const {
         return m_powerupType;
@@ -202,6 +205,9 @@ public:
     }
     i32 GetStamina() const {
         return m_stamina;
+    }
+    i32 GetToyTimePercent() const {
+        return m_toyTime;
     }
     i32 GetHealth() const {
         return m_health;

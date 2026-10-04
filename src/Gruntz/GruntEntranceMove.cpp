@@ -281,9 +281,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);                                         \
         if (flags & BRICKZ_CELL_OCCUPIED) {                                                        \
             i32 owner = grid->OccupantAt(static_cast<u32>(tile.m_x), static_cast<u32>(tile.m_y));  \
-            i32 playerIndex =                                                                      \
-                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;            \
-            i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;                                 \
+            i32 playerIndex = GruntIdentity::UnpackPlayerIndex(owner);                             \
+            i32 unitIndex = GruntIdentity::UnpackUnitIndex(owner);                                 \
             if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {                        \
                 m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex); \
             }                                                                                      \
@@ -401,7 +400,7 @@ i32 CGrunt::StartBombGruntRun() {
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
-    BeginGruntEntranceAndReleaseCell(this);
+    BeginGruntEntranceAndReleaseCell();
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
     if (ApplyPickup(PICKUP_BOMB, 1, 0, 1) == 0) {
@@ -599,7 +598,7 @@ i32 CGrunt::BeginFreezeAnimation() {
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
         if (m_activePickupType != PICKUP_BOMB) {
             goto finalize;
         }
@@ -637,7 +636,7 @@ finalize:
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
-    BeginGruntEntranceAndReleaseCell(this);
+    BeginGruntEntranceAndReleaseCell();
     SET_ANIMATION_ACT("Q");
     {
         i32 z = m_object->m_screenY + 0x186a0;
@@ -692,7 +691,7 @@ i32 CGrunt::UpdateMovingDeathAnimation() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    UnregisterFromBoard(this, 0);
+    UnregisterFromBoard(0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
@@ -858,7 +857,7 @@ i32 CGrunt::FinishActiveAction() {
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
         return 1;
     }
     if (GRUNT_IS_USING_TOY()) {

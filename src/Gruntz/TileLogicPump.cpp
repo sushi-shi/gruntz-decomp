@@ -430,8 +430,8 @@ i32 CCheckpointTrigger::Act() {
     }
 
     GruntIdentity identity;
-    identity.m_playerIndex = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
-    owner &= GRUNT_IDENTITY_COMPONENT_MASK;
+    identity.m_playerIndex = GruntIdentity::UnpackPlayerIndex(owner);
+    owner = GruntIdentity::UnpackUnitIndex(owner);
     identity.m_unitIndex = owner;
     CGrunt* g = FindGruntByIdentity(g_gameReg, identity);
     if (g == NULL) {

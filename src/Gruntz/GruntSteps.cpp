@@ -475,8 +475,8 @@ i32 CGrunt::StepCompassMove() {
 
             i32 owner = board->OccupantAt(mtx, mty);
             m_triggerMgr->StartUnitDeath(
-                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
-                owner & GRUNT_IDENTITY_COMPONENT_MASK,
+                GruntIdentity::UnpackPlayerIndex(owner),
+                GruntIdentity::UnpackUnitIndex(owner),
                 DEATH_SQUASH,
                 m_playerIndex
             );
@@ -767,7 +767,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
         if (m_activePickupType != PICKUP_BOMB) {
             goto applyTail;
         }
