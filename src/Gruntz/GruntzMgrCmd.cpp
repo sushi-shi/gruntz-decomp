@@ -248,11 +248,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         i32 _key = g_gameReg->GetPlayer(0).m_warlordObjectId;
                         if (_key) {
                             _dr = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                                    _key,
-                                    _dr
-                                )
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(_key, _dr)
                                 && _dr) {
                                 CWarlord* _d =
                                     static_cast<CWarlord*>(_dr->GetLogicRecord()->UserLogic());

@@ -574,8 +574,7 @@ i32 CPlay::Render() {
                 if (g_gameReg->m_players[0].m_warlordObjectId != 0) {
                     CGameObject* out = NULL;
                     CGameObject* object = NULL;
-                    if (MapLookupById(
-                            g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                    if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                             g_gameReg->m_players[0].m_warlordObjectId,
                             out
                         )) {

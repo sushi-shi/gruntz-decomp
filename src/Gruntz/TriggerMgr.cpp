@@ -138,9 +138,7 @@ void CTriggerMgr::SelectUnitsInRect(RECT selectionRect, b32 preserveSelection) {
                         SelectUnit(g_curPlayer, unitIndex, 1, 1);
                     } else {
                         grunt->CreateHealthSprite();
-                        grunt->m_hudRetireTiming.Start(
-                            g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388)
-                        );
+                        grunt->StartHudRetireTimer();
                     }
                 }
             }
@@ -576,10 +574,9 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
                 }
                 i32 occupantId = g_gameReg->GetTileGrid()->ObjectIdAt(tx, ty);
                 if (occupantId != 0) {
-                    CMapPtrToPtr* map =
-                        &g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById;
+                    CDDrawChildGroup* children = g_gameReg->World()->ChildGroup();
                     CGameObject* occupant = NULL;
-                    MapLookupById(*map, occupantId, occupant);
+                    children->LookupRegisteredObject(occupantId, occupant);
                     if (occupant != NULL) {
                         CInGameIcon* icon =
                             static_cast<CInGameIcon*>(occupant->GetLogicRecord()->UserLogic());
@@ -1218,7 +1215,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
             if (g != NULL) {
                 id = g->m_object->GetObjectId();
                 CGameObject* found = NULL;
-                MapLookupById(lvl->ChildGroup()->m_registeredGameObjectsById, id, found);
+                lvl->ChildGroup()->LookupRegisteredObject(id, found);
             }
             ar->Write(&id, sizeof(id));
             cell++;
@@ -1278,7 +1275,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         }
         objId = obj->m_object->GetObjectId();
         CGameObject* found = NULL;
-        MapLookupById(lvl->ChildGroup()->m_registeredGameObjectsById, objId, found);
+        lvl->ChildGroup()->LookupRegisteredObject(objId, found);
         ar->Write(&objId, sizeof(objId));
     }
     hasOv = m_actionOptionsMenu != NULL;
@@ -1326,8 +1323,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             CGrunt* cell = NULL;
             if (key != 0) {
                 CGameObject* found = NULL;
-                if (MapLookupById(world->ChildGroup()->m_registeredGameObjectsById, key, found)
-                    == false) {
+                if (world->ChildGroup()->LookupRegisteredObject(key, found) == false) {
                     return 0;
                 }
                 if (found == NULL) {
@@ -1397,8 +1393,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             CGameObject* found = NULL;
             CGameObject* looked = NULL;
-            if (MapLookupById(world->ChildGroup()->m_registeredGameObjectsById, key, found)
-                != false) {
+            if (world->ChildGroup()->LookupRegisteredObject(key, found) != false) {
                 looked = found;
             }
             if (looked == NULL) {
@@ -1425,7 +1420,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
         CGameObject* found = NULL;
         CGameObject* looked = NULL;
-        if (MapLookupById(world->ChildGroup()->m_registeredGameObjectsById, key, found) != false) {
+        if (world->ChildGroup()->LookupRegisteredObject(key, found) != false) {
             looked = found;
         }
         if (looked == NULL) {

@@ -101,11 +101,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
-            if (MapLookupById(
-                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                    key,
-                    obj
-                )) {
+            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(key, obj)) {
                 hit = obj;
             }
             if (hit != NULL && hit->GetLogicRecord()->UserLogic() != NULL) {
@@ -120,11 +116,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
-            if (MapLookupById(
-                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                    key,
-                    obj
-                )) {
+            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(key, obj)) {
                 hit = obj;
             }
             if (hit != NULL && hit->GetLogicRecord()->UserLogic() != NULL) {

@@ -1782,11 +1782,7 @@ void CGrunt::StepBehavior(char*) {
         if (cellObj != 0) {
             CGameObject* found = NULL;
             CGameObject* result = NULL;
-            if (MapLookupById(
-                    reg->World()->ChildGroup()->m_registeredGameObjectsById,
-                    cellObj,
-                    found
-                )) {
+            if (reg->World()->ChildGroup()->LookupRegisteredObject(cellObj, found)) {
                 result = found;
             }
             if (result == NULL) {

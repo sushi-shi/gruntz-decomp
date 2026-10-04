@@ -153,7 +153,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 da,
                 wp,
                 grunt->m_inCombat,
-                grunt->m_attackQueued,
+                grunt->IsAttackQueued(),
                 grunt->m_arrivalAction,
                 grunt->m_attackWindupActive,
                 grunt->m_neighborScanEnabled,
@@ -707,7 +707,7 @@ i32 CNetSession::ComputeChecksum() {
                 PRIO(priority, carried);
 
                 sum += grunt->m_arrivalAction + grunt->m_neighborScanEnabled
-                       + grunt->m_attackWindupActive + grunt->m_attackQueued + grunt->m_inCombat
+                       + grunt->m_attackWindupActive + grunt->IsAttackQueued() + grunt->m_inCombat
                        + static_cast<i32>(g_frameTime) + priority;
                 sum += rand();
             }

@@ -15,6 +15,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStats.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntPickupInline.h>
@@ -433,7 +434,7 @@ i32 CTriggerMgr::SelectUnit(i32 playerIndex, i32 unitIndex, i32 extendSelection,
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
-        cell->m_hudRetireTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
+        cell->StartHudRetireTimer();
         return 0;
     }
     if (extendSelection == 0) {
@@ -1256,7 +1257,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
 
         CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);
         cell->FaceTowardPixel(destination.m_x, destination.m_y);
-        if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
+        if (cell->IsInCombat() != false && cell->IsAttackQueued() == false) {
             RESET_GRUNT_COMBAT_STATE(cell)
         }
         cell->SetCarriedToy(PICKUP_NONE);

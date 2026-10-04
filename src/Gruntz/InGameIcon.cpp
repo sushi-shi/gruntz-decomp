@@ -659,11 +659,7 @@ i32 CInGameIcon::Reposition() {
         if (cellVal != 0) {
 
             CGameObject* found = NULL;
-            if (MapLookupById(
-                    reg->World()->ChildGroup()->m_registeredGameObjectsById,
-                    cellVal,
-                    found
-                )
+            if (reg->World()->ChildGroup()->LookupRegisteredObject(cellVal, found)
                 && found != NULL) {
                 found->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }

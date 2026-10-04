@@ -94,7 +94,7 @@ i32 CExitTrigger::SerializeDispatch(
             if (key != 0) {
                 found = NULL;
                 CGameObject* obj = NULL;
-                if (MapLookupById(holder->ChildGroup()->m_registeredGameObjectsById, key, found)) {
+                if (holder->ChildGroup()->LookupRegisteredObject(key, found)) {
                     obj = found;
                 }
                 m_warlordLogic = static_cast<CWarlord*>(obj->GetLogicRecord()->UserLogic());

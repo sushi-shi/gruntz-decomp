@@ -687,9 +687,15 @@ public:
         return !m_arrivalRerollTiming.Expired();
     }
 
+    b32 IsAttackQueued() const {
+        return m_attackQueued;
+    }
+
     b32 IsCombatTimeoutExpired() const {
         return m_combatTiming.Expired();
     }
+
+    void StartHudRetireTimer();
 
     void StartHold(u32 durationMs) {
         m_holdTiming.Start(durationMs);

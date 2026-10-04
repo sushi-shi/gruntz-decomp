@@ -103,7 +103,7 @@ rva	unit	function	lost_max	cur
 0x07d450	triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	92.0121
 0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.1892
 0x0788d0	triggermgr	?UpdateCameraTracking@CTriggerMgr@@QAEHXZ	100.0000	99.1379
-0x078a50	triggermgr	?UpdateTargetingCursor@CTriggerMgr@@QAEHHH@Z	91.3955	91.3390
+0x078a50	triggermgr	?UpdateTargetingCursor@CTriggerMgr@@QAEHHH@Z	91.3955	91.1596
 0x06d300	triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	93.6448
 0x06dae0	triggermgrgrid	?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z	90.2044	90.1934
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	89.1185

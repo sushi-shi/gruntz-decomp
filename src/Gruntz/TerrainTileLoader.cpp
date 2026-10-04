@@ -243,8 +243,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     objectId,
                                     found
                                 )) {
@@ -309,8 +308,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     objectId,
                                     found
                                 )) {
@@ -379,8 +377,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     objectId,
                                     found
                                 )) {
@@ -445,8 +442,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
-                            if (MapLookupById(
-                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                            if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     objectId,
                                     found
                                 )) {
