@@ -79,7 +79,7 @@ i32 CDemoSetup::SetupDemoActors() {
 class CRezItm;
 
 RVA(0x0003c0e0, 0xfb)
-i32 CDemo::BuildWorldLevelPath(i32 unused) {
+i32 CDemo::LoadLevelWorld(i32 unused) {
     m_world->GetLevel()->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);

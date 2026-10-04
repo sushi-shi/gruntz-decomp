@@ -1213,7 +1213,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    SetEffectSpriteDurations();
+    ConfigureSoundReplayDelays();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1242,7 +1242,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (!BuildWorldLevelPath(reload)) {
+    if (!LoadLevelWorld(reload)) {
         goto fail0;
     }
     BuildHelpReveal(false);
@@ -1366,7 +1366,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                         (savedThis)->SendLobbyKeepAlive();
                     }
                     RegisterInputBindings();
-                    if (BuildMusicCategoryTable(reload)) {
+                    if (LoadMusicSequences(reload)) {
                         goto okContinue;
                     }
                 }

@@ -138,8 +138,8 @@ public:
 
     virtual void UpdateWorldFrame();
     virtual i32 UpdateWorldFixedSteps();
-    virtual i32 BuildMusicCategoryTable(i32);
-    virtual i32 BuildWorldLevelPath(i32);
+    virtual i32 LoadMusicSequences(i32);
+    virtual i32 LoadLevelWorld(i32);
 
     Coord* StartMarkerAt(i32 index) {
         return static_cast<Coord*>(m_startMarkers.GetAt(index));
@@ -283,7 +283,7 @@ public:
 
     i32 AddLevelGruntz();
 
-    i32 SetEffectSpriteDurations();
+    i32 ConfigureSoundReplayDelays();
 
     i32 UnloadGruntAndWarlordAssets(CMulti* multiplayerSession);
 

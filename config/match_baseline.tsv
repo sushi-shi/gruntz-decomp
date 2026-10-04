@@ -1263,7 +1263,7 @@ deflate	_lm_init	100.0000	100.0000	1	92f427e44f84	0x186a50	100.0000
 deflate	_longest_match	100.0000	100.0000	1	18824b519e86	0x187000	100.0000	
 deflate	_putShortMSB	100.0000	100.0000	1	6f59b6af4108	0x1868e0	100.0000	
 deflate	_read_buf	100.0000	100.0000	1	b66aa815658a	0x186d30	100.0000	
-demo	?BuildWorldLevelPath@CDemo@@UAEHH@Z	100.0000	100.0000	5	85271483694d	0x3c0e0	100.0000	
+demo	?LoadLevelWorld@CDemo@@UAEHH@Z	100.0000	100.0000	5	85271483694d	0x3c0e0	100.0000	
 demo	?CompleteLevel@CDemo@@UAEHXZ	100.0000	100.0000	2	d22b7e221929	0x3c030	100.0000	
 demo	?DispatchDemoMoverLogic@@YAHPAUCGameObject@@@Z	97.2071	97.2071	13	6d23486ec4e7	0x3c300	97.2071	
 demo	?DispatchDemoSignLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	6aab711e7b6a	0x3c500	100.0000	
@@ -3481,8 +3481,8 @@ play	?TickStateMgrs@CPlay@@UAEXXZ	100.0000	100.0000	2	383793d19014	0xcfbb0	100.0
 play	?UpdateWorldFixedSteps@CPlay@@UAEHXZ	99.3137	99.3137	11	95160b149a7f	0xc9cc0	99.3137	
 play	?UpdateWorldFrame@CPlay@@UAEXXZ	100.0000	100.0000	12	d3b62d1539c0	0xc9c20	100.0000	
 play	?ValidateLevelTiles@CPlay@@QAEHXZ	91.7086	91.5408	62	74faabfbd838	0xd2dd0	91.7086	
-playassetload	?BuildMusicCategoryTable@CPlay@@UAEHH@Z	100.0000	100.0000	7	3c46683289b3	0xdba30	100.0000	
-playassetload	?BuildWorldLevelPath@CPlay@@UAEHH@Z	100.0000	100.0000	8	2ddb8b193e17	0xdbc80	100.0000	
+playassetload	?LoadMusicSequences@CPlay@@UAEHH@Z	100.0000	100.0000	7	3c46683289b3	0xdba30	100.0000	
+playassetload	?LoadLevelWorld@CPlay@@UAEHH@Z	100.0000	100.0000	8	2ddb8b193e17	0xdbc80	100.0000	
 playassetload	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	7	8c9934c59d8c	0xdb600	100.0000	
 playassetload	?LoadGameAnims@CPlay@@QAEHH@Z	100.0000	100.0000	7	b30e0fb721be	0xdb9b0	100.0000	
 playassetload	?LoadGameImages@CPlay@@QAEHH@Z	100.0000	100.0000	7	71442c5af3de	0xdb8a0	100.0000	
@@ -3495,7 +3495,7 @@ playassetload	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	6	607c1f690ac2	0x
 playassetload	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	7	e05acb41e137	0xdb7e0	100.0000	
 playassetload	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	6	9f0b710dd4c6	0xdb6c0	100.0000	
 playassetload	?SetAssetGroupLoaded@CState@@QAEHABVCString@@HHPAVCMulti@@@Z	100.0000	100.0000	19	aa72b161fb6b	0xdca70	100.0000	
-playassetload	?SetEffectSpriteDurations@CPlay@@QAEHXZ	100.0000	100.0000	18	dfe8edd18e55	0xdc060	100.0000	
+playassetload	?ConfigureSoundReplayDelays@CPlay@@QAEHXZ	100.0000	100.0000	18	dfe8edd18e55	0xdc060	100.0000	
 playassetload	?SetGruntTypeAssetsLoaded@CPlay@@QAEHW4PickupType@@HHPAVCMulti@@@Z	100.0000	100.0000	2	3e662d208338	0xdc6d0	100.0000	
 playassetload	?UnloadGruntAndWarlordAssets@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	4	c8f01a942ec7	0xdd340	100.0000	
 projectile	??0CBoomerang@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	133871ebd19b	0xe0650	100.0000	
