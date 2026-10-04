@@ -366,28 +366,29 @@ i32 CStatusBarMgr::SetCollapsedSpritePosition(i32 x, i32 y) {
 }
 
 RVA(0x000fe8a0, 0x4e)
-i32 CStatusBarMgr::HitTestCollapsedSprite(i32 x, i32 y) {
-    CWwdSpriteObject* r = m_collapsedSprite;
-    CImage* L = r->GetFrameImage();
-    i32 xlo = r->m_screenX - L->GetAnchorX();
-    i32 ylo = r->m_screenY - L->GetAnchorY();
-    i32 xhi = L->GetWidth() + xlo;
-    i32 yhi = L->GetHeight() + ylo;
-    if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
+i32 CStatusBarMgr::HitTestCollapsedSprite(i32 screenX, i32 screenY) {
+    CWwdSpriteObject* collapsedSprite = m_collapsedSprite;
+    CImage* frame = collapsedSprite->GetFrameImage();
+    i32 imageLeft = collapsedSprite->m_screenX - frame->GetAnchorX();
+    i32 imageTop = collapsedSprite->m_screenY - frame->GetAnchorY();
+    i32 imageRight = frame->GetWidth() + imageLeft;
+    i32 imageBottom = frame->GetHeight() + imageTop;
+    if (screenX >= imageRight || screenX < imageLeft || screenY >= imageBottom
+        || screenY < imageTop) {
         return 0;
     }
     return 1;
 }
 
 RVA(0x000fe910, 0xc30)
-i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
-    CStatusBarItem* w = HitTestItems(x, y);
-    if (w == NULL) {
+i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 screenX, i32 screenY) {
+    CStatusBarItem* item = HitTestItems(screenX, screenY);
+    if (item == NULL) {
         return 1;
     }
-    w->OnClick(mouseFlags, x, y);
-    SbiCommandId cmd = w->GetCommandId();
-    switch (w->GetTab()) {
+    item->OnClick(mouseFlags, screenX, screenY);
+    SbiCommandId command = item->GetCommandId();
+    switch (item->GetTab()) {
         case TAB_CONTROLS:
             if (m_gameplayControlsDisabled != false) {
                 break;
@@ -395,14 +396,14 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
-            switch (cmd) {
+            switch (command) {
                 case SBICMD_TAB_STATZ:
                 case SBICMD_TAB_GRUNTZ:
                 case SBICMD_TAB_RESOURCE:
                 case SBICMD_TAB_MULTIPLAYER:
                 case SBICMD_TAB_GAME:
                     HiCueFind();
-                    SetButtonState(cmd, MENUITEM_SELECTED);
+                    SetButtonState(command, MENUITEM_SELECTED);
                     return 1;
                 case SBICMD_DOCK_LEFT:
                     HiCueFind();
@@ -424,7 +425,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (m_levelOverlayActive != false) {
                 break;
             }
-            switch (cmd) {
+            switch (command) {
                 case SBICMD_PAUSE:
                     HiCueFind();
                     PostGameWindowCommand(0x8007);
@@ -468,14 +469,14 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                     }
                     HiCueLookup();
                     {
-                        CPlay* sm = static_cast<CPlay*>(g_gameReg->m_curState);
+                        CPlay* playState = static_cast<CPlay*>(g_gameReg->m_curState);
                         if (m_destructWarningState == DESTRUCT_WARNING_INACTIVE) {
                             m_destructWarningState = DESTRUCT_WARNING_FORWARD;
                             m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
                             m_destructWarningClock.Start(
                                 g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32)
                             );
-                            sm->SetDefeatCountdown(true, 0xbb7);
+                            playState->SetDefeatCountdown(true, 0xbb7);
                         } else {
                             CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                             m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
@@ -483,7 +484,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                             if (destructButtonImage) {
                                 destructButtonImage->SetFrameIndex(1);
                             }
-                            sm->SetDefeatCountdown(false, 0xbb7);
+                            playState->SetDefeatCountdown(false, 0xbb7);
                         }
                     }
                     return 1;
@@ -499,7 +500,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
-            switch (cmd) {
+            switch (command) {
                 case SBICMD_CURSOR_TARGET_FIRST + 0x0:
                 case SBICMD_CURSOR_TARGET_FIRST + 0x1:
                 case SBICMD_CURSOR_TARGET_FIRST + 0x2:
@@ -516,7 +517,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_CURSOR_TARGET_FIRST + 0xd:
                 case SBICMD_CURSOR_TARGET_FIRST + 0xe:
                     HiCueLookup();
-                    PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
+                    PlaceCursorTarget(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
                     return 1;
                 case SBICMD_STAT_TOGGLE_FIRST + 0x0:
                 case SBICMD_STAT_TOGGLE_FIRST + 0x1:
@@ -534,7 +535,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_STAT_TOGGLE_FIRST + 0xd:
                 case SBICMD_STAT_TOGGLE_FIRST + 0xe:
                     HiCueLookup();
-                    ToggleUnitSample(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
+                    ToggleUnitSample(IDX(command) - IDX(SBICMD_STAT_TOGGLE_FIRST));
                     return 1;
                 default:
                     return 0;
@@ -547,11 +548,11 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
-            if (cmd < SBICMD_MULTIPLAYER_HEAD_FIRST || cmd > SBICMD_MULTIPLAYER_HEAD_LAST) {
+            if (command < SBICMD_MULTIPLAYER_HEAD_FIRST || command > SBICMD_MULTIPLAYER_HEAD_LAST) {
                 return 0;
             }
             HiCueLookup();
-            m_multiplayerPlayerIndex = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
+            m_multiplayerPlayerIndex = IDX(command) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
             ResetWidgets(false);
             TryActivate();
             RequestRedraw();
@@ -564,10 +565,10 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
-            if (cmd < SBICMD_GRUNT_SLOT_FIRST || cmd > SBICMD_GRUNT_SLOT_LAST) {
+            if (command < SBICMD_GRUNT_SLOT_FIRST || command > SBICMD_GRUNT_SLOT_LAST) {
                 return 0;
             }
-            SelectGruntOvenForPlacement(IDX(cmd) - IDX(SBICMD_GRUNT_SLOT_FIRST));
+            SelectGruntOvenForPlacement(IDX(command) - IDX(SBICMD_GRUNT_SLOT_FIRST));
             return 1;
 
         case TAB_RESOURCE:
@@ -577,14 +578,14 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
-            switch (cmd) {
+            switch (command) {
                 case SBICMD_TOOL_RESOURCE_CATEGORY:
                 case SBICMD_TOOL_RESOURCE_UPPER:
                 case SBICMD_TOOL_RESOURCE_MIDDLE:
                 case SBICMD_TOOL_RESOURCE_LOWER:
                     SelectToolResource(
                         static_cast<StatusBarHighlightRow>(
-                            IDX(cmd) - IDX(SBICMD_TOOL_RESOURCE_FIRST)
+                            IDX(command) - IDX(SBICMD_TOOL_RESOURCE_FIRST)
                         )
                     );
                     return 1;
@@ -594,7 +595,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_TOY_RESOURCE_LOWER:
                     SelectToyResource(
                         static_cast<StatusBarHighlightRow>(
-                            IDX(cmd) - IDX(SBICMD_TOY_RESOURCE_FIRST)
+                            IDX(command) - IDX(SBICMD_TOY_RESOURCE_FIRST)
                         )
                     );
                     return 1;
@@ -604,7 +605,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_BRICK_RESOURCE_LOWER:
                     SelectBrickResource(
                         static_cast<StatusBarHighlightRow>(
-                            IDX(cmd) - IDX(SBICMD_BRICK_RESOURCE_FIRST)
+                            IDX(command) - IDX(SBICMD_BRICK_RESOURCE_FIRST)
                         )
                     );
                     return 1;
@@ -612,7 +613,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             break;
 
         case TAB_DIALOG:
-            switch (cmd) {
+            switch (command) {
                 case SBICMD_DIALOG_PRIMARY:
                     if (g_gameReg->m_triggerMgr->m_finishState == FINISH_STATE_VICTORY) {
                         HiCueLookup();
@@ -665,26 +666,26 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
 }
 
 RVA(0x000ff850, 0x121)
-i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
-    CStatusBarItem* r = HitTestItems(x, y);
-    if (r == NULL) {
+i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 screenX, i32 screenY) {
+    CStatusBarItem* item = HitTestItems(screenX, screenY);
+    if (item == NULL) {
         return 1;
     }
-    r->OnDoubleClick(keyFlags, x, y);
-    SbiCommandId cmd = r->GetCommandId();
-    switch (r->GetTab()) {
+    item->OnDoubleClick(keyFlags, screenX, screenY);
+    SbiCommandId command = item->GetCommandId();
+    switch (item->GetTab()) {
         case TAB_STATZ:
             if (m_gameplayControlsDisabled == false
                 && g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() != false
-                && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
+                && command >= SBICMD_CURSOR_TARGET_FIRST && command <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
-                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
+                PlaceCursorTarget(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
                 return 1;
             }
             break;
     }
 
-    return HandleClick(keyFlags, x, y);
+    return HandleClick(keyFlags, screenX, screenY);
 }
 
 RVA(0x000ff9d0, 0x8)
@@ -693,35 +694,35 @@ i32 CStatusBarMgr::OnPointerRelease(i32, i32, i32) {
 }
 
 RVA(0x000ff9f0, 0xe4)
-i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
-    CStatusBarItem* r = HitTestItems(x, y);
-    if (r == NULL) {
+i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 screenX, i32 screenY) {
+    CStatusBarItem* item = HitTestItems(screenX, screenY);
+    if (item == NULL) {
         ClearButtonHighlights(TAB_ALL);
         return 1;
     }
-    r->OnPointerDrag(keyFlags, x, y);
-    if (r->GetKind() != SBI_KIND_MENU_ITEM) {
+    item->OnPointerDrag(keyFlags, screenX, screenY);
+    if (item->GetKind() != SBI_KIND_MENU_ITEM) {
         ClearButtonHighlights(TAB_ALL);
         return 1;
     }
-    SbiCommandId cmd = r->GetCommandId();
+    SbiCommandId command = item->GetCommandId();
     if (m_gameplayControlsDisabled == false) {
-        if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
-            SetButtonState(cmd, MENUITEM_HIGHLIGHT);
+        if (command >= SBICMD_TAB_FIRST && command <= SBICMD_TAB_LAST) {
+            SetButtonState(command, MENUITEM_HIGHLIGHT);
         } else {
             ClearButtonHighlights(TAB_CONTROLS);
         }
     }
     if (m_activeTab == TAB_GAME) {
-        if (r->GetTab() == TAB_GAME) {
-            SetButtonState(cmd, MENUITEM_HIGHLIGHT);
+        if (item->GetTab() == TAB_GAME) {
+            SetButtonState(command, MENUITEM_HIGHLIGHT);
         } else {
             ClearButtonHighlights(TAB_GAME);
         }
     }
     if (m_levelOverlayActive) {
-        if (r->GetTab() == TAB_DIALOG) {
-            SetButtonState(cmd, MENUITEM_HIGHLIGHT);
+        if (item->GetTab() == TAB_DIALOG) {
+            SetButtonState(command, MENUITEM_HIGHLIGHT);
             return 1;
         }
         ClearButtonHighlights(TAB_GAME);

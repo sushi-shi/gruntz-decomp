@@ -139,7 +139,7 @@ public:
     i32 PrepareNextResource();
     i32 Initialize(CGameWorld* world);
     i32 Render();
-    i32 HandleClick(i32 mouseFlags, i32 x, i32 y);
+    i32 HandleClick(i32 mouseFlags, i32 screenX, i32 screenY);
     i32 UpdateStatusBar(i32 deltaMs);
     void BuildGameTabResumeButton(b32 show);
     void BuildGameTabPauseButton();
@@ -192,10 +192,10 @@ public:
         i32 frame,
         i32 extra
     );
-    i32 HandleDoubleClick(i32 keyFlags, i32 x, i32 y);
+    i32 HandleDoubleClick(i32 keyFlags, i32 screenX, i32 screenY);
 
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
-    i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
+    i32 HandlePointerDrag(i32 keyFlags, i32 screenX, i32 screenY);
     CStatusBarItem* HitTestItems(i32 screenX, i32 screenY);
     void ResetWidgets(b32 deleteCollapsedSprite);
     void ClearActiveTabContent();
@@ -225,7 +225,7 @@ public:
     i32 SetDockState(StatusBarDock state);
     i32 RestoreStatusBar();
     i32 SetCollapsedSpritePosition(i32 x, i32 y);
-    i32 HitTestCollapsedSprite(i32 x, i32 y);
+    i32 HitTestCollapsedSprite(i32 screenX, i32 screenY);
     i32 QueuePickupReward(i32 pickupValue, i32 score);
     void DiscardSelectedResource(i32 pickupValue);
 
