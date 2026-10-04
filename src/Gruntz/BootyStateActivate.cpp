@@ -128,28 +128,28 @@ const Coord g_bootyFlagPos[4] = {{218, 180}, {334, 180}, {450, 180}, {566, 180}}
 DATA(0x001e9158)
 const Coord g_bootyTabPos[4] = {{218, 138}, {334, 138}, {450, 138}, {566, 138}};
 DATA(0x001e9178)
-const RECT s_col1Rects[4] =
+const RECT s_curseCountRects[4] =
     {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
 DATA(0x001e91b8)
-const RECT s_col2Rects[4] =
+const RECT s_powerupCountRects[4] =
     {{200, 372, 284, 422}, {316, 372, 400, 422}, {432, 372, 516, 422}, {548, 372, 632, 422}};
 DATA(0x001e91f8)
-const RECT s_col3Rects[4] =
+const RECT s_toyCountRects[4] =
     {{200, 329, 284, 379}, {316, 329, 400, 379}, {432, 329, 516, 379}, {548, 329, 632, 379}};
 DATA(0x001e9238)
-const RECT s_col4Rects[4] =
+const RECT s_toolCountRects[4] =
     {{200, 286, 284, 336}, {316, 286, 400, 336}, {432, 286, 516, 336}, {548, 286, 632, 336}};
 DATA(0x001e9278)
-const RECT s_col5Rects[4] =
+const RECT s_gruntCountRects[4] =
     {{200, 243, 284, 293}, {316, 243, 400, 293}, {432, 243, 516, 293}, {548, 243, 632, 293}};
 DATA(0x001e92b8)
-const RECT s_col6Rects[4] =
+const RECT s_killCountRects[4] =
     {{200, 200, 284, 250}, {316, 200, 400, 250}, {432, 200, 516, 250}, {548, 200, 632, 250}};
 DATA(0x001e92f8)
-const RECT s_colorRects[4] =
+const RECT s_playerNameRects[4] =
     {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
 DATA(0x001e9338)
-const RECT s_labelRects[7] = {
+const RECT s_battleStatLabelRects[7] = {
     {45, 155, 175, 215},
     {50, 198, 180, 258},
     {34, 241, 172, 301},
@@ -1923,16 +1923,16 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (tint == NULL) {
         return 0;
     }
-    m_fortSprite = CreateSimpleAnimationSprite(0);
-    if (m_fortSprite == NULL) {
+    m_winnerFortSprite = CreateSimpleAnimationSprite(0);
+    if (m_winnerFortSprite == NULL) {
         return 0;
     }
-    m_fortSprite->SetImageSetByName("LEVEL_FORT");
-    m_fortSprite->SetAnimationByName("GAME_CYCLE100", 0);
-    m_fortSprite->SetDrawFill(SHADE_PAL_16, tint);
-    m_fortSprite->Hide();
-    SET_SCREEN_POS(m_fortSprite, 0x64, 0x64);
-    m_fortSprite->Show();
+    m_winnerFortSprite->SetImageSetByName("LEVEL_FORT");
+    m_winnerFortSprite->SetAnimationByName("GAME_CYCLE100", 0);
+    m_winnerFortSprite->SetDrawFill(SHADE_PAL_16, tint);
+    m_winnerFortSprite->Hide();
+    SET_SCREEN_POS(m_winnerFortSprite, 0x64, 0x64);
+    m_winnerFortSprite->Show();
 
     CString joyKey;
     CString bootyKey;
@@ -1944,18 +1944,18 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         "GRUNTZ_WARLORDZ_%s_BOOTY",
         static_cast<const char*>(GetWarlordName(GetWinningPlayerIndex()))
     );
-    m_warlordBooty = CreateSimpleAnimationSprite(0);
-    if (m_warlordBooty == NULL) {
+    m_winnerWarlordSprite = CreateSimpleAnimationSprite(0);
+    if (m_winnerWarlordSprite == NULL) {
         return 0;
     }
-    m_warlordBooty->SetImageSetByName(joyKey);
-    m_warlordBooty->SetAnimationByName(bootyKey, 0);
-    m_warlordBooty->SetDrawFill(SHADE_PAL_16, tint);
-    m_warlordBooty->Hide();
-    SET_SCREEN_POS(m_warlordBooty, 0x64, 0x64);
-    CWwdSpriteObject* sorted = m_warlordBooty;
+    m_winnerWarlordSprite->SetImageSetByName(joyKey);
+    m_winnerWarlordSprite->SetAnimationByName(bootyKey, 0);
+    m_winnerWarlordSprite->SetDrawFill(SHADE_PAL_16, tint);
+    m_winnerWarlordSprite->Hide();
+    SET_SCREEN_POS(m_winnerWarlordSprite, 0x64, 0x64);
+    CWwdSpriteObject* sorted = m_winnerWarlordSprite;
     sorted->SetSortKey(SORTKEY_BOOTY_WARLORD);
-    m_warlordBooty->Show();
+    m_winnerWarlordSprite->Show();
 
     const Coord* flagPos = g_bootyFlagPos;
     i32 w = 0;
@@ -2324,27 +2324,27 @@ void CMultiBootyState::DrawBattleStats() {
     for (i = 0; i < 4; i++) {
         if (g_gameReg->GetPlayer(i).HasJoinedRound() != false) {
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetCursePickupCounts(i), 4));
-            rc.CopyRect(&s_col1Rects[i]);
+            rc.CopyRect(&s_curseCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetTimedPowerupPickupCounts(i), 7));
-            rc.CopyRect(&s_col2Rects[i]);
+            rc.CopyRect(&s_powerupCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetToyPickupCounts(i), 10));
-            rc.CopyRect(&s_col3Rects[i]);
+            rc.CopyRect(&s_toyCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetToolPickupCounts(i), 22));
-            rc.CopyRect(&s_col4Rects[i]);
+            rc.CopyRect(&s_toolCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", g_gameReg->GetGameStats()->m_gruntzSpawnedByPlayer[i]);
-            rc.CopyRect(&s_col5Rects[i]);
+            rc.CopyRect(&s_gruntCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->GetGameStats())->CountKillsForPlayer(i));
-            rc.CopyRect(&s_col6Rects[i]);
+            rc.CopyRect(&s_killCountRects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
@@ -2374,7 +2374,7 @@ void CMultiBootyState::DrawBattleStats() {
                 s = "Cursez:";
                 break;
         }
-        rc.CopyRect(&s_labelRects[c]);
+        rc.CopyRect(&s_battleStatLabelRects[c]);
         DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
@@ -2436,7 +2436,7 @@ void CMultiBootyState::DrawBattleStats() {
                     break;
             }
             s.Format("%s", static_cast<const char*>(player->GetName()));
-            rc.CopyRect(&s_colorRects[i]);
+            rc.CopyRect(&s_playerNameRects[i]);
             DrawTextToOverlaySurface(
                 m_world,
                 &s,
@@ -2553,7 +2553,7 @@ i32 CMultiBootyState::OnPaint() {
 }
 
 RVA(0x0001f8a0, 0x30)
-i32 CMultiBootyState::PostCommandIfKey() {
+i32 CMultiBootyState::HandleContinueInput() {
     if (m_sequenceState == BOOTYSEQ_PERFECT_BONUS) {
         PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
@@ -2562,17 +2562,17 @@ i32 CMultiBootyState::PostCommandIfKey() {
 
 RVA(0x0001f8e0, 0x8)
 i32 CMultiBootyState::OnLButtonDown(i32, i32, i32) {
-    return PostCommandIfKey();
+    return HandleContinueInput();
 }
 
 RVA(0x0001f900, 0x8)
 i32 CMultiBootyState::OnRButtonDown(i32, i32, i32) {
-    return PostCommandIfKey();
+    return HandleContinueInput();
 }
 
 RVA(0x0001f920, 0x8)
 i32 CMultiBootyState::OnKeyDown(i32, i32) {
-    return PostCommandIfKey();
+    return HandleContinueInput();
 }
 
 RVA(0x0001f940, 0x4c)

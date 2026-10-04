@@ -273,7 +273,7 @@ public:
     i32 Paint();
     i32 BuildBootyGruntIdleAnimation();
 
-    i32 PostCommandIfKey();
+    i32 HandleContinueInput();
 
     // @identity-TODO: construction and activation zero this word; no semantic read.
     i32 m_reserved1b4;
@@ -286,8 +286,8 @@ public:
     CWwdSpriteObject* m_curseIcons[4];
     CWwdSpriteObject* m_tabSprites[4];
     CWwdSpriteObject* m_flagSprites[4];
-    CWwdSpriteObject* m_warlordBooty;
-    CWwdSpriteObject* m_fortSprite;
+    CWwdSpriteObject* m_winnerWarlordSprite;
+    CWwdSpriteObject* m_winnerFortSprite;
 };
 
 #endif // SRC_GRUNTZ_GAMEMODE_H
