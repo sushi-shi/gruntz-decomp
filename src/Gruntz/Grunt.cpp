@@ -249,7 +249,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_facing = g_gruntMoveDirSouth;
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
-    m_object->m_moveMode = MOVE_GROUNDED;
+    m_object->SetMoveMode(MOVE_GROUNDED);
     m_reserved430 = 0;
     m_reserved42c = 0;
 

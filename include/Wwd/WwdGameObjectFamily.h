@@ -92,6 +92,13 @@ public:
         return dispatch(this);
     }
 
+    MoveMode GetMoveMode() const {
+        return m_moveMode;
+    }
+    void SetMoveMode(MoveMode mode) {
+        m_moveMode = mode;
+    }
+
     void SetSpeedX(i32 speed) {
         m_speedX = speed;
     }

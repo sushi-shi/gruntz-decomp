@@ -20,7 +20,7 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
     i32 result = 0;
     i32 prevX = target->m_screenX;
     i32 prevY = target->m_screenY;
-    MoveMode moveMode = target->m_moveMode;
+    MoveMode moveMode = target->GetMoveMode();
 
     if (moveMode > MOVE_NONE) {
         if (moveMode > MOVE_GROUNDED_LAST) {
