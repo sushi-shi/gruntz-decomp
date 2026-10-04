@@ -27,12 +27,12 @@ public:
 
     int Update();
 
-    double m_angularVelocity;
+    double m_orbitAngularVelocity;
     DoubleVector2 m_position;
-    DoubleVector2 m_center;
-    DoubleVector2 m_offset;
-    double m_angle;
-    CWwdSpriteObject* m_focus;
+    DoubleVector2 m_orbitCenter;
+    DoubleVector2 m_orbitOffset;
+    double m_orbitAngle;
+    CWwdSpriteObject* m_orbitCenterObject;
 
     i32 m_targetPlayerIndex;
     i32 m_targetUnitIndex;
