@@ -248,7 +248,7 @@ public:
 
     void SetGameClock(i32 now, i32 delta, i32 abs);
     void ResetClockGlobals();
-    i32 TickStateMgrs();
+    i32 UpdateGameplayInput();
     void SetSoundEnabled(b32 enabled);
     i32 CheckSavedMode();
     i32 PaintCurrentState();

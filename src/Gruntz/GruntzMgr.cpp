@@ -3120,7 +3120,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
 }
 
 RVA(0x000920b0, 0x1c)
-i32 CGruntzMgr::TickStateMgrs() {
+i32 CGruntzMgr::UpdateGameplayInput() {
     g_inputMgr->PollAll();
     g_gameplayInput->Update();
     return 1;

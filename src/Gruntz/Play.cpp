@@ -691,7 +691,7 @@ i32 CPlay::Render() {
 
 RVA(0x000c9c20, 0x79)
 void CPlay::UpdateWorldFrame() {
-    TickStateMgrs();
+    UpdateGameplayInput();
     {
 
         CGameLevel* lvl = m_world->GetLevel();
@@ -745,7 +745,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
                     lvl->m_mainPlane->DeactivateDistantObjects();
                 }
             }
-            TickStateMgrs();
+            UpdateGameplayInput();
             {
                 CGameLevel* lvl = m_world->GetLevel();
                 if (lvl->m_mainPlane != NULL) {
@@ -776,7 +776,7 @@ i32 CPlay::ProfileInputFrame() {
     DWORD(WINAPI * tg)(void) = timeGetTime;
 
     i32 activateMs = static_cast<i32>(tg());
-    TickStateMgrs();
+    UpdateGameplayInput();
     activateMs = static_cast<i32>(tg() - static_cast<u32>(activateMs));
 
     i32 deactMs = static_cast<i32>(tg());
@@ -3244,8 +3244,8 @@ void CPlay::DrawDebugStats() {
 }
 
 RVA(0x000cfbb0, 0x8)
-void CPlay::TickStateMgrs() {
-    m_mgr->TickStateMgrs();
+void CPlay::UpdateGameplayInput() {
+    m_mgr->UpdateGameplayInput();
 }
 
 RVA(0x000cfbd0, 0x8f)

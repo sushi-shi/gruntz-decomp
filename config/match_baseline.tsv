@@ -2489,7 +2489,7 @@ gruntzmgr	?ShowMessageBox@CGruntzMgr@@QAEHPBDI@Z	100.0000	100.0000	5	e2a44f557db
 gruntzmgr	?ShowToggleMessage@CGruntzMgr@@QAEHPADH@Z	100.0000	100.0000	1	ed1ec5a4a8a0	0x8f9f0	100.0000	
 gruntzmgr	?StopAudioPlayback@CGruntzMgr@@QAEXXZ	100.0000	100.0000	6	3b568de5f9d5	0x8f740	100.0000	
 gruntzmgr	?SwitchToNextState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	d81d0d1bb217	0x8d6a0	100.0000	
-gruntzmgr	?TickStateMgrs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	98d321b5f329	0x920b0	100.0000	
+gruntzmgr	?UpdateGameplayInput@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	98d321b5f329	0x920b0	100.0000	
 gruntzmgr	?ToggleBaseLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	abe1836a76b0	0x8f0b0	100.0000	
 gruntzmgr	?ToggleHeightLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	5dd79518d531	0x8f060	100.0000	
 gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	8	fa079dd56f40	0x8efe0	100.0000	
@@ -3147,7 +3147,7 @@ multi	?ShowMultiplayerOptionsDialog@CMulti@@QAEXXZ	100.0000	100.0000	4	60ffdc400
 multi	?ShowMultiplayerPauseDialog@CMulti@@QAEXXZ	100.0000	100.0000	7	1b9e74b60997	0xbad40	100.0000	
 multi	?ShowNetworkMessage@CMulti@@QAEXPADH@Z	100.0000	100.0000	2	464bf3d241be	0xb7e30	100.0000	
 multi	?ShowNetworkMessageById@CMulti@@QAEXIH@Z	100.0000	100.0000	2	9b7d7a2699f1	0xb7ec0	100.0000	
-multi	?TickStateMgrs@CMulti@@UAEXXZ	100.0000	100.0000	1	711e932a66db	0xbd3c0	100.0000	
+multi	?UpdateGameplayInput@CMulti@@UAEXXZ	100.0000	100.0000	1	711e932a66db	0xbd3c0	100.0000	
 multi	?VerifyCustomLevel@CMulti@@QAEHPAVCNetSessionListNode@@PAVCNetPlayerNode@@@Z	100.0000	100.0000	7	150e86c9e177	0xb8fc0	100.0000	
 multi	?WaitForGameConfig@CMulti@@QAEHXZ	100.0000	100.0000	7	eabebf4f3dce	0xbca50	100.0000	
 multi	?WaitForOtherPlayers@CMulti@@QAEHXZ	100.0000	100.0000	15	3ccecff1b376	0xbb700	100.0000	
@@ -3477,7 +3477,7 @@ play	?ShrinkViewport@CPlay@@QAEHH@Z	100.0000	100.0000	9	70a57e9cf6fb	0xd8dc0	100
 play	?StartLevelPlay@CPlay@@QAEHXZ	96.7800	96.7800	31	f06a49d91b62	0xd60b0	96.7800	
 play	?StepScroll@CPlay@@QAEXXZ	100.0000	100.0000	6	811dca1566f5	0xd1ac0	100.0000	
 play	?StepViewportResize@CPlay@@QAEHXZ	100.0000	100.0000	2	46184550033e	0xd8d90	100.0000	
-play	?TickStateMgrs@CPlay@@UAEXXZ	100.0000	100.0000	2	383793d19014	0xcfbb0	100.0000	
+play	?UpdateGameplayInput@CPlay@@UAEXXZ	100.0000	100.0000	2	383793d19014	0xcfbb0	100.0000	
 play	?UpdateWorldFixedSteps@CPlay@@UAEHXZ	99.3137	99.3137	11	95160b149a7f	0xc9cc0	99.3137	
 play	?UpdateWorldFrame@CPlay@@UAEXXZ	100.0000	100.0000	12	d3b62d1539c0	0xc9c20	100.0000	
 play	?ValidateLevelTiles@CPlay@@QAEHXZ	91.7086	91.5408	62	74faabfbd838	0xd2dd0	91.7086	

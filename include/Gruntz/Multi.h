@@ -68,7 +68,7 @@ public:
     virtual i32 LoadLevel(i32 level, i32 unused) OVERRIDE;
 
     virtual void OnExit() OVERRIDE;
-    virtual void TickStateMgrs() OVERRIDE;
+    virtual void UpdateGameplayInput() OVERRIDE;
 
     CGruntzMgr* Mgr() {
         return m_mgr;

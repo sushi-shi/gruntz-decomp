@@ -134,7 +134,7 @@ public:
 
     virtual void DrawChatMessages(HDC dc);
 
-    virtual void TickStateMgrs();
+    virtual void UpdateGameplayInput();
 
     virtual void UpdateWorldFrame();
     virtual i32 UpdateWorldFixedSteps();

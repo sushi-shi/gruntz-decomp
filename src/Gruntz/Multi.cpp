@@ -568,7 +568,7 @@ i32 CMulti::Render() {
     if (m_session->AdvanceTick() && m_pollAbort == false) {
         tickAdvanced = 1;
     }
-    TickStateMgrs();
+    UpdateGameplayInput();
     CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
     if (mainPlane) {
         mainPlane->ActivateVisibleObjects();
@@ -3243,6 +3243,6 @@ i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     return CPlay::OnChar(charCode, keyData);
 }
 RVA(0x000bd3c0, 0x9)
-void CMulti::TickStateMgrs() {
-    m_mgr->TickStateMgrs();
+void CMulti::UpdateGameplayInput() {
+    m_mgr->UpdateGameplayInput();
 }
