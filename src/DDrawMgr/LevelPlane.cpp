@@ -703,7 +703,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     anim->m_tweakX = *p++;
     anim->m_tweakY = *p++;
     anim->m_counter = *p++;
-    anim->m_speed = *p++;
+    anim->SetSpeed(*p++);
     anim->m_width = *p++;
     anim->m_height = *p++;
     obj->m_direction = *p++;

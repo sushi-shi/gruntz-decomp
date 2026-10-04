@@ -66,6 +66,7 @@ rva	unit	function	lost_max	cur
 0x0984b0	ingameicon	?PeekCycle@CInGameIcon@@QAEHXZ	93.8843	93.7190
 0x0986b0	ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	96.3765	96.2956
 0x162010	levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	87.7566	83.2420
+0x0a3a20	lightfxrender	?DrawBorderRaw@CMinimap@@QAEXPAUtagRECT@@PADH@Z	98.4483	96.7931
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.2899
 0x183b60	menupage	?Draw@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9806
 0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4662	96.3919

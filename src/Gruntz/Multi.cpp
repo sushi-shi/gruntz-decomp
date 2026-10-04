@@ -461,7 +461,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_reserved5e8 = 0;
     m_accumTime = 0;
     m_lastFrameSyncTime = timeGetTime();
-    m_processedCommandTick = m_session->m_commandTick - 1;
+    m_processedCommandTick = m_session->GetCommandTick() - 1;
     m_outOfSync = false;
 
     if (CPlay::LoadByMode(mode, 0) == 0) {
@@ -494,7 +494,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_reserved5e8 = 0;
     m_accumTime = 0;
     m_lastFrameSyncTime = timeGetTime();
-    m_processedCommandTick = m_session->m_commandTick - 1;
+    m_processedCommandTick = m_session->GetCommandTick() - 1;
     m_outOfSync = false;
     Mgr()->ChatLog()->ClearMessages();
     m_session->ResetRound();
@@ -531,7 +531,7 @@ i32 CMulti::Render() {
 
     m_frameDelta = t - oldT;
     m_accumTime += m_frameDelta;
-    i32 newId = m_session->m_commandTick;
+    i32 newId = m_session->GetCommandTick();
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
         CGruntzCmdMgr* mgr = Mgr()->GetCommandMgr();
@@ -2051,7 +2051,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
             packet.m_rows[i].m_ready = static_cast<u8>(v);
             v = player->GetMaxGruntz();
             packet.m_rows[i].m_maxGruntz = static_cast<u8>(v);
-            packet.m_rows[i].m_networkPlayerId = player->m_networkPlayerId;
+            packet.m_rows[i].m_networkPlayerId = player->GetNetworkPlayerId();
             strcpy(packet.m_rows[i].m_name, static_cast<const char*>(player->GetName()));
         }
     }
@@ -2278,7 +2278,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     packet.m_active = true;
     v = player->GetMaxGruntz();
     packet.m_maxGruntz = static_cast<u8>(v);
-    v = player->m_networkPlayerId;
+    v = player->GetNetworkPlayerId();
     packet.m_networkPlayerId = v;
     strcpy(packet.m_name, static_cast<const char*>(player->GetName()));
 
@@ -2442,7 +2442,7 @@ i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
         return 0;
     }
 
-    CNetPlayerNode* player = Network()->GetPlayerNodeData(slot->m_networkPlayerId);
+    CNetPlayerNode* player = Network()->GetPlayerNodeData(slot->GetNetworkPlayerId());
 
     b32 humanControlled = slot->IsHumanControlled();
     if (player == NULL) {
@@ -2660,7 +2660,7 @@ i32 CMulti::Poll(i32 token) {
 
         for (i32 i = 0; i < 4; i++) {
             GruntzPlayer* player = &g_gameReg->GetPlayer(i);
-            if (player->m_networkPlayerId != m_localPlayerId && player->IsActive() != false
+            if (player->GetNetworkPlayerId() != m_localPlayerId && player->IsActive() != false
                 && player->IsHumanControlled() != false) {
                 if (m_levelChecksumReceived[i] == 0) {
                     allAcked = 0;
@@ -2705,8 +2705,8 @@ i32 CMulti::CreateSession() {
         return 0;
     }
 
-    Session()->m_localPlayer = LocalPlayer();
-    i32 commandTickSnapshot = m_session->m_commandTick;
+    Session()->SetLocalPlayer(LocalPlayer());
+    i32 commandTickSnapshot = m_session->GetCommandTick();
     u8 b = static_cast<u8>(commandTickSnapshot);
     if (b == 0) {
         b = 0x7f;
@@ -2721,7 +2721,7 @@ i32 CMulti::CreateSession() {
         if (player->IsActive() != false && player->IsHumanControlled() != false) {
 
             state = NETSLOT_LOCAL;
-            if (player->m_networkPlayerId != m_localPlayerId) {
+            if (player->GetNetworkPlayerId() != m_localPlayerId) {
                 state = NETSLOT_REMOTE;
             }
         }
@@ -2864,7 +2864,7 @@ void CMulti::CheckDropTimeout() {
     if (slot == NULL) {
         return;
     }
-    g_dropPlayerId = slot->GetPlayer()->m_networkPlayerId;
+    g_dropPlayerId = slot->GetPlayer()->GetNetworkPlayerId();
     g_sessionName = slot->GetPlayerName();
     BroadcastValueMessage(NETMSG_DROP_TIMEOUT, g_dropPlayerId, DPSEND_GUARANTEED);
     ShowDropPlayerDialog();

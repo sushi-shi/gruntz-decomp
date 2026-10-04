@@ -83,7 +83,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         }
     }
 
-    i32 time = m_object->GetLogicRecord()->m_speed;
+    i32 time = m_object->GetLogicRecord()->GetSpeed();
     if (time == 0) {
         time = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 1000);
     }

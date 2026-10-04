@@ -339,7 +339,7 @@ i32 CNetSession::RelayDrainingRecords() {
                                     record,
                                     flags,
                                     sourceIndex,
-                                    recipient->GetPlayer()->m_networkPlayerId
+                                    recipient->GetPlayer()->GetNetworkPlayerId()
                                 )) {
                                 count++;
                             }
@@ -457,7 +457,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
 
     i32 status = m_netMgr->SendById(
         m_localPlayer->GetPlayerId(),
-        slot->GetPlayer()->m_networkPlayerId,
+        slot->GetPlayer()->GetNetworkPlayerId(),
         0,
         &g_netCmdSendMsg,
         entry->m_payloadLength + offsetof(NetCmdSendMsg, m_payload)
@@ -488,7 +488,7 @@ void CNetSession::ResetLatencies() {
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindSlotByPlayerId(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
-        if (m_slots[i].GetPlayer()->m_networkPlayerId == playerId) {
+        if (m_slots[i].GetPlayer()->GetNetworkPlayerId() == playerId) {
             return &m_slots[i];
         }
     }

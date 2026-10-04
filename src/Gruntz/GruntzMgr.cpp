@@ -1076,7 +1076,7 @@ i32 CMulti::UnusedPlayQuery() {
 
 RVA(0x0008d220, 0xa)
 i32 CMulti::GetFrame() {
-    return m_session->m_commandTick;
+    return m_session->GetCommandTick();
 }
 
 RVA_COMPGEN(0x0008d240, 0x1e, ??_GCMulti@@UAEPAXI@Z)
@@ -3517,7 +3517,7 @@ GruntzPlayer* CGruntzMgr::FindPlayerByNetworkId(i32 networkPlayerId) {
 
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* slot = &m_players[i];
-        if (slot && slot->m_networkPlayerId == networkPlayerId) {
+        if (slot && slot->GetNetworkPlayerId() == networkPlayerId) {
             return slot;
         }
     }
