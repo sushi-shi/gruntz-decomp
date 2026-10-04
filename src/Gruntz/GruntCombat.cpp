@@ -1358,6 +1358,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     return 1;
 }
 
+// @early-stop
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(
     i32 targetPlayerIndex,
