@@ -50,9 +50,9 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
 
     b32 inCombat = m_inCombat;
     if (inCombat != false) {
-        b32 neighborValid = m_neighborValid;
-        if (neighborValid == false) {
-            if (m_combatActive == false) {
+        b32 attackQueued = m_attackQueued;
+        if (attackQueued == false) {
+            if (m_attackWindupActive == false) {
                 if (m_stamina >= STAMINA_FULL) {
                     if (FindGridNeighbor(1) != NULL) {
                         m_defenderState = AISTATE_RETREAT;
@@ -61,7 +61,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     if (flag != 0 && g == NULL) {
                         goto retreat;
                     }
-                    if (m_inCombat == false || m_neighborValid != false) {
+                    if (m_inCombat == false || m_attackQueued != false) {
                         goto retreat;
                     }
                     RESET_GRUNT_COMBAT_STATE(this)
@@ -69,14 +69,14 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     if (flag != 0) {
                         goto retreat;
                     }
-                    if (m_inCombat == false || m_neighborValid != false) {
+                    if (m_inCombat == false || m_attackQueued != false) {
                         goto retreat;
                     }
                     RESET_GRUNT_COMBAT_STATE(this)
                 }
             }
         } else {
-            m_neighborValid = false;
+            m_attackQueued = false;
         }
     retreat:
         m_defenderState = AISTATE_RETREAT;
@@ -145,10 +145,10 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 || slot->IsEntranceCommitted() == false) {
                 goto ph1;
             }
-            if (m_neighborValid != false) {
+            if (m_attackQueued != false) {
                 return 1;
             }
-            if (m_combatActive != false) {
+            if (m_attackWindupActive != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -170,7 +170,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         }
 
         case AISTATE_RETREAT: {
-            if (m_combatActive != false) {
+            if (m_attackWindupActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {

@@ -95,9 +95,9 @@ i32 CGrunt::StepToolThiefBehavior() {
         FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
         b32 inCombat = this->m_inCombat;
         if (inCombat != false) {
-            b32 neighborValid = this->m_neighborValid;
-            if (neighborValid == false) {
-                if (this->m_combatActive != false) {
+            b32 attackQueued = this->m_attackQueued;
+            if (attackQueued == false) {
+                if (this->m_attackWindupActive != false) {
                     return 1;
                 }
                 if (this->m_stamina >= STAMINA_FULL) {
@@ -110,7 +110,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (this->m_inCombat == false) {
                         return 1;
                     }
-                    if (this->m_neighborValid != false) {
+                    if (this->m_attackQueued != false) {
                         return 1;
                     }
                     RESET_CURRENT_GRUNT_COMBAT_STATE
@@ -122,14 +122,14 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (this->m_inCombat == false) {
                         return 1;
                     }
-                    if (this->m_neighborValid != false) {
+                    if (this->m_attackQueued != false) {
                         return 1;
                     }
                     RESET_CURRENT_GRUNT_COMBAT_STATE
                     return 1;
                 }
             } else {
-                this->m_neighborValid = false;
+                this->m_attackQueued = false;
             }
             return 1;
         }

@@ -1428,10 +1428,10 @@ i32 CGrunt::CommitNeighbor(
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
     if (m_stamina < STAMINA_FULL || m_entranceActive != false) {
-        m_neighborValid = true;
+        m_attackQueued = true;
         return 1;
     }
-    m_neighborValid = false;
+    m_attackQueued = false;
     nb->HandleCombatContact(
         m_object->m_screenX,
         m_object->m_screenY,
@@ -1452,7 +1452,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
                 m_inCombat = true;
-                m_combatActive = true;
+                m_attackWindupActive = true;
                 CreateHealthSprite();
 
                 ArmGruntCombatTimeout(this);
@@ -1493,7 +1493,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         }
     }
 
-    m_neighborValid = false;
+    m_attackQueued = false;
     return NULL;
 }
 
@@ -1677,7 +1677,7 @@ static inline void ExpireBattlezCombatState(CGrunt* grunt) {
             eq = grunt->IsAnimationAct("A");
         }
         if (eq) {
-            if (grunt->m_inCombat != false && grunt->m_neighborValid == false) {
+            if (grunt->m_inCombat != false && grunt->m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(grunt)
             }
         }
@@ -2033,7 +2033,7 @@ afterTile:
                         break;
                 }
             }
-        } else if (m_inCombat != false && m_neighborValid == false && m_combatActive == false
+        } else if (m_inCombat != false && m_attackQueued == false && m_attackWindupActive == false
                    && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != false) {
             FindGridNeighbor(0);
         }
@@ -2086,7 +2086,7 @@ afterArrival:
         ExpireBattlezCombatState(this);
     } else {
         if (IsCombatTimeoutExpired()) {
-            if (m_inCombat != false && m_neighborValid == false) {
+            if (m_inCombat != false && m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(this)
             }
             if (m_arrived == false && m_hudRetireTiming.Expired()) {

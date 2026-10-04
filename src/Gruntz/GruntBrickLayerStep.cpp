@@ -59,8 +59,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
 
     b32 inCombat = m_inCombat;
     if (inCombat != false) {
-        if (m_neighborValid == false) {
-            if (m_combatActive != false) {
+        if (m_attackQueued == false) {
+            if (m_attackWindupActive != false) {
                 goto L_combat_active;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -81,22 +81,22 @@ i32 CGrunt::StepBrickLayerBehavior() {
                     goto L_combat_active;
                 }
             }
-            if (m_neighborValid != false) {
+            if (m_attackQueued != false) {
                 goto L_combat_active;
             }
             RESET_GRUNT_COMBAT_STATE(this)
         } else {
-            m_neighborValid = false;
+            m_attackQueued = false;
         }
     L_combat_active:
         return 1;
     }
 
     if (g != NULL) {
-        if (m_neighborValid != false) {
+        if (m_attackQueued != false) {
             return 1;
         }
-        if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
+        if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 this->RecycleCoords();

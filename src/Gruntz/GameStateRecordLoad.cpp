@@ -100,8 +100,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Read(&m_reserved210, sizeof(m_reserved210));
     ar->Read(&m_struckPose, sizeof(m_struckPose));
-    ar->Read(&m_combatActive, sizeof(m_combatActive));
-    ar->Read(&m_neighborValid, sizeof(m_neighborValid));
+    ar->Read(&m_attackWindupActive, sizeof(m_attackWindupActive));
+    ar->Read(&m_attackQueued, sizeof(m_attackQueued));
     ar->Read(&m_inCombat, sizeof(m_inCombat));
     ar->Read(&m_daFlag, sizeof(m_daFlag));
     ar->Read(&m_entranceStamped, sizeof(m_entranceStamped));

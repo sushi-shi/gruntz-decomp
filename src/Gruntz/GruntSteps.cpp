@@ -232,7 +232,7 @@ void CGrunt::FaceTowardPixel(i32 x, i32 y) {
 
 RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
-    if (m_combatActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
+    if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
         return 1;
     }
     return 0;
@@ -806,7 +806,7 @@ applyTail:
     if (m_wingzEnabled != false) {
         LoadWingzGruntSprites(false);
     }
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
     m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
@@ -1030,8 +1030,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Write(&m_reserved210, sizeof(m_reserved210));
     ar->Write(&m_struckPose, sizeof(m_struckPose));
-    ar->Write(&m_combatActive, sizeof(m_combatActive));
-    ar->Write(&m_neighborValid, sizeof(m_neighborValid));
+    ar->Write(&m_attackWindupActive, sizeof(m_attackWindupActive));
+    ar->Write(&m_attackQueued, sizeof(m_attackQueued));
     ar->Write(&m_inCombat, sizeof(m_inCombat));
     ar->Write(&m_daFlag, sizeof(m_daFlag));
     ar->Write(&m_entranceStamped, sizeof(m_entranceStamped));

@@ -432,8 +432,8 @@ public:
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
-    b32 m_combatActive;
-    b32 m_neighborValid;
+    b32 m_attackWindupActive;
+    b32 m_attackQueued;
     b32 m_inCombat;
     i32 m_daFlag;
     b32 m_entranceStamped;

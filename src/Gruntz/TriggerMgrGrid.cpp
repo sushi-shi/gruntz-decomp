@@ -1173,7 +1173,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 }
                 SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
                 cell->FaceTowardPixel(bx, by);
-                if (cell->IsInCombat() != false && cell->m_neighborValid == false) {
+                if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
                     RESET_GRUNT_COMBAT_STATE(cell)
                 }
                 cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
@@ -1255,7 +1255,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
 
         CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
         cell->FaceTowardPixel(destination.m_x, destination.m_y);
-        if (cell->IsInCombat() != false && cell->m_neighborValid == false) {
+        if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
             RESET_GRUNT_COMBAT_STATE(cell)
         }
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
@@ -1279,7 +1279,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         moveKind = cell->m_moveKind;
     }
     cell->FaceTowardPixel(destination.m_x, destination.m_y);
-    cell->m_neighborValid = false;
+    cell->m_attackQueued = false;
     if (cell->IsInCombat() != false) {
         RESET_GRUNT_COMBAT_STATE(cell)
     }

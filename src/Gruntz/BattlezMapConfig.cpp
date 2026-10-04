@@ -797,8 +797,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 special = 0;
                             }
                             if (special != 0) {
-                                if (unit->IsInCombat() != false && unit->m_neighborValid == false
-                                    && unit->m_combatActive == false
+                                if (unit->IsInCombat() != false && unit->m_attackQueued == false
+                                    && unit->m_attackWindupActive == false
                                     && unit->m_stamina >= STAMINA_FULL) {
                                     if (unit->FindGridNeighbor(0) != NULL) {
                                         return 1;
@@ -1029,7 +1029,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
 
 resetEntrance: {
     b32 pw = unit->m_inCombat;
-    unit->m_neighborValid = false;
+    unit->m_attackQueued = false;
     if (pw == false) {
         return 1;
     }

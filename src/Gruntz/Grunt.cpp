@@ -288,8 +288,8 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_toySprite = NULL;
     m_powerupSprite = NULL;
     m_reserved210 = 0;
-    m_combatActive = false;
-    m_neighborValid = false;
+    m_attackWindupActive = false;
+    m_attackQueued = false;
     m_arrivalActive = false;
     m_coordToggle = false;
     m_wingzEnabled = false;
@@ -2368,7 +2368,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
             SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
         } else {
-            if (m_inCombat != false && m_neighborValid == false) {
+            if (m_inCombat != false && m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(this)
             }
             if (IsAnimationAct("D")) {

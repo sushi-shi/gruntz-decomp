@@ -67,7 +67,7 @@ i32 CGrunt::LoadPickupSprites(
     if (m_wingzEnabled != false) {
         return 0;
     }
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
     if (m_activePickupType == PICKUP_WARPSTONE) {

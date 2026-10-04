@@ -398,7 +398,7 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
     m_gruntKind = GRUNT_NORMAL;
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);
@@ -634,7 +634,7 @@ finalize:
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);

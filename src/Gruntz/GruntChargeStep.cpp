@@ -54,9 +54,9 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
     b32 inCombat = m_inCombat;
     if (inCombat != false) {
-        b32 neighborValid = m_neighborValid;
-        if (neighborValid == false) {
-            if (m_combatActive != false) {
+        b32 attackQueued = m_attackQueued;
+        if (attackQueued == false) {
+            if (m_attackWindupActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -69,7 +69,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (m_inCombat == false) {
                     return 1;
                 }
-                if (m_neighborValid != false) {
+                if (m_attackQueued != false) {
                     return 1;
                 }
                 RESET_GRUNT_COMBAT_STATE(this)
@@ -81,13 +81,13 @@ i32 CGrunt::StepDumbChaserBehavior() {
             if (m_inCombat == false) {
                 return 1;
             }
-            if (m_neighborValid != false) {
+            if (m_attackQueued != false) {
                 return 1;
             }
             RESET_GRUNT_COMBAT_STATE(this)
             return 1;
         }
-        m_neighborValid = false;
+        m_attackQueued = false;
         return 1;
     }
 
@@ -172,7 +172,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                if (m_neighborValid != false || m_combatActive != false
+                if (m_attackQueued != false || m_attackWindupActive != false
                     || m_stamina < STAMINA_FULL) {
                     return 1;
                 }

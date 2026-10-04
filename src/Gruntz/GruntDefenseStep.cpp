@@ -52,10 +52,10 @@ i32 CGrunt::StepScrollGruntBehavior() {
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->IsEntranceCommitted() != false) {
-                if (m_neighborValid != false) {
+                if (m_attackQueued != false) {
                     return 1;
                 }
-                if (m_combatActive != false) {
+                if (m_attackWindupActive != false) {
                     return 1;
                 }
                 if (m_stamina < STAMINA_FULL) {

@@ -79,9 +79,9 @@ i32 CGrunt::StepGooSuckerBehavior() {
 
     b32 inCombat = m_inCombat;
     if (inCombat != false) {
-        b32 neighborValid = m_neighborValid;
-        if (neighborValid == false) {
-            if (m_combatActive != false) {
+        b32 attackQueued = m_attackQueued;
+        if (attackQueued == false) {
+            if (m_attackWindupActive != false) {
                 goto L_yes;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -94,7 +94,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (m_inCombat == false) {
                     goto L_yes;
                 }
-                if (m_neighborValid != false) {
+                if (m_attackQueued != false) {
                     goto L_yes;
                 }
             } else {
@@ -104,23 +104,23 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (m_inCombat == false) {
                     goto L_yes;
                 }
-                if (m_neighborValid != false) {
+                if (m_attackQueued != false) {
                     goto L_yes;
                 }
             }
             RESET_GRUNT_COMBAT_STATE(this)
         } else {
-            m_neighborValid = false;
+            m_attackQueued = false;
         }
     L_yes:
         return 1;
     }
 
     if (g != NULL) {
-        if (m_neighborValid != false) {
+        if (m_attackQueued != false) {
             return 1;
         }
-        if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
+        if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 this->RecycleCoords();

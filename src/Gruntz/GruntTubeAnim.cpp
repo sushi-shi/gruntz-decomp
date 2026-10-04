@@ -35,7 +35,7 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
 
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
 

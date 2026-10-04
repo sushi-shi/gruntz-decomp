@@ -51,10 +51,10 @@ i32 CGrunt::StepPostGuardBehavior() {
         m_defenderState = AISTATE_SEEK;
     }
     if (m_inCombat != false) {
-        if (m_neighborValid != false) {
+        if (m_attackQueued != false) {
             return 1;
         }
-        if (m_combatActive != false) {
+        if (m_attackWindupActive != false) {
             return 1;
         }
         if (m_stamina < STAMINA_FULL) {

@@ -58,9 +58,9 @@ i32 CGrunt::StepDiggerBehavior() {
 
     b32 inCombat = m_inCombat;
     if (inCombat != false) {
-        b32 neighborValid = m_neighborValid;
-        if (neighborValid == false) {
-            if (m_combatActive != false) {
+        b32 attackQueued = m_attackQueued;
+        if (attackQueued == false) {
+            if (m_attackWindupActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -73,12 +73,12 @@ i32 CGrunt::StepDiggerBehavior() {
                 if (m_inCombat == false) {
                     return 1;
                 }
-                if (m_neighborValid != false) {
+                if (m_attackQueued != false) {
                     return 1;
                 }
                 m_entranceActive = false;
-                m_combatActive = false;
-                m_neighborValid = false;
+                m_attackWindupActive = false;
+                m_attackQueued = false;
                 m_inCombat = false;
                 ResetEntranceAnimation(1, 0, 0);
                 return 1;
@@ -89,17 +89,17 @@ i32 CGrunt::StepDiggerBehavior() {
             if (m_inCombat == false) {
                 return 1;
             }
-            if (m_neighborValid != false) {
+            if (m_attackQueued != false) {
                 return 1;
             }
             m_entranceActive = false;
-            m_combatActive = false;
-            m_neighborValid = false;
+            m_attackWindupActive = false;
+            m_attackQueued = false;
             m_inCombat = false;
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        m_neighborValid = false;
+        m_attackQueued = false;
         return 1;
     }
 

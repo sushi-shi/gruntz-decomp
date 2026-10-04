@@ -108,8 +108,8 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
     m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_stamina >= STAMINA_FULL) {
-        if (m_neighborValid != false) {
-            m_neighborValid = false;
+        if (m_attackQueued != false) {
+            m_attackQueued = false;
             CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
             if (n != NULL && n->IsEntranceCommitted() != false) {
                 if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
@@ -141,7 +141,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
     SET_ANIMATION_ACT("F");
 
-    m_combatActive = true;
+    m_attackWindupActive = true;
 
     GruntAttackPose pose;
     switch (m_activePickupType) {
@@ -321,7 +321,7 @@ i32 CGrunt::StepAttackFire() {
         if (m_healthSprite != NULL) {
             CreateStaminaSprite();
         }
-        m_combatActive = false;
+        m_attackWindupActive = false;
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
@@ -362,7 +362,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             }
         }
 
-        if (m_inCombat != false && m_neighborValid == false) {
+        if (m_inCombat != false && m_attackQueued == false) {
             RESET_GRUNT_COMBAT_STATE(this)
         }
         m_entranceActive = true;
@@ -421,7 +421,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (walking != 0) {
 
         m_toyTileIndex = 0;
-        if (m_inCombat != false && m_neighborValid == false) {
+        if (m_inCombat != false && m_attackQueued == false) {
             RESET_GRUNT_COMBAT_STATE(this)
         }
         SET_ANIMATION_ACT("L");
@@ -756,7 +756,7 @@ i32 CGrunt::StepEntranceReinit() {
     if (IsAnimationAct("I")) {
         ClearMoveTileFx(this);
     }
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
     m_tileMoveCommitted = false;
@@ -920,7 +920,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     m_gruntKind = GRUNT_NORMAL;
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
 
@@ -1073,7 +1073,7 @@ tail:
         }
     }
 
-    m_combatActive = false;
+    m_attackWindupActive = false;
     CAniElement* pose = m_poseStruck[struckPose];
     SwitchAnimation(pose);
     i32 frame;
@@ -1169,7 +1169,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     FaceTowardTile(tileX, tileY);
     m_moveTile.m_x = tileX;
     m_moveTile.m_y = tileY;
-    if (m_inCombat != false && m_neighborValid == false) {
+    if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
 
