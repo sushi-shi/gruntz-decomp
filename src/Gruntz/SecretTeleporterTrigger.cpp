@@ -185,7 +185,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         o = m_object;
         CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
-            (o->m_score << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (o->GetScore() << TILE_SHIFT_PX) + TILE_HALF_PX,
             (o->m_points << TILE_SHIFT_PX) + TILE_HALF_PX,
             0,
             "Teleporter",
@@ -198,7 +198,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->SetSpeedY(m_object->m_speedY);
             spr->m_powerup = m_object->m_powerup;
             spr->m_damage = m_object->m_damage;
-            spr->m_score = m_object->m_score;
+            spr->SetScore(m_object->GetScore());
             spr->m_points = m_object->m_points;
             spr->m_health = 0;
             CWwdSpriteObject* eo = hit->m_object;

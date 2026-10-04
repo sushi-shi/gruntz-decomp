@@ -17,7 +17,7 @@ RVA(0x000476b0, 0x69)
 i32 CExplosion::Update() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
         CWwdSpriteObject* t = m_object;
-        if (t->m_score == 1) {
+        if (t->GetScore() == 1) {
             g_gameReg->GetTriggerMgr()
                 ->ApplyExplosion(t->m_screenX, t->m_screenY, 1, t->GetSmarts());
         }
