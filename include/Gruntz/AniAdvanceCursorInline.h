@@ -6,7 +6,7 @@
 #include <Gruntz/AniElementInline.h>
 
 inline i32 CAniAdvanceCursor::IsComplete() const {
-    return m_finished != false && m_frameTicksLeft == 0;
+    return m_finished != false && m_recordDurationRemaining == 0;
 }
 
 inline void CAniAdvanceCursor::AdvanceToNextRecord() {

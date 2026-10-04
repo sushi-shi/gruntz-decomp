@@ -17,7 +17,7 @@ class CAnimationSequence;
 class CFileMemBase;
 
 GZ_ENUM_CONST_BEGIN(AniAdvanceValue)
-    ANI_SCALE_ONE_BITS = 0x3f800000
+    ANI_DURATION_SCALE_ONE_BITS = 0x3f800000
 GZ_ENUM_CONST_END(AniAdvanceValue)
 
 class CAniAdvanceCursor : public CWapObj {
@@ -76,7 +76,8 @@ public:
 
     CAniFrameRecord* m_currentRecord;
     i32 m_recordIndex;
-    u32 m_frameTicksLeft;
+    // Units follow m_useElapsedTime: milliseconds or animation updates.
+    u32 m_recordDurationRemaining;
     b32 m_useElapsedTime;
     b32 m_finished;
     i32 m_consumeEvents;
@@ -84,8 +85,8 @@ public:
     i32 m_currentEventCode;
 
     union {
-        float m_scale;
-        i32 m_scaleBits;
+        float m_durationScale;
+        i32 m_durationScaleBits;
     };
 };
 

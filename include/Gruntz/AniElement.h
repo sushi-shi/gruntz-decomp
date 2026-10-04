@@ -46,7 +46,7 @@ public:
     i32 m_flags;
     CObArray m_records;
     char* m_name;
-    float m_scale;
+    float m_durationScale;
     i32 m_durationMs;
 };
 

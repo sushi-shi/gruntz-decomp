@@ -246,7 +246,7 @@ void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_boundObject = src;
     m_finished = true;
     m_animation = NULL;
-    m_scale = 1.0f;
+    m_durationScale = 1.0f;
     m_consumeEvents =
         HAS(static_cast<DDrawSurfaceMgrFlags>(src->OwnerMgr()->m_flags),
             SURFACEMGR_CONSUME_ANIMATION_EVENTS);
@@ -271,14 +271,14 @@ void CAniAdvanceCursor::SetAnimation(CAnimationSequence* src) {
     m_recordIndex = 0;
     e = src->RecordAt(0);
     m_currentRecord = e;
-    m_frameTicksLeft = 0;
+    m_recordDurationRemaining = 0;
     m_finished = false;
     v = e->m_eventCode;
     m_pendingEventCode = v;
     m_currentEventCode = v;
     {
-        float f = src->m_scale;
-        m_scale = f;
+        float f = src->m_durationScale;
+        m_durationScale = f;
     }
 }
 
@@ -295,11 +295,11 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     m_currentRecord = e;
     m_finished = false;
     i32 v = e->m_eventCode;
-    m_scale = 1.0f;
+    m_durationScale = 1.0f;
     m_pendingEventCode = v;
     m_currentEventCode = v;
     if (resetElapsedTime != 0) {
-        m_frameTicksLeft = 0;
+        m_recordDurationRemaining = 0;
     }
 }
 
@@ -309,17 +309,17 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         return -1;
     }
 
-    if (m_frameTicksLeft > 0) {
+    if (m_recordDurationRemaining > 0) {
         if (m_useElapsedTime != false) {
-            if (elapsed >= m_frameTicksLeft) {
-                m_frameTicksLeft = 0;
+            if (elapsed >= m_recordDurationRemaining) {
+                m_recordDurationRemaining = 0;
                 m_currentEventCode = m_pendingEventCode;
             } else {
-                m_frameTicksLeft -= elapsed;
+                m_recordDurationRemaining -= elapsed;
                 return m_currentEventCode;
             }
         } else {
-            m_frameTicksLeft -= 1;
+            m_recordDurationRemaining -= 1;
             return m_currentEventCode;
         }
     } else {
@@ -489,12 +489,12 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
         CAniFrameRecord* rd = m_currentRecord;
         i32 reload = rd->m_duration;
-        m_frameTicksLeft = reload;
+        m_recordDurationRemaining = reload;
         m_useElapsedTime = static_cast<u8>(!HAS(rd->m_flags, ANI_RECORD_FLAG_FRAME_COUNT));
 
-        if (m_scaleBits != ANI_SCALE_ONE_BITS) {
-            m_frameTicksLeft =
-                static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
+        if (m_durationScaleBits != ANI_DURATION_SCALE_ONE_BITS) {
+            m_recordDurationRemaining =
+                static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_durationScale));
         }
 
         i32 modeWord = IDX(rd->m_loopMode);
@@ -507,7 +507,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     m_recordIndex = 0;
                     m_currentRecord = static_cast<CAniFrameRecord*>(m_animation->AtChecked(0));
                     m_finished = false;
-                    m_scale = 1.0f;
+                    m_durationScale = 1.0f;
                     m_currentEventCode = m_pendingEventCode = m_currentRecord->m_eventCode;
                 }
                 break;
@@ -521,7 +521,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 if (m_currentRecord != NULL) {
                     m_finished = false;
-                    m_frameTicksLeft = 0;
+                    m_recordDurationRemaining = 0;
                     m_currentEventCode = m_pendingEventCode;
                     m_pendingEventCode = m_currentRecord->m_eventCode;
                 }
@@ -608,7 +608,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     if (m_consumeEvents != 0) {
-        if (m_frameTicksLeft > 0) {
+        if (m_recordDurationRemaining > 0) {
             i32 r = m_currentEventCode;
             m_currentEventCode = 0;
             return r;
@@ -617,7 +617,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         m_pendingEventCode = 0;
         return r;
     }
-    if (m_frameTicksLeft > 0) {
+    if (m_recordDurationRemaining > 0) {
         return m_currentEventCode;
     }
     return m_pendingEventCode;
@@ -669,13 +669,13 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
         return 0;
     }
     ar->Write(&m_recordIndex, sizeof(m_recordIndex));
-    ar->Write(&m_frameTicksLeft, sizeof(m_frameTicksLeft));
+    ar->Write(&m_recordDurationRemaining, sizeof(m_recordDurationRemaining));
     ar->Write(&m_useElapsedTime, sizeof(m_useElapsedTime));
     ar->Write(&m_finished, sizeof(m_finished));
     ar->Write(&m_consumeEvents, sizeof(m_consumeEvents));
     ar->Write(&m_pendingEventCode, sizeof(m_pendingEventCode));
     ar->Write(&m_currentEventCode, sizeof(m_currentEventCode));
-    ar->Write(&m_scale, sizeof(m_scale));
+    ar->Write(&m_durationScale, sizeof(m_durationScale));
     char buf[SERIAL_NAME_LEN];
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
@@ -693,13 +693,13 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
         return 0;
     }
     ar->Read(&m_recordIndex, sizeof(m_recordIndex));
-    ar->Read(&m_frameTicksLeft, sizeof(m_frameTicksLeft));
+    ar->Read(&m_recordDurationRemaining, sizeof(m_recordDurationRemaining));
     ar->Read(&m_useElapsedTime, sizeof(m_useElapsedTime));
     ar->Read(&m_finished, sizeof(m_finished));
     ar->Read(&m_consumeEvents, sizeof(m_consumeEvents));
     ar->Read(&m_pendingEventCode, sizeof(m_pendingEventCode));
     ar->Read(&m_currentEventCode, sizeof(m_currentEventCode));
-    ar->Read(&m_scale, sizeof(m_scale));
+    ar->Read(&m_durationScale, sizeof(m_durationScale));
     char buf[SERIAL_NAME_LEN];
     ar->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) == 0) {
@@ -718,7 +718,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
         }
         if (m_currentRecord != NULL) {
             m_finished = false;
-            m_frameTicksLeft = 0;
+            m_recordDurationRemaining = 0;
             m_currentEventCode = m_pendingEventCode;
             m_pendingEventCode = m_currentRecord->m_eventCode;
         }

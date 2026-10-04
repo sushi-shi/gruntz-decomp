@@ -831,7 +831,7 @@ CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
 RVA(0x00165460, 0x156)
 i32 CAnimationSequence::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
-    m_scale = 1.0f;
+    m_durationScale = 1.0f;
     m_durationMs = 0;
     const char* cursor = src->m_data;
     m_flags = src->m_flags | flags;
