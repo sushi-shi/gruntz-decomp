@@ -16,6 +16,7 @@
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -253,7 +254,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     }
     i32 band = unit->GetTargetTeam();
     if (band == -1) {
-        band = rand() % 4;
+        band = GetRandom(3);
         if (band == m_playerIndex) {
             band++;
         }

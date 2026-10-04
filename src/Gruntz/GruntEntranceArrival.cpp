@@ -161,7 +161,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
             pose = GRUNT_ATTACK2;
             break;
         default:
-            pose = static_cast<GruntAttackPose>(rand() % 2);
+            pose = static_cast<GruntAttackPose>(GetRandom(1));
             break;
     }
 
@@ -376,7 +376,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
         if (m_activePickupType == PICKUP_SCROLL) {
             SET_ANIMATION_ACT("P");
-            i32 toyIdx = rand() % 2;
+            i32 toyIdx = GetRandom(1);
             SwitchAnimationAndMaybeAdvance(m_poseToy[toyIdx], 0);
 
             DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
@@ -931,7 +931,7 @@ i32 CGrunt::StartExitAnimation() {
     SET_ANIMATION_ACT("B");
 
     CAniElement* found;
-    i32 r = rand() % 0x1e1;
+    i32 r = GetRandom(480);
     if (r > 0x140) {
         found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
         PLAY_VOICE_IF_VISIBLE(0x384);
@@ -1194,7 +1194,7 @@ i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
         m_toobWaterMode = (m_toobWaterMode == false);
     } else if (m_activePickupType == PICKUP_WAND) {
         i32 voiceBase;
-        if (rand() % 100 < 80) {
+        if (GetRandom(99) < 80) {
             pose = GRUNT_ITEM2;
             voiceBase = 0x41a;
         } else {

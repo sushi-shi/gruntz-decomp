@@ -9,6 +9,7 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -184,8 +185,8 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             i32 clip = 1;
             i32 baseTileY = base->m_screenY >> TILE_SHIFT_PX;
             i32 baseTileX = base->m_screenX >> TILE_SHIFT_PX;
-            i32 py = rand() % 4 + baseTileY - 2;
-            i32 px = rand() % 4 + baseTileX - 2;
+            i32 py = GetRandom(3) + baseTileY - 2;
+            i32 px = GetRandom(3) + baseTileX - 2;
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry =

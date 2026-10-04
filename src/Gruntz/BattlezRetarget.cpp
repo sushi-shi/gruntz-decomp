@@ -17,6 +17,7 @@
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -67,7 +68,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_moveBudget)) {
                 return 1;
             }
-            i32 r = rand() % 4;
+            i32 r = GetRandom(3);
             if (r == m_playerIndex) {
                 r++;
             }

@@ -20,6 +20,7 @@
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
@@ -446,9 +447,9 @@ i32 CCreditsState::FlashColor() {
     i32 color = RGB(255, 255, 255);
     if (m_fxEnabled) {
         if (m_flashTimer == 0) {
-            i32 r = rand() % 256;
-            i32 g = rand() % 256;
-            i32 b = rand() % 256;
+            i32 r = GetRandom(255);
+            i32 g = GetRandom(255);
+            i32 b = GetRandom(255);
             m_flashTimer = 0x12c;
             color = RGB(r, g, b);
             m_flashColor = color;

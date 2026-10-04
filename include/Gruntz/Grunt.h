@@ -10,6 +10,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DoubleVector.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
@@ -714,7 +715,7 @@ public:
     void ResetArrivalReroll() {
         ResetIdleAnimation(1, 1, 0);
         m_arrivalRerollTiming.Clear();
-        m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
+        m_arrivalRerollTiming.Start(GetRandom(29999) + 30000);
     }
     i32 UpdateIdleAnimation();
     void Deselect();

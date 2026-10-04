@@ -345,7 +345,7 @@ i32 CWarlord::UpdateMovingState() {
     }
 
     if (m_cooldownTimer.Expired()) {
-        if (rand() % 10 < 5) {
+        if (GetRandom(9) < 5) {
             ResolveIdleAnimation();
             return 0;
         }

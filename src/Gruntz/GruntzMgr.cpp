@@ -2,6 +2,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GruntzMgr.h>
 
 #include <Bute/ButeMgr.h>
@@ -2798,7 +2799,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                     ShadeMode st = fmt->m_drawType;
                     if (st != SHADE_DST_BY_LEVEL) {
                         set->SetAllTypes(SHADE_DST_BY_LEVEL);
-                        set->SetAllLightLevels(rand() % 256);
+                        set->SetAllLightLevels(GetRandom(255));
                         AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
                         set->SetAllTypes(SHADE_COPY);

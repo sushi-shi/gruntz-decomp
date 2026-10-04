@@ -1968,7 +1968,7 @@ i32 CTriggerMgr::SetRandomGruntColors(i32 skipPlayerIndex, b32 enable) {
                 CGrunt* grunt = *units;
                 if (grunt != NULL) {
                     if (enable != false) {
-                        i32 colorIndex = rand() % 0x11;
+                        i32 colorIndex = GetRandom(16);
                         if (grunt->m_savedColorIndex == -1) {
                             grunt->m_savedColorIndex = IDX(grunt->GetColorIndex());
                         }
