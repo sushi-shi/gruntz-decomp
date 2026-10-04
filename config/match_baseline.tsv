@@ -349,7 +349,7 @@ actionarea	?RegisterType@CProjActObj@@SAXXZ	100.0000	100.0000	4	c8b39d1196d9	0x8
 actionarea	?SerializeDispatch@CActionArea@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	6	06e1641cec4e	0x8600	100.0000	
 actionarea	?SerializeDispatch@CUserBase@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:369ccf71c95f	0x87d0	100.0000	
 actionarea	?StepAttackFire@CUserLogic@@UAEHXZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x8930	100.0000	
-actionarea	?Tick@CActionArea@@QAEHXZ	100.0000	100.0000	5	43616abbce9a	0x8440	100.0000	
+actionarea	?UpdateLightPulse@CActionArea@@QAEHXZ	100.0000	100.0000	5	43616abbce9a	0x8440	100.0000	
 actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	100.0000	100.0000	2	c52086b730af	0x9090	100.0000	
 actionoptionsmenubar	?Clear@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	2	b26a00c479de	0x92e0	100.0000	
 actionoptionsmenubar	?Deactivate@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	2	d511c7d46266	0x97f0	100.0000	
