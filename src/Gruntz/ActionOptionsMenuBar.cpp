@@ -378,7 +378,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 }
 
 RVA(0x0000a000, 0xac)
-void CDDrawWorkerHost::WorldToViewport(LONG* px, LONG* py) {
+void CLevelPlane::WorldToViewport(LONG* px, LONG* py) {
     if (m_flags & 0x4) {
         if (*px < 0) {
             *px += m_planePixelWidth;

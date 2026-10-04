@@ -24,7 +24,7 @@ static inline i32 ObjectTypeBits(u32 objectType, i32 mask) {
 static inline void DrawObjectDebugRect(
     CWwdGameObject* obj,
     const RECT& objectRect,
-    CDDrawWorkerHost* view,
+    CLevelPlane* view,
     CDDrawSurfacePair* drawHost
 ) {
     i32 ox = obj->m_screenX;

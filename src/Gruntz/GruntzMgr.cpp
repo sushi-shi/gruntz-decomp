@@ -1358,7 +1358,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     }
     if (m_curState->GetStateId() == GAMESTATE_PLAY || m_curState->GetStateId() == GAMESTATE_MULTI) {
         if (m_world->GetLevel() != NULL) {
-            CDDrawWorkerHost* f = m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* f = m_world->GetLevel()->m_mainPlane;
             if (f != NULL) {
                 if (w > f->GetPlanePixelWidth() || h > f->GetPlanePixelHeight()) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
@@ -1509,7 +1509,7 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
     switch (msg) {
         case WM_INITDIALOG: {
 
-            CDDrawWorkerHost* warp = g_gameReg->World()->GetLevel()->m_mainPlane;
+            CLevelPlane* warp = g_gameReg->World()->GetLevel()->m_mainPlane;
             i32 seedX = warp->GetScrollPixelX();
             i32 seedY = warp->GetScrollPixelY();
             SetDlgItemInt(hDlg, 0x40e, seedX, false);
@@ -1834,7 +1834,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
                 idx--;
             }
-            CDDrawWorkerHost* layer = view->GetPlane(idx - 1);
+            CLevelPlane* layer = view->GetPlane(idx - 1);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -1851,7 +1851,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = World()->GetLevel();
         if (view) {
-            CDDrawWorkerHost* layer = view->m_mainPlane;
+            CLevelPlane* layer = view->m_mainPlane;
             if (layer) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -1868,7 +1868,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = World()->GetLevel();
         if (view) {
-            CDDrawWorkerHost* layer = view->GetPlane(0);
+            CLevelPlane* layer = view->GetPlane(0);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -2626,10 +2626,10 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
     }
     i32 monolithWidth = e->GetWidth();
     i32 monolithHeight = e->GetHeight();
-    CDDrawWorkerHost* found =
-        static_cast<CDDrawWorkerHost*>(m_world->GetLevel()->FindPlaneByName("MONOLITH"));
+    CLevelPlane* found =
+        static_cast<CLevelPlane*>(m_world->GetLevel()->FindPlaneByName("MONOLITH"));
     if (found == NULL) {
-        CDDrawWorkerHost* spr = m_world->GetLevel()->ReadObjectPlane(
+        CLevelPlane* spr = m_world->GetLevel()->ReadObjectPlane(
             0x20,
             0x20,
             monolithWidth,

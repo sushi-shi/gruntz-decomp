@@ -22,7 +22,7 @@ measured on a function whose two sides are otherwise the same code, and each
 cost a false row before it was separated out:
 
   WALK   the source register is a `*p++` cursor and C2 pre-loaded two steps of
-         the walk. CDDrawWorkerHost::ReadPlaneObjects reads its record with one
+         the walk. CLevelPlane::ReadPlaneObjects reads its record with one
          `*p++` per member on both sides, and retail pairs the loads at exactly
          one of sixty sites.
   ARG    the source slots are INCOMING STACK ARGUMENTS nothing in the function

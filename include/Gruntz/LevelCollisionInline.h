@@ -7,7 +7,7 @@
 #include <Gruntz/ImageSets.h>
 
 static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
-    CDDrawWorkerHost* g = level->m_mainPlane;
+    CLevelPlane* g = level->m_mainPlane;
     CLAMP_PIXEL_TO_PLANE(x, y, g);
     i32 tx = x >> g->m_shiftX;
     i32 ty = y >> g->m_shiftY;
@@ -18,7 +18,7 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
 }
 
 static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
-    CDDrawWorkerHost* g = level->m_mainPlane;
+    CLevelPlane* g = level->m_mainPlane;
     CLAMP_PIXEL_TO_PLANE(x, y, g);
     i32 tx = x >> g->m_shiftX;
     i32 ty = y >> g->m_shiftY;
@@ -34,7 +34,7 @@ static __inline i32 VtblResolve(CTileImageSet* imageSet) {
 
 static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
     CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
-    CDDrawWorkerHost* plane = level->m_mainPlane;
+    CLevelPlane* plane = level->m_mainPlane;
     i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
     return level->CollisionAtHandle(cell, 0, 0);
 }

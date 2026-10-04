@@ -9,7 +9,7 @@
 #include <Wwd/WwdSpatialMgr.h>
 
 RVA(0x00163a90, 0x17)
-i32 CDDrawWorkerHost::IsLoaded() {
+i32 CLevelPlane::IsLoaded() {
     if (m_tileHandles != NULL && m_tileRowOffsets != NULL) {
         return 1;
     }
@@ -17,16 +17,16 @@ i32 CDDrawWorkerHost::IsLoaded() {
 }
 
 RVA(0x00163ab0, 0x6)
-LoadableClassId CDDrawWorkerHost::GetClassId() {
-    return CLASSID_WORKERHOST;
+LoadableClassId CLevelPlane::GetClassId() {
+    return CLASSID_LEVEL_PLANE;
 }
 
 RVA(0x00163ac0, 0x3)
-void CDDrawWorkerHost::UnusedPlaneHook(i32) {}
+void CLevelPlane::UnusedPlaneHook(i32) {}
 
-RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)
+RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCLevelPlane@@UAEPAXI@Z)
 RVA(0x00163af0, 0xcd)
-CDDrawWorkerHost::~CDDrawWorkerHost() {
+CLevelPlane::~CLevelPlane() {
     if (m_spatialMgr != NULL) {
         m_spatialMgr->PruneCount();
     }

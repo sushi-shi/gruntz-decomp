@@ -29,7 +29,7 @@
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
-    CDDrawWorkerHost* grid = m_attrMgr->m_level->m_mainPlane;
+    CLevelPlane* grid = m_attrMgr->m_level->m_mainPlane;
     if (grid == NULL) {
         return 0;
     }

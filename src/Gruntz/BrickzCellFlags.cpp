@@ -51,7 +51,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 }
 
 RVA(0x00077dc0, 0x1d)
-void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
+void CLevelPlane::SetCell(i32 x, i32 y, i32 id) {
     SET_WORKER_HOST_CELL(this, x, y, id);
 }
 

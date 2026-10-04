@@ -39,7 +39,7 @@
 #include <string.h>
 
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CLevelPlane::CLevelPlane(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
     m_tileHandles = NULL;
@@ -54,11 +54,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 
 // @early-stop
 RVA(0x00161640, 0x3a2)
-i32 CDDrawWorkerHost::Read(
-    const WwdPlaneHeader* pd,
-    const char* blockBase,
-    LevelCoordRect* bounds
-) {
+i32 CLevelPlane::Read(const WwdPlaneHeader* pd, const char* blockBase, LevelCoordRect* bounds) {
     if (pd->m_headerSize != WWD_PLANE_HEADER_SIZE) {
         return 0;
     }
@@ -158,7 +154,7 @@ i32 CDDrawWorkerHost::Read(
 
 // @early-stop
 RVA(0x001619f0, 0x1f7)
-i32 CDDrawWorkerHost::InitGeometry(
+i32 CLevelPlane::InitGeometry(
     i32 tileColumns,
     i32 tileRows,
     i32 tileWidthPx,
@@ -210,7 +206,7 @@ i32 CDDrawWorkerHost::InitGeometry(
 }
 
 RVA(0x00161bf0, 0x5e)
-void CDDrawWorkerHost::Unload() {
+void CLevelPlane::Unload() {
     if (m_spatialMgr != NULL) {
         m_spatialMgr->PruneCount();
     }
@@ -229,13 +225,13 @@ void CDDrawWorkerHost::Unload() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
-void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
+void CLevelPlane::SetImageSetByName(char index, const char* key) {
     m_imageSets.SetAtGrow(index, OwnerMgr()->FindImageSet(key));
 }
 
 // @early-stop
 RVA(0x00161c90, 0x1e4)
-void CDDrawWorkerHost::UpdatePlaneViewRect() {
+void CLevelPlane::UpdatePlaneViewRect() {
     WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(m_flags);
     i32 wrapX, wrapY;
     wrapX = HAS(flags, WWD_PLANE_FLAG_WRAP_X);
@@ -323,12 +319,12 @@ void CDDrawWorkerHost::UpdatePlaneViewRect() {
 }
 
 RVA(0x00161e80, 0x79)
-void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
+void CLevelPlane::SetViewportRect(LevelCoordRect* coords) {
     APPLY_WORKER_HOST_BOUNDS(coords);
 }
 
 RVA(0x00161f00, 0x75)
-void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
+void CLevelPlane::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     m_tileWidthPx = tileWidthPx;
     m_tileHeightPx = tileHeightPx;
     SET_RECT_COMPONENTS(m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
@@ -342,14 +338,14 @@ void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161f80, 0x14)
-void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
+void CLevelPlane::SetTileSizeFromImage(CImage* image) {
     SET_TILE_SIZE_FROM_IMAGE(image);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161fa0, 0x6c)
-void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
+void CLevelPlane::SetTileSizeFromImageSet(CImageSet* set) {
     for (i32 i = 0; i < set->m_frames.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
@@ -361,7 +357,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
 
 // @early-stop
 RVA(0x00162010, 0x8bd)
-void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
+void CLevelPlane::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
@@ -468,7 +464,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
 #undef DRAW_CELL
 
 RVA(0x001628d0, 0x12)
-i32 CDDrawWorkerHost::Prune() {
+i32 CLevelPlane::Prune() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
@@ -477,7 +473,7 @@ i32 CDDrawWorkerHost::Prune() {
 
 // @early-stop
 RVA(0x001628f0, 0x1fc)
-i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
+i32 CLevelPlane::RebuildPlanes(const char* base, i32 count) {
     if (base == NULL) {
         return 0;
     }
@@ -568,7 +564,7 @@ static inline void ReadPlaneString(char* buf, const char*& cursor, i32 len) {
 // @early-stop
 RVA(0x00162af0, 0x806)
 
-i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
+i32 CLevelPlane::ReadPlaneObjects(const PlaneObjectRecord* src) {
     if (src == NULL) {
         return 0;
     }
@@ -728,7 +724,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 }
 
 RVA(0x00163300, 0x70)
-i32 CDDrawWorkerHost::ActivateVisibleObjects() {
+i32 CLevelPlane::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
     if (scroll == NULL) {
         return 0;
@@ -753,7 +749,7 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
 }
 
 RVA(0x00163370, 0x70)
-i32 CDDrawWorkerHost::DeactivateDistantObjects() {
+i32 CLevelPlane::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
     if (scroll == NULL) {
         return 0;
@@ -778,7 +774,7 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
 }
 
 RVA(0x001633e0, 0x12)
-i32 CDDrawWorkerHost::ActivateKeepActiveObjects() {
+i32 CLevelPlane::ActivateKeepActiveObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
@@ -788,7 +784,7 @@ i32 CDDrawWorkerHost::ActivateKeepActiveObjects() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163400, 0x12)
-i32 CDDrawWorkerHost::FlushAllObjects() {
+i32 CLevelPlane::FlushAllObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
@@ -796,7 +792,7 @@ i32 CDDrawWorkerHost::FlushAllObjects() {
 }
 
 RVA(0x00163420, 0xf0)
-void CDDrawWorkerHost::UpdateActiveRegionSizes() {
+void CLevelPlane::UpdateActiveRegionSizes() {
     if (m_spatialMgr == NULL) {
         return;
     }
@@ -837,7 +833,7 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
 
 // @early-stop
 RVA(0x00163510, 0x156)
-i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
+i32 CLevelPlane::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) {
         return 0;
     }
@@ -889,7 +885,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 }
 
 RVA(0x00163670, 0x95)
-void CDDrawWorkerHost::ResolveColorKey() {
+void CLevelPlane::ResolveColorKey() {
     ColorDepth format = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->m_bpp;
     if (format == BPP_PALETTED_8) {
         return;
@@ -920,7 +916,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
 }
 
 RVA(0x00163710, 0x60)
-i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
+i32 CLevelPlane::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (!ar) {
         return 0;
     }
@@ -950,12 +946,12 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, Logic
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163770, 0xe)
-i32 CDDrawWorkerHost::CanSave(CFileMemBase* s) {
+i32 CLevelPlane::CanSave(CFileMemBase* s) {
     return s != NULL;
 }
 
 RVA(0x00163780, 0x134)
-i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
+i32 CLevelPlane::Save(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
@@ -983,7 +979,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 }
 
 RVA(0x001638c0, 0x140)
-i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
+i32 CLevelPlane::Load(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
@@ -1015,7 +1011,7 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163a00, 0xe)
-i32 CDDrawWorkerHost::CanLoad(CFileMemBase* s) {
+i32 CLevelPlane::CanLoad(CFileMemBase* s) {
     return s != NULL;
 }
 

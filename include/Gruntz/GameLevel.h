@@ -24,7 +24,7 @@ static const i32 s_tileClear = -1;
         i32 py_ = (Y);                                                                             \
         i32 px_ = (X);                                                                             \
         CLAMP_PIXEL_TO_PLANE(px_, py_, (LVL)->m_mainPlane);                                        \
-        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
+        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
         i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
@@ -40,7 +40,7 @@ static const i32 s_tileClear = -1;
         i32 py_ = (Y);                                                                             \
         i32 px_ = (X);                                                                             \
         CLAMP_PIXEL_TO_PLANE(px_, py_, (LVL)->m_mainPlane);                                        \
-        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
+        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
         i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
@@ -153,7 +153,7 @@ public:
     i32 MoveFalling(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
     i32 MoveClimbing(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
-    CDDrawWorkerHost* FindPlaneByName(const char* name);
+    CLevelPlane* FindPlaneByName(const char* name);
 
     i32 MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
@@ -190,12 +190,11 @@ public:
     i32 BroadPhase(CGameObject* t, i32 candX, i32 candY);
 
 public:
-    CDDrawWorkerHost*
+    CLevelPlane*
     ReadObjectPlane(i32 w, i32 h, i32 tileW, i32 tileH, i32 depthX, i32 depthY, const char* name);
 
 private:
-    CDDrawWorkerHost*
-    ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT* bounds);
+    CLevelPlane* ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT* bounds);
 
     CTileImageSet* ReadImageSet(WwdTileImageRecord* record);
 
@@ -248,9 +247,9 @@ private:
     i32 BacktrackTopY(CGameObject* t, i32 x, i32 y);
 
 public:
-    CDDrawWorkerHost* GetPlane(i32 index) {
+    CLevelPlane* GetPlane(i32 index) {
         return (index >= 0 && index < m_planes.GetSize())
-                   ? static_cast<CDDrawWorkerHost*>(m_planes[index])
+                   ? static_cast<CLevelPlane*>(m_planes[index])
                    : NULL;
     }
 
@@ -258,7 +257,7 @@ public:
     CObArray m_array20;
     CObArray m_planes;
     CObArray m_imageSets;
-    CDDrawWorkerHost* m_mainPlane;
+    CLevelPlane* m_mainPlane;
     i32 m_mainIndex;
     i32 m_maxStepX;
     i32 m_maxStepY;
@@ -279,7 +278,7 @@ public:
     i32 index = 0;                                                                                 \
     if (m_mainIndex >= 0) {                                                                        \
         do {                                                                                       \
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index)))->Draw(visitor);                \
+            (static_cast<CLevelPlane*>(m_planes.GetAt(index)))->Draw(visitor);                     \
             ++index;                                                                               \
         } while (index <= m_mainIndex);                                                            \
     }
@@ -288,7 +287,7 @@ public:
     i32 index = m_mainIndex + 1;                                                                   \
     if (index < m_planes.GetSize()) {                                                              \
         do {                                                                                       \
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index)))->Draw(visitor);                \
+            (static_cast<CLevelPlane*>(m_planes.GetAt(index)))->Draw(visitor);                     \
             ++index;                                                                               \
         } while (index < m_planes.GetSize());                                                      \
     }
@@ -297,14 +296,13 @@ public:
     m_mainIndex = -1;                                                                              \
     m_mainPlane = NULL;                                                                            \
     for (i32 index = 0; index < m_planes.GetSize(); index++) {                                     \
-        static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index))                                      \
-            ->ClearFlags(IDX(WWD_PLANE_FLAG_MAIN));                                                \
+        static_cast<CLevelPlane*>(m_planes.GetAt(index))->ClearFlags(IDX(WWD_PLANE_FLAG_MAIN));    \
     }
 
 #define RELEASE_LEVEL_CHILDREN                                                                     \
     i32 i;                                                                                         \
     for (i = 0; i < m_planes.GetSize(); i++) {                                                     \
-        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i));               \
+        CLevelPlane* child = static_cast<CLevelPlane*>(m_planes.GetAt(i));                         \
         if (child) {                                                                               \
             delete child;                                                                          \
         }                                                                                          \

@@ -27,7 +27,8 @@ class CFileMemBase;
 struct PlaneObjectRecord;
 struct WwdPlaneHeader;
 
-class CDDrawWorkerHost : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CLevelPlane : public CWapObj {
 public:
     LevelCoordRect* GetPlaneViewRect() {
         return &m_planeViewRect;
@@ -54,8 +55,8 @@ public:
         return m_tileRows;
     }
 
-    CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
-    virtual ~CDDrawWorkerHost() OVERRIDE;
+    CLevelPlane(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    virtual ~CLevelPlane() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
 
