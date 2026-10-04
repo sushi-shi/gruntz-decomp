@@ -60,6 +60,10 @@ public:
         return m_active;
     }
 
+    b32 HasJoinedRound() const {
+        return m_joined;
+    }
+
     b32 IsEliminated() const {
         return m_clearedRound;
     }

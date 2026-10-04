@@ -510,7 +510,7 @@ i32 CBoomerang::LoadProjectileSprites(
     m_velScale = d;
     CGrunt* g = g_gameReg->GetTriggerMgr()->UnitAt(sourcePlayerIndex, sourceUnitIndex);
     if (g != NULL) {
-        g->m_holdTiming.Start(static_cast<i32>((duration * m_flightDist * 0.0625 - (-500.0))));
+        g->StartHold(static_cast<i32>((duration * m_flightDist * 0.0625 - (-500.0))));
         g->RecycleCoords();
     }
     m_launched = false;
