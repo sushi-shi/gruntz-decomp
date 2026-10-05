@@ -162,25 +162,25 @@ int HeapStats() {
 RVA(0x00118ce0, 0x1f5)
 BOOL ExistProcess(const char* sExe, int thresh, HANDLE* phProcess) {
     if (sExe == NULL) {
-        return (FALSE);
+        return (false);
     }
     if (sExe[0] == '\0') {
-        return (FALSE);
+        return (false);
     }
 
     if (phProcess) {
         *phProcess = NULL;
     }
 
-    BOOL bFullPath = FALSE;
+    BOOL bFullPath = false;
 
     if (strstr(sExe, "\\")) {
-        bFullPath = TRUE;
+        bFullPath = true;
     }
 
     HMODULE hKernel = GetModuleHandle("KERNEL32.DLL");
     if (!hKernel) {
-        return (FALSE);
+        return (false);
     }
 
     CREATESNAPSHOT pCreateToolhelp32Snapshot = NULL;
@@ -191,24 +191,24 @@ BOOL ExistProcess(const char* sExe, int thresh, HANDLE* phProcess) {
     pCreateToolhelp32Snapshot =
         reinterpret_cast<CREATESNAPSHOT>(GetProcAddress(hKernel, "CreateToolhelp32Snapshot"));
     if (!pCreateToolhelp32Snapshot) {
-        return (FALSE);
+        return (false);
     }
 
     // API-forced: GetProcAddress returns FARPROC.
     pProcess32First = reinterpret_cast<PROCESSWALK>(GetProcAddress(hKernel, "Process32First"));
     if (!pProcess32First) {
-        return (FALSE);
+        return (false);
     }
 
     // API-forced: GetProcAddress returns FARPROC.
     pProcess32Next = reinterpret_cast<PROCESSWALK>(GetProcAddress(hKernel, "Process32Next"));
     if (!pProcess32Next) {
-        return (FALSE);
+        return (false);
     }
 
     HANDLE hProcessSnap = pCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hProcessSnap == INVALID_HANDLE_VALUE) {
-        return (FALSE);
+        return (false);
     }
 
     PROCESSENTRY32 pe32 = {0};
@@ -232,11 +232,11 @@ BOOL ExistProcess(const char* sExe, int thresh, HANDLE* phProcess) {
 
                         if (count == 1 && phProcess) {
                             *phProcess =
-                                OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, me32.th32ProcessID);
+                                OpenProcess(PROCESS_QUERY_INFORMATION, false, me32.th32ProcessID);
                         }
 
                         if (count >= thresh) {
-                            return (TRUE);
+                            return (true);
                         }
                     }
                 } else {
@@ -245,11 +245,11 @@ BOOL ExistProcess(const char* sExe, int thresh, HANDLE* phProcess) {
 
                         if (count == 1 && phProcess) {
                             *phProcess =
-                                OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, me32.th32ProcessID);
+                                OpenProcess(PROCESS_QUERY_INFORMATION, false, me32.th32ProcessID);
                         }
 
                         if (count >= thresh) {
-                            return (TRUE);
+                            return (true);
                         }
                     }
                 }
@@ -258,19 +258,19 @@ BOOL ExistProcess(const char* sExe, int thresh, HANDLE* phProcess) {
     }
 
     CloseHandle(hProcessSnap);
-    return (FALSE);
+    return (false);
 }
 
 RVA(0x00118f60, 0x134)
 BOOL GetProcessModule(DWORD dwPID, DWORD dwModuleID, LPMODULEENTRY32 lpMe32, DWORD cbMe32) {
-    BOOL bRet = FALSE;
-    BOOL bFound = FALSE;
+    BOOL bRet = false;
+    BOOL bFound = false;
     HANDLE hModuleSnap = NULL;
     MODULEENTRY32 me32 = {0};
 
     HMODULE hKernel = GetModuleHandle("KERNEL32.DLL");
     if (!hKernel) {
-        return (FALSE);
+        return (false);
     }
 
     CREATESNAPSHOT pCreateToolhelp32Snapshot = NULL;
@@ -281,24 +281,24 @@ BOOL GetProcessModule(DWORD dwPID, DWORD dwModuleID, LPMODULEENTRY32 lpMe32, DWO
     pCreateToolhelp32Snapshot =
         reinterpret_cast<CREATESNAPSHOT>(GetProcAddress(hKernel, "CreateToolhelp32Snapshot"));
     if (!pCreateToolhelp32Snapshot) {
-        return (FALSE);
+        return (false);
     }
 
     // API-forced: GetProcAddress returns FARPROC.
     pModule32First = reinterpret_cast<MODULEWALK>(GetProcAddress(hKernel, "Module32First"));
     if (!pModule32First) {
-        return (FALSE);
+        return (false);
     }
 
     // API-forced: GetProcAddress returns FARPROC.
     pModule32Next = reinterpret_cast<MODULEWALK>(GetProcAddress(hKernel, "Module32Next"));
     if (!pModule32Next) {
-        return (FALSE);
+        return (false);
     }
 
     hModuleSnap = pCreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
     if (hModuleSnap == INVALID_HANDLE_VALUE) {
-        return (FALSE);
+        return (false);
     }
 
     me32.dwSize = sizeof(MODULEENTRY32);
@@ -307,13 +307,13 @@ BOOL GetProcessModule(DWORD dwPID, DWORD dwModuleID, LPMODULEENTRY32 lpMe32, DWO
         do {
             if (me32.th32ModuleID == dwModuleID) {
                 CopyMemory(lpMe32, &me32, cbMe32);
-                bFound = TRUE;
+                bFound = true;
             }
         } while (!bFound && pModule32Next(hModuleSnap, &me32));
 
         bRet = bFound;
     } else {
-        bRet = FALSE;
+        bRet = false;
     }
 
     CloseHandle(hModuleSnap);
@@ -367,9 +367,9 @@ BOOL BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         i32 sc = wParam & 0xfff0;
         if (sc == SC_SCREENSAVE || sc == SC_MONITORPOWER) {
             if (!IsIconic(hWnd)) {
-                return 1;
+                return true;
             }
         }
     }
-    return 0;
+    return false;
 }

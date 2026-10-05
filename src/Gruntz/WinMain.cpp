@@ -30,7 +30,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     char szModulePath[0xFE];
 
     if (GetModuleFileNameA(NULL, szModulePath, 0xFE) > 0
-        && ExistProcess(szModulePath, 2, NULL) != 0) {
+        && ExistProcess(szModulePath, 2, NULL) != false) {
 
         HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
         if (hPrev != NULL) {
@@ -50,12 +50,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
         char* pValue;
         UINT uLen;
-        VerQueryValueA(
-            pInfo,
-            "\\StringFileInfo\\040904B0\\FileVersion",
-            PtrOut(&pValue),
-            &uLen
-        );
+        VerQueryValueA(pInfo, "\\StringFileInfo\\040904B0\\FileVersion", PtrOut(&pValue), &uLen);
         sscanf(
             pValue,
             "%d, %d, %d, %d",

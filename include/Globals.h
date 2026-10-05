@@ -5,10 +5,10 @@
 
 inline BOOL PtInRect(const RECT* pRect, int x, int y) {
     if (x >= pRect->right || x < pRect->left || y >= pRect->bottom || y < pRect->top) {
-        return FALSE;
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 template<class TYPE> class CRange {
 public:

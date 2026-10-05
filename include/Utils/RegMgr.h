@@ -6,7 +6,7 @@
 class CRegMgr {
 public:
     CRegMgr() {
-        m_bInitialized = FALSE;
+        m_bInitialized = false;
     }
     ~CRegMgr() {
         Term();

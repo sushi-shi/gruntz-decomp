@@ -14,21 +14,21 @@ BOOL Sparam_Get(char* sDest, const char* sSource, const char* sId) {
 
     char* sStart = strstr(sSource, sRealId);
     if (!sStart) {
-        return (FALSE);
+        return (false);
     }
 
     int nLen = strlen(sRealId);
     sStart = &sStart[nLen];
     if (strlen(sStart) < 2) {
-        return (FALSE);
+        return (false);
     }
 
     char* pEnd = strstr(sStart, DATA_COMPGEN(0x00213eec, "]"));
     if (!pEnd) {
-        return (FALSE);
+        return (false);
     }
     if (pEnd <= sStart) {
-        return (FALSE);
+        return (false);
     }
 
     int i = 0;
@@ -40,13 +40,13 @@ BOOL Sparam_Get(char* sDest, const char* sSource, const char* sId) {
 
     sDest[i] = '\0';
 
-    return (TRUE);
+    return (true);
 }
 
 RVA(0x000f9280, 0xe4)
 BOOL Sparam_Add(char* sSource, const char* sId, const char* sParam) {
     if (!sParam) {
-        return (FALSE);
+        return (false);
     }
 
     strcat(sSource, "[");
@@ -57,7 +57,7 @@ BOOL Sparam_Add(char* sSource, const char* sId, const char* sParam) {
 
     strcat(sSource, "]");
 
-    return (TRUE);
+    return (true);
 }
 
 RVA(0x000f93b0, 0x41)

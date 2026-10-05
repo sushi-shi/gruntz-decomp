@@ -5,6 +5,7 @@
 #include <Gruntz/UserLogic.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/LogicRecordFlags.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <Enums.h>
@@ -24,17 +25,25 @@
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     if (!obj->GetWorld()->GetLogicRegistry()->FindTemplate("LogicHit")) {
-        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
+        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(
+            DispatchLogicHit,
+            "LogicHit",
+            IDX(LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)
+        );
     }
     if (!obj->GetWorld()->GetLogicRegistry()->FindTemplate("LogicAttack")) {
         obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(
             DispatchLogicAttack,
             "LogicAttack",
-            2
+            IDX(LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)
         );
     }
     if (!obj->GetWorld()->GetLogicRegistry()->FindTemplate("LogicBump")) {
-        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(DispatchLogicBump, "LogicBump", 2);
+        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(
+            DispatchLogicBump,
+            "LogicBump",
+            IDX(LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)
+        );
     }
 }
 

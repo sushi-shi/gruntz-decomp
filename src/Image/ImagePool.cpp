@@ -55,7 +55,7 @@ void CDibMgr::RemoveDib(CDib* dib) {
     CDibPal* palette = dib->GetPalette();
     if (palette != NULL && dib->IsPaletteOwner()) {
         RemovePal(palette);
-        SetPalette(NULL, FALSE);
+        SetPalette(NULL, false);
     }
     POSITION pos = dib->GetPos();
     if (pos != NULL) {
@@ -273,7 +273,7 @@ i32 CDib::Init(HDC dc, i32 width, i32 height, ColorDepth bitcount, u32 ctrl) {
         m_nPitch = width;
     }
     m_nStride = m_nPitch - width;
-    m_bPalOwner = 0;
+    m_bPalOwner = false;
     m_pPal = NULL;
     m_bTransparent = true;
     memset(&m_bmi.m_hdr, 0, sizeof(BITMAPINFOHEADER));

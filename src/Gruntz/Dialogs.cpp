@@ -79,7 +79,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (comboChild == NULL) {
             return;
         }
-        comboChild->SetReadOnly(1);
+        comboChild->SetReadOnly(true);
         comboChild->SetWindowTextA("");
 
         CComboBox* combo = static_cast<CComboBox*>(GetDlgItem(0x4ff));
@@ -186,7 +186,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             CWnd* colorControl = GetPlayerColorControl(i);
             CComboBox* maxGruntzControl = GetMaxGruntzControl(i);
             nameControl->EnableWindow(true);
-            nameControl->SetReadOnly(0);
+            nameControl->SetReadOnly(false);
             colorControl->EnableWindow(true);
             typeControl->EnableWindow(true);
             maxGruntzControl->EnableWindow(true);

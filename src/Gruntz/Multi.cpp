@@ -876,16 +876,10 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
             if (store != NULL && g_serviceId != NET_SERVICE_NONE) {
                 store->Set("Service", g_serviceId);
                 {
-                    store->Set(
-                        "Player Name",
-                        static_cast<const char*>(PlayerName())
-                    );
+                    store->Set("Player Name", static_cast<const char*>(PlayerName()));
                 }
                 {
-                    store->Set(
-                        "Game Name",
-                        static_cast<const char*>(GameName())
-                    );
+                    store->Set("Game Name", static_cast<const char*>(GameName()));
                 }
             }
         }
@@ -896,10 +890,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 if (g_serviceId != NET_SERVICE_NONE) {
                     store->Set("Service", g_serviceId);
                 }
-                store->Set(
-                    "Player Name",
-                    static_cast<const char*>(PlayerName())
-                );
+                store->Set("Player Name", static_cast<const char*>(PlayerName()));
             }
         }
     }
@@ -917,7 +908,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     char nameBuf[0xa];
     char gameBuf[0x44];
     NetLobby::g_curDlg = hDlg;
-    if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
+    if (BlockScreenSaver(hDlg, msg, wParam, lParam) != false) {
         return true;
     }
 
@@ -1032,7 +1023,7 @@ i32 CMulti::JoinSession() {
 RVA(0x000b8020, 0x22f)
 BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
-    if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
+    if (BlockScreenSaver(hDlg, msg, wParam, lParam) != false) {
         goto ret_true;
     }
     switch (msg) {
@@ -1868,10 +1859,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                 result.Format("*** A player had a different version of the game.");
             }
             if (g_netMessageEditHwnd != NULL) {
-                AppendEditLine(
-                    g_netMessageEditHwnd,
-                    static_cast<const char*>(result)
-                );
+                AppendEditLine(g_netMessageEditHwnd, static_cast<const char*>(result));
             } else {
                 (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
                     ->AddMessage(result, GAME_TEXT_FLAGS_NONE, 0x11);

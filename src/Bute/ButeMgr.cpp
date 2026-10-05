@@ -770,10 +770,10 @@ CButeMgr::CButeMgr() {
     m_pDisplayFunc = NULL;
     m_lineNumber = 0;
     m_bLineCounterFlag = true;
-    m_bPutChar = 0;
-    m_writeMode = 0;
-    m_bCrypt = 0;
-    m_bErrorFlag = 0;
+    m_bPutChar = false;
+    m_writeMode = false;
+    m_bCrypt = false;
+    m_bErrorFlag = false;
     m_sAttributeFilename.Empty();
     m_sTagName.Empty();
 }
@@ -783,7 +783,7 @@ void CButeMgr::Reset() {
     m_checksum = 0;
     m_lineNumber = 0;
     m_bLineCounterFlag = true;
-    m_bErrorFlag = 0;
+    m_bErrorFlag = false;
     m_sTagName = "";
     m_sAttribute = "";
 }
@@ -855,7 +855,7 @@ bool CButeMgr::ScanTok() {
             case LEXACT_TAKE:
                 State = NextState(State, m_currentChar);
                 m_szTokenString[s_pos++] = m_currentChar;
-                if (m_bPutChar != 0 && m_currentChar != 0) {
+                if (m_bPutChar != false && m_currentChar != 0) {
                     (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
                 ConsumeChar();
@@ -863,7 +863,7 @@ bool CButeMgr::ScanTok() {
 
             case LEXACT_SKIP:
                 State = NextState(State, m_currentChar);
-                if (m_bPutChar != 0 && m_currentChar != 0) {
+                if (m_bPutChar != false && m_currentChar != 0) {
                     (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
                 ConsumeChar();
@@ -872,7 +872,7 @@ bool CButeMgr::ScanTok() {
             case LEXACT_ACCEPT_TAKE:
                 LookupCodes(State, m_currentChar);
                 m_szTokenString[s_pos++] = m_currentChar;
-                if (m_bPutChar != 0 && m_currentChar != 0) {
+                if (m_bPutChar != false && m_currentChar != 0) {
                     (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
                 ConsumeChar();
@@ -884,7 +884,7 @@ bool CButeMgr::ScanTok() {
 
             case LEXACT_ACCEPT_SKIP:
                 LookupCodes(State, m_currentChar);
-                if (m_bPutChar != 0 && m_currentChar != 0) {
+                if (m_bPutChar != false && m_currentChar != 0) {
                     (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
                 ConsumeChar();
@@ -958,7 +958,7 @@ bool CButeMgr::Statement() {
         return false;
     }
     if (m_writeMode) {
-        m_bPutChar = 0;
+        m_bPutChar = false;
         (*m_pSaveData) << static_cast<unsigned char>(0x20);
     }
     if (!ScanTok()) {
@@ -1109,7 +1109,7 @@ bool CButeMgr::Statement() {
     }
 
     if (m_writeMode) {
-        m_bPutChar = 1;
+        m_bPutChar = true;
     }
     return true;
 }
