@@ -29,6 +29,8 @@ field or variable, comparison operand, switch discriminator, array index/extent,
 or function return. Each group includes a total and up to twenty example
 locations; the site report retains every location. Overloaded functions and
 methods with the same spelling in different classes have different keys.
+Macro-expanded arguments are distinguished by their AST ancestor paths; their
+source extents can overlap even when they occupy different parameters.
 Intermediate operations remain in the
 key, so an operand used to construct a value is distinguishable from the value
 itself. Sites without a proven destination keep separate source keys.
@@ -73,3 +75,19 @@ does not mark them reviewed. Retain distinct domains with a concrete explanation
 of their different meanings, or map duplicate names to their canonical owner.
 Verify any source/signature change with the normal build and merge gates before
 banking it.
+
+When a source alias is replaced by an object-size expression or a vendor name,
+use the `replace` decision instead of retaining an unnecessary declaration.
+Map each removed member as
+`OLD=expression:src/Owner.cpp::sizeof(buffer)` (or the SDK identifier) in
+`member_reuse`. Keep ordinary mappings for any surviving members of the same
+domain; `current_enums` lists only their current domains. Preserve the original
+member/value snapshot and explain the replacement's meaning and evidence in
+`reason`.
+
+The check requires the retired name to be absent from project code and the
+replacement tokens to occur in the specified source file. These checks detect
+stale decisions; they do not establish semantic equivalence or evaluate the
+replacement. Review the complete use family, SDK declaration or object layout,
+and verify the compiled result before accepting the decision. A named
+compile-time value does not imply a stored retail datum or justify a `DATA` tag.

@@ -101,6 +101,8 @@ public:
     i32* m_rowStates;
 };
 
+#define FADER_LIGHT_SPAN_CAPACITY 1024
+
 class CFaderLight : public CFader {
 public:
     virtual void BeginFade() OVERRIDE;
@@ -127,8 +129,8 @@ public:
     u8* m_targetBits;
     u8* m_restoreBits;
     i32 m_frameCount;
-    i32 m_spanStarts[1024];
-    i32 m_spanEnds[1024];
+    i32 m_spanStarts[FADER_LIGHT_SPAN_CAPACITY];
+    i32 m_spanEnds[FADER_LIGHT_SPAN_CAPACITY];
     i32 m_spanCount;
     i32 m_width;
     i32 m_height;

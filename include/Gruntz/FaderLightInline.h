@@ -6,8 +6,6 @@
 
 #include <math.h>
 
-#define FADER_LIGHT_SPAN_CAPACITY 1024
-
 inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left) {
     i32 dy = row - m_center.y;
     i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - SQR(dy))));

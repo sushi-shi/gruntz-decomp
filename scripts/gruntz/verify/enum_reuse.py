@@ -39,7 +39,10 @@ from itertools import combinations
 from pathlib import Path
 
 from gruntz.core.paths import BUILD, REPO
-from gruntz.verify.constants import _flags, _require_cl_mode, _source_path, source_stamp
+from gruntz.verify.constants import (
+    _CHAR, _STRING, _SOURCE_EXTENSIONS, _blank_literal, _flags,
+    _require_cl_mode, _source_path, source_stamp,
+)
 from gruntz.verify.constant_context import semantic_context
 from gruntz.verify.srcscan import blank_comments
 
@@ -56,7 +59,7 @@ LEDGER_FIELDS = (
     "source_enum", "members", "decision", "current_enums", "member_reuse",
     "reason",
 )
-LEDGER_DECISIONS = frozenset(("pending", "retain", "canonical", "reuse"))
+LEDGER_DECISIONS = frozenset(("pending", "retain", "canonical", "reuse", "replace"))
 
 _MACRO_BLOCK = re.compile(
     r"\bGZ_ENUM_(BEGIN|BEGIN_SPLIT|FLAGS_BEGIN|CONST_BEGIN)"
@@ -932,8 +935,42 @@ def _parse_reuse(text: str, *, source_enum: str) -> tuple[dict[str, str], list[s
     return reuse, findings
 
 
-def check_ledger(path: Path, constants: list[Constant]) -> list[str]:
-    """Prove that every starting member has a reviewed, value-preserving home."""
+def _code_tokens(text: str) -> tuple[str, ...]:
+    code = _CHAR.sub(_blank_literal, _STRING.sub(_blank_literal, blank_comments(text)))
+    return tuple(re.findall(r"[A-Za-z_]\w*|0[xX][\da-fA-F]+|\d+|[^\s]", code))
+
+
+def _replacement_findings(repo: Path, replacements) -> list[str]:
+    """Check replacement witnesses and reject surviving retired identifiers.
+
+    The reason records the semantic review; token presence does not prove
+    an SDK value or sizeof expression equals the historical snapshot.
+    """
+    if not replacements:
+        return []
+    sources = {
+        str(path.relative_to(repo)): _code_tokens(path.read_text(errors="replace"))
+        for root in (repo / "src", repo / "include")
+        for path in root.rglob("*")
+        if path.is_file() and path.suffix in _SOURCE_EXTENSIONS
+    }
+    identifiers = set(token for tokens in sources.values() for token in tokens)
+    findings = []
+    for owner, old, source, expression in replacements:
+        if old in identifiers:
+            findings.append(f"{owner}: replaced identifier {old} still occurs in source")
+        tokens = sources.get(source)
+        witness = _code_tokens(expression)
+        if tokens is None:
+            findings.append(f"{owner}: replacement source is not a project source file: {source}")
+        elif not witness or not any(tokens[i:i + len(witness)] == witness
+                                    for i in range(len(tokens) - len(witness) + 1)):
+            findings.append(f"{owner}: replacement expression not found in {source}: {expression}")
+    return findings
+
+
+def check_ledger(path: Path, constants: list[Constant], *, repo: Path = REPO) -> list[str]:
+    """Account for retained values, owner moves and reviewed expression replacements."""
     if not path.is_file():
         return [f"{path}: missing review ledger (run --init-ledger once)"]
     current = {
@@ -943,6 +980,7 @@ def check_ledger(path: Path, constants: list[Constant]) -> list[str]:
     claimed = set()
     findings = []
     seen = set()
+    replacements = []
     with path.open(newline="") as stream:
         reader = csv.DictReader(stream, dialect="excel-tab")
         if tuple(reader.fieldnames or ()) != LEDGER_FIELDS:
@@ -975,19 +1013,29 @@ def check_ledger(path: Path, constants: list[Constant]) -> list[str]:
                 findings.append(
                     f"{source_enum}: member_reuse names absent from snapshot: "
                     + ", ".join(unknown))
-            if decision == "reuse" and not reuse:
-                findings.append(f"{source_enum}: reuse decision has no member mapping")
+            if decision in ("reuse", "replace") and not reuse:
+                findings.append(f"{source_enum}: {decision} decision has no member mapping")
             if decision in ("retain", "canonical") and reuse:
                 findings.append(
                     f"{source_enum}: {decision} decision cannot redirect members")
 
             target_enums = set()
+            expression_count = 0
             for name, value in members.items():
                 target = reuse.get(name, f"{source_enum}::{name}")
                 target_enum, separator, target_name = target.rpartition("::")
                 if not separator or not target_enum or not target_name:
                     findings.append(
                         f"{source_enum}: invalid target for {name}: {target!r}")
+                    continue
+                if target_enum.startswith("expression:"):
+                    expression_count += 1
+                    if decision != "replace":
+                        findings.append(f"{source_enum}: expression target requires replace decision")
+                    if any(member.name == name for member in constants):
+                        findings.append(f"{source_enum}: replaced member {name} still has a declaration")
+                    replacements.append((source_enum, name,
+                                         target_enum.removeprefix("expression:"), target_name))
                     continue
                 target_enums.add(target_enum)
                 if target not in current:
@@ -998,12 +1046,15 @@ def check_ledger(path: Path, constants: list[Constant]) -> list[str]:
                         f"{source_enum}: {name}={value} maps to {target}="
                         f"{current[target]}")
                 claimed.add(target)
+            if decision == "replace" and not expression_count:
+                findings.append(f"{source_enum}: replace decision has no expression target")
             declared_enums = set(filter(None, row["current_enums"].split(";")))
             if target_enums != declared_enums:
                 findings.append(
                     f"{source_enum}: current_enums is {sorted(declared_enums)}, "
                     f"member targets use {sorted(target_enums)}")
 
+    findings.extend(_replacement_findings(repo, replacements))
     unclaimed = sorted(set(current) - claimed)
     if unclaimed:
         preview = ", ".join(unclaimed[:10])
