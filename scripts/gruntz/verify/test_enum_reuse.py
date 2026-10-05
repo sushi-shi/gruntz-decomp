@@ -108,6 +108,31 @@ class NamedConstantCoverage(unittest.TestCase):
             self.assertTrue(pairs[0]["right"].endswith(":Right"))
             self.assertIn("call:", pairs[0]["direct_shared_contexts"])
 
+    def test_macro_expansion_keeps_argument_and_array_index_domains_separate(self):
+        rows, _, missing, unmapped, _ = self.scan(
+            "enum Left { LEFT=1 }; enum Right { RIGHT=1 };\n"
+            "void consume(int,int); int table[4];\n"
+            "#define SEND() consume(LEFT, table[RIGHT])\n"
+            "void f(){ SEND(); }\n")
+        self.assertEqual(missing + unmapped, [])
+        by_name = {row.name: row for row in rows}
+        left = by_name["LEFT"].use_contexts
+        right = by_name["RIGHT"].use_contexts
+        self.assertEqual(len(left), 1)
+        self.assertTrue(left[0].endswith(":argument:1"), left)
+        self.assertEqual(len(right), 1)
+        self.assertTrue(right[0].startswith("index:"), right)
+        self.assertFalse(set(left) & set(right))
+
+    def test_macro_expansion_distinguishes_sibling_arguments(self):
+        rows, _, missing, unmapped, _ = self.scan(
+            "enum Left { LEFT=1 }; enum Right { RIGHT=1 }; void consume(int,int);\n"
+            "#define SEND() consume(LEFT, RIGHT)\nvoid f(){ SEND(); }\n")
+        self.assertEqual(missing + unmapped, [])
+        by_name = {row.name: row for row in rows}
+        self.assertTrue(by_name["LEFT"].use_contexts[0].endswith(":argument:1"))
+        self.assertTrue(by_name["RIGHT"].use_contexts[0].endswith(":argument:2"))
+
     def test_macro_const_and_enum_share_destination_but_not_overloads(self):
         rows, _, missing, unmapped, _ = self.scan(
             "enum Domain { VALUE=7 };\n#define ALIAS (VALUE)\n"
@@ -216,6 +241,50 @@ class NamedConstantCoverage(unittest.TestCase):
             value = [row for row in raw.values() if row.name == "VALUE"]
             self.assertIn(("evaluated", 7), {(row.status, row.value) for row in value})
             self.assertIn(("excluded", None), {(row.status, row.value) for row in value})
+
+    def replacement_ledger(self, source, *, expression="sizeof(buffer)", decision="replace",
+                           reason="The transfer consumes the complete buffer object."):
+        constants, _, _, _, _ = self.scan(source)
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            (repo / "src").mkdir()
+            (repo / "src/Probe.cpp").write_text(source)
+            ledger = repo / "review.tsv"
+            reuse._write_tsv(ledger, reuse.LEDGER_FIELDS, [{
+                "source_enum": "src/Probe.cpp:Old", "members": "KEEP=1;LIMIT=4",
+                "decision": decision, "current_enums": "src/Probe.cpp:Old",
+                "member_reuse": "LIMIT=expression:src/Probe.cpp::" + expression,
+                "reason": reason,
+            }])
+            return reuse.check_ledger(ledger, constants, repo=repo)
+
+    def test_expression_replacement_keeps_other_domain_members(self):
+        self.assertEqual(self.replacement_ledger(
+            "enum Old { KEEP=1 }; int buffer; unsigned f(){return sizeof (buffer);}"), [])
+
+    def test_expression_replacement_rejects_surviving_identifier(self):
+        findings = self.replacement_ledger(
+            "enum Old { KEEP=1 }; int buffer, LIMIT; unsigned f(){return sizeof(buffer);}")
+        self.assertTrue(any("LIMIT still occurs" in finding for finding in findings), findings)
+        findings = self.replacement_ledger(
+            "enum Old { KEEP=1, LIMIT=4 }; int buffer; unsigned f(){return sizeof(buffer);}")
+        self.assertTrue(any("still has a declaration" in finding for finding in findings), findings)
+
+    def test_expression_replacement_requires_real_code_witness_and_review(self):
+        findings = self.replacement_ledger(
+            'enum Old { KEEP=1 }; // sizeof(buffer)\nconst char* note="sizeof(buffer)";')
+        self.assertTrue(any("expression not found" in finding for finding in findings), findings)
+        source = "enum Old { KEEP=1 }; int buffer; unsigned f(){return sizeof(buffer);}"
+        findings = self.replacement_ledger(source, reason="")
+        self.assertTrue(any("evidence reason" in finding for finding in findings), findings)
+        findings = self.replacement_ledger(source, decision="reuse")
+        self.assertTrue(any("requires replace decision" in finding for finding in findings), findings)
+
+    def test_expression_replacement_checks_token_boundaries(self):
+        findings = self.replacement_ledger(
+            "enum Old { KEEP=1 }; int buffer; unsigned f(){return sizeof(buffer);}",
+            expression="izeof(buffer)")
+        self.assertTrue(any("expression not found" in finding for finding in findings), findings)
 
 
 if __name__ == "__main__":

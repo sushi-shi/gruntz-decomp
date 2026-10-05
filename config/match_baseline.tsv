@@ -1499,7 +1499,7 @@ directsoundmgr	?Compact@SoundDevice@@QAEHXZ	100.0000	100.0000	3	5fe9f4010f3e	0x1
 directsoundmgr	?ConvertVolumeToPercent@@YAHH@Z	100.0000	100.0000	5	87a4edb04447	0x135110	100.0000	
 directsoundmgr	?CreateInstance@SoundSample@@QAEPAVSoundBuffer@@H@Z	100.0000	100.0000	6	b5df62ed2640	0x135c20	100.0000	
 directsoundmgr	?CreatePrimaryBuffer@SoundDevice@@QAEHXZ	100.0000	100.0000	4	ea60f19d87bd	0x137260	100.0000	
-directsoundmgr	?CreateSample@SoundDevice@@QAEPAVSoundSample@@PAUtWAVEFORMATEX@@II@Z	100.0000	100.0000	12	968086a9a6fb	0x1366f0	100.0000	
+directsoundmgr	?CreateSample@SoundDevice@@QAEPAVSoundSample@@PAUtWAVEFORMATEX@@II@Z	100.0000	100.0000	13	9a7f8680b916	0x1366f0	100.0000	
 directsoundmgr	?DestroyBuffer@SoundDevice@@QAEXPAVSoundBuffer@@@Z	100.0000	100.0000	6	b0125f75c19b	0x136d80	100.0000	
 directsoundmgr	?DestroyInstance@SoundSample@@QAEXPAVSoundBuffer@@@Z	100.0000	100.0000	4	56ccd1605f7b	0x135d20	100.0000	
 directsoundmgr	?GetBaseFrequency@SoundBuffer@@QAEIXZ	100.0000	100.0000	3	eca4c29e5816	0x135900	100.0000	
@@ -3686,11 +3686,11 @@ savegame	?Init@CSaveGame@@QAEXXZ	100.0000	100.0000	2	82670021f36d	0xe4d50	100.00
 savegame	?InitializeLevelSlot@CSaveGame@@QAEHPAUSaveSlot@@HPAVCGruntzMgr@@@Z	100.0000	100.0000	5	26afe4d724fb	0xe5240	100.0000	
 savegame	?InitializeNamedSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAVCGruntzMgr@@@Z	100.0000	100.0000	7	15263c424d99	0xe5130	100.0000	
 savegame	?InitializeNamedSlotAt@CSaveGame@@QAEHHPBDPAVCGruntzMgr@@@Z	100.0000	100.0000	2	42f4c80075b6	0xe54e0	100.0000	
-savegame	?InitializeSaveDirectory@CSaveGame@@QAEHPBD@Z	100.0000	100.0000	5	3c86670cb955	0xe4b60	100.0000	
-savegame	?Load@CSaveGame@@QAEHXZ	100.0000	100.0000	6	b962613221b2	0xe4d90	100.0000	
+savegame	?InitializeSaveDirectory@CSaveGame@@QAEHPBD@Z	100.0000	100.0000	6	47cd4fd9892b	0xe4b60	100.0000	
+savegame	?Load@CSaveGame@@QAEHXZ	100.0000	100.0000	7	87fd74e86802	0xe4d90	100.0000	
 savegame	?Register@CSaveGame@@QAEHPAUSaveSlot@@@Z	100.0000	100.0000	5	8e808daf5fd9	0xe5390	100.0000	
 savegame	?Reset@CSaveGame@@QAEXXZ	100.0000	100.0000	2	bd83d558aa7a	0xe4d20	100.0000	
-savegame	?Save@CSaveGame@@QAEHPADH@Z	100.0000	100.0000	14	5b6e0dd2820a	0xe4ea0	100.0000	
+savegame	?Save@CSaveGame@@QAEHPADH@Z	100.0000	100.0000	15	acf1a6b1fadd	0xe4ea0	100.0000	
 savegame	?SetCurLevel@CSaveGame@@QAEXW4QuestLevel@@@Z	100.0000	100.0000	2	bd9aeb21e129	0xe5660	100.0000	
 savegame	?SetMagic@CSaveGame@@QAEXXZ	100.0000	100.0000	4	2f20078bfd32	0xe56b0	100.0000	
 savegame	?SetMaxLevel@CSaveGame@@QAEXW4QuestLevel@@@Z	100.0000	100.0000	2	828321024360	0xe5620	100.0000	

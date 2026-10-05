@@ -33,10 +33,6 @@ const double g_attenuationBase = 2.0;
 
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
-typedef enum DSoundDx5Magic {
-    DSBUFFERDESC_SIZE = 0x14,
-} DSoundDx5Magic;
-
 DATA(0x00253ab8)
 i32 g_volumeTable[VOLUME_PCT_MAX + 1];
 
@@ -1025,7 +1021,7 @@ SoundSample* SoundDevice::CreateSample(WAVEFORMATEX* format, u32 bytes, u32 flag
     bufferFormat.cbSize = 0;
 
     memset(&bufferDesc, 0, sizeof(DSBUFFERDESC));
-    bufferDesc.dwSize = DSBUFFERDESC_SIZE;
+    bufferDesc.dwSize = sizeof(bufferDesc);
     bufferDesc.dwFlags = flags;
     bufferDesc.dwBufferBytes = bytes;
     bufferDesc.lpwfxFormat = &bufferFormat;

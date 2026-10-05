@@ -8,10 +8,10 @@ an argument is not evidence that it names the entire argument domain.
 from __future__ import annotations
 
 
-def _contains(outer, inner):
-    return (outer.extent.start.file == inner.location.file
-            and outer.extent.start.offset <= inner.location.offset
-            < outer.extent.end.offset)
+def _contains(outer, inner, ancestors):
+    # Macro-expanded siblings can have identical source extents. Only the
+    # cursor's actual ancestor path establishes which argument/operand owns it.
+    return outer == inner or any(outer == parent for parent in ancestors)
 
 
 def _identity(node):
@@ -62,7 +62,7 @@ def semantic_context(cidx, node, stack):
         kind = parent.kind
         if kind == cidx.CursorKind.CALL_EXPR:
             for index, arg in enumerate(parent.get_arguments()):
-                if _contains(arg, node):
+                if _contains(arg, node, stack):
                     identity = _identity(parent)
                     if identity:
                         return result("call", identity, f":argument:{index + 1}")
@@ -71,7 +71,7 @@ def semantic_context(cidx, node, stack):
             children = list(parent.get_children())
             op = parent.spelling
             if len(children) == 2:
-                side = 0 if _contains(children[0], node) else 1
+                side = 0 if _contains(children[0], node, stack) else 1
                 if op in ("=", "+=", "-=", "&=", "|=", "^=") and side == 1:
                     identity = _operand(cidx, children[0])
                     if identity:
@@ -89,7 +89,7 @@ def semantic_context(cidx, node, stack):
         elif kind == cidx.CursorKind.CASE_STMT:
             children = list(parent.get_children())
             # Case bodies are not labels; they retain their own destinations.
-            if children and _contains(children[0], node):
+            if children and _contains(children[0], node, stack):
                 switch = next((p for p in reversed(stack)
                                if p.kind == cidx.CursorKind.SWITCH_STMT), None)
                 if switch:
@@ -107,7 +107,7 @@ def semantic_context(cidx, node, stack):
                 return result(role, identity)
         elif kind == cidx.CursorKind.ARRAY_SUBSCRIPT_EXPR:
             children = list(parent.get_children())
-            if len(children) == 2 and _contains(children[1], node):
+            if len(children) == 2 and _contains(children[1], node, stack):
                 identity = _operand(cidx, children[0])
                 if identity:
                     return result("index", identity)
