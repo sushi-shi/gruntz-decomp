@@ -26,6 +26,14 @@ enum {
     SAVE_LEVEL_STATS_COUNT = 40
 };
 
+struct SaveGameProgress {
+    i32 m_header[4];
+    GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;
+    GZ_ENUM_STORAGE(QuestLevel, u32) m_curLevel;
+    u32 m_magic;
+    QuestLevelStats m_levelStats[SAVE_LEVEL_STATS_COUNT];
+};
+
 struct SaveSlot {
     union {
         i32 m_type;
@@ -75,7 +83,7 @@ public:
     void SetMaxLevel(QuestLevel v);
     void SetCurLevel(QuestLevel v);
     QuestLevel CurrentLevel() const {
-        return static_cast<QuestLevel>(m_curLevel);
+        return static_cast<QuestLevel>(m_progress.m_curLevel);
     }
     i32 CheckMagic();
     void SetMagic();
@@ -83,11 +91,7 @@ public:
     CString m_saveDirectory;
     CString m_progressFilePath;
 
-    i32 m_header[4];
-    GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;
-    GZ_ENUM_STORAGE(QuestLevel, u32) m_curLevel;
-    u32 m_magic;
-    QuestLevelStats m_levelStats[SAVE_LEVEL_STATS_COUNT];
+    SaveGameProgress m_progress;
     SaveSlot m_slots[SAVE_SLOT_COUNT];
 };
 

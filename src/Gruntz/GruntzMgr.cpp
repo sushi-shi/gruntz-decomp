@@ -609,7 +609,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_gameStats = new CGameStats;
-    if (!m_gameStats->ResetWithLevelRecords(m_saveGame->m_levelStats)) {
+    if (!m_gameStats->ResetWithLevelRecords(m_saveGame->m_progress.m_levelStats)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x464);
         return 0;
     }
