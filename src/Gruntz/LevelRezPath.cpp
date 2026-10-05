@@ -34,7 +34,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             path = levelName;
         }
         if (file.Open(path, CFile::modeRead, NULL)) {
-            if (file.GetLength() < 0x5f4) {
+            if (file.GetLength() < sizeof(buf)) {
                 file.Close();
             } else {
                 file.Read(&buf, sizeof(buf));
@@ -60,7 +60,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             if (parsed == NULL) {
                 return 0;
             }
-            memcpy(&buf, parsed, 0x5f4);
+            memcpy(&buf, parsed, sizeof(buf));
             sub->UnLoad();
             return buf.m_checksum;
         } else {
@@ -77,7 +77,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             if (parsed == NULL) {
                 return 0;
             }
-            memcpy(&buf, parsed, 0x5f4);
+            memcpy(&buf, parsed, sizeof(buf));
             sub->UnLoad();
             return buf.m_checksum;
         }
@@ -102,7 +102,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         if (parsed == NULL) {
             return 0;
         }
-        memcpy(&buf, parsed, 0x5f4);
+        memcpy(&buf, parsed, sizeof(buf));
         sub->UnLoad();
         return buf.m_checksum;
     }

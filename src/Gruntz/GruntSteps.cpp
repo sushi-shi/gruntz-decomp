@@ -502,8 +502,7 @@ i32 CGrunt::StepCompassMove() {
             default:
                 break;
         }
-        u32 toyCount =
-            g_buteMgr.GetDword(static_cast<LPCTSTR>(str), s_toyTiles, 1);
+        u32 toyCount = g_buteMgr.GetDword(static_cast<LPCTSTR>(str), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_facing.m_direction) {
                 case DIR_NORTH:
@@ -1122,7 +1121,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         ar->Write(&count, sizeof(count));
         POSITION cpos = m_coordList.GetHeadPosition();
         while (cpos != NULL) {
-            ar->Write(GetNextCoord(cpos), 8);
+            ar->Write(GetNextCoord(cpos), sizeof(Coord));
         }
     }
     {

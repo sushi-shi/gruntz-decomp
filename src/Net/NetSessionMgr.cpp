@@ -231,7 +231,7 @@ i32 CNetSession::Dispatch(i32 senderId, CNetPacketPrefix* message, i32 messageSi
     }
     slot->m_latency = 0;
 
-    if (!(message->m_routeFlags & 0x80) && (message->m_routeFlags & 1)) {
+    if (!(message->m_routeFlags & NET_PACKET_APPLICATION) && (message->m_routeFlags & 1)) {
         slot = &m_slots[message->m_routeSlot];
         if (!slot) {
             return 0;

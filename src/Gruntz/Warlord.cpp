@@ -200,7 +200,7 @@ i32 CWarlord::SerializeDispatch(
     switch (mode) {
         case SERIAL_LOAD: {
             ar->Read(hdr, SERIAL_NAME_LEN);
-            ar->Read(m_blob, 0x10);
+            ar->Read(m_blob, sizeof(m_blob));
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
             m_ownerLogicRecord = obj->GetLogicRecord();
@@ -227,7 +227,7 @@ i32 CWarlord::SerializeDispatch(
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
-            ar->Write(m_blob, 0x10);
+            ar->Write(m_blob, sizeof(m_blob));
             break;
         }
     }

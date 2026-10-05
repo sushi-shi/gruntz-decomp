@@ -288,8 +288,8 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     ar->Write(&m_screenY, sizeof(m_screenY));
     ar->Write(&m_loaded, sizeof(m_loaded));
     ar->Write(&m_active, sizeof(m_active));
-    ar->Write(m_buttonState, 8);
-    ar->Write(m_buttonIcon, 8);
+    ar->Write(m_buttonState, sizeof(m_buttonState));
+    ar->Write(m_buttonIcon, sizeof(m_buttonIcon));
 
     char tmp[SERIAL_NAME_LEN];
 
@@ -359,8 +359,8 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&m_screenY, sizeof(m_screenY));
     s->Read(&m_loaded, sizeof(m_loaded));
     s->Read(&m_active, sizeof(m_active));
-    s->Read(&m_buttonState[0], 8);
-    s->Read(&m_buttonIcon[0], 8);
+    s->Read(&m_buttonState[0], sizeof(m_buttonState));
+    s->Read(&m_buttonIcon[0], sizeof(m_buttonIcon));
 
     SERIAL_READ_IMAGE_SET(s, mgr, buf, m_normChipSprite);
 
@@ -379,7 +379,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 
 RVA(0x0000a000, 0xac)
 void CLevelPlane::WorldToViewport(LONG* px, LONG* py) {
-    if (m_flags & 0x4) {
+    if (m_flags & IDX(WWD_PLANE_FLAG_WRAP_X)) {
         if (*px < 0) {
             *px += m_planePixelWidth;
         } else if (*px >= m_planePixelWidth) {
@@ -391,7 +391,7 @@ void CLevelPlane::WorldToViewport(LONG* px, LONG* py) {
         }
     }
 
-    if (m_flags & 0x8) {
+    if (m_flags & IDX(WWD_PLANE_FLAG_WRAP_Y)) {
         if (*py < 0) {
             *py += m_planePixelHeight;
         } else if (*py >= m_planePixelHeight) {

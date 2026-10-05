@@ -28,7 +28,7 @@ inline i32 CWapX::SerializeAnimationState(
         case SERIAL_LOAD: {
 
             archive->Read(name, SERIAL_NAME_LEN);
-            archive->Read(m_blob, 0x10);
+            archive->Read(m_blob, sizeof(m_blob));
             m_gameObject = object;
             m_wwdObject = static_cast<CWwdSpriteObject*>(object);
             m_ownerLogicRecord = object->GetLogicRecord();
@@ -56,7 +56,7 @@ inline i32 CWapX::SerializeAnimationState(
                 );
             }
             archive->Write(name, SERIAL_NAME_LEN);
-            archive->Write(m_blob, 0x10);
+            archive->Write(m_blob, sizeof(m_blob));
             break;
         }
     }

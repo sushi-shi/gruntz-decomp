@@ -3,39 +3,44 @@
 Equal integer values are review leads, never proof that two domains are the
 same.  This audit combines two views:
 
-* a lexical inventory of every enum block and member under ``src/`` and
-  ``include/``, including GZ_ENUM_* declarations and inactive/unreferenced
-  source; and
+* a lexical inventory of enum blocks, object-like macro definitions and
+  scalar const declarations under ``src/`` and ``include/``, including
+  inactive/unreferenced source; and
 * a libclang pass over every project translation unit, which evaluates aliases,
   shifts, negative values, character constants, and implicit increments with
-  the target ABI.
+  the target ABI. Compiler-evaluated named values share the existing ledger.
 
 The two views must cover one another.  A declaration missing from the evaluated
 view is a fatal coverage hole rather than a silently incomplete report.
+Named non-integral/runtime exclusions and unresolved definitions are reported
+separately; an incomplete scan writes explicitly partial numeric reports.
 
     gruntz verify enum-reuse                  # write the three derived TSV reports
     gruntz verify enum-reuse --duplicates     # print values declared twice+
     gruntz verify enum-reuse --value 10       # inspect one value
     gruntz verify enum-reuse --json           # machine-readable full census
     gruntz verify enum-reuse --init-ledger    # snapshot the review worklist
+    gruntz verify enum-reuse --extend-ledger  # append new pending domains only
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import ctypes
 import json
 import multiprocessing
 import re
 import sys
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from itertools import combinations
 from pathlib import Path
 
 from gruntz.core.paths import BUILD, REPO
-from gruntz.verify.constants import _flags, _require_cl_mode, _source_path
+from gruntz.verify.constants import _flags, _require_cl_mode, _source_path, source_stamp
+from gruntz.verify.constant_context import semantic_context
 from gruntz.verify.srcscan import blank_comments
 
 
@@ -43,6 +48,7 @@ CDB = BUILD / "clangd/compile_commands.json"
 REPORT = BUILD / "gen/enum_reuse.tsv"
 COLLISION_REPORT = BUILD / "gen/enum_value_collisions.tsv"
 PAIR_REPORT = BUILD / "gen/enum_domain_pairs.tsv"
+NAMED_REPORT = BUILD / "gen/named_constant_coverage.tsv"
 BARE_CONSTANTS = BUILD / "gen/bare_constants.tsv"
 LEDGER = REPO / "config/reviews/enum-reuse.tsv"
 
@@ -89,7 +95,7 @@ class Block:
 
 @dataclass(frozen=True)
 class RawConstant:
-    value: int
+    value: int | None
     name: str
     file: str
     line: int
@@ -99,6 +105,11 @@ class RawConstant:
     parent_file: str
     parent_offset: int
     context: str
+    kind: str = "enum"
+    expression: str = ""
+    status: str = "evaluated"
+    reason: str = ""
+    use_contexts: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -115,6 +126,108 @@ class Constant:
     storage: str
     expression: str
     contexts: tuple[str, ...]
+    use_contexts: tuple[str, ...] = ()
+
+
+_DEFINE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(?P<name>[A-Za-z_]\w*)(?P<body>(?:\\\n|[^\n])*)", re.M)
+_TYPE_WORDS = r"(?:unsigned\s+|signed\s+)?[A-Za-z_]\w*(?:::\w+)*(?:\s+(?:long|int|char))?"
+_CONST = re.compile(
+    rf"\b(?:const\s+(?P<prefix>{_TYPE_WORDS})|(?P<postfix>{_TYPE_WORDS})\s+const)"
+    r"\s+(?P<body>[A-Za-z_]\w*\s*=[^;]+);"
+)
+
+
+def _named_blocks(path: Path, repo: Path) -> list[Block]:
+    """Lexical coverage witnesses, not an expression evaluator.
+
+    The AST adds declarations with other legal spellings (including comma
+    declarators). These witnesses also expose declarations in unused headers.
+    """
+    text = blank_comments(path.read_text(errors="replace"))
+    rel = str(path.resolve().relative_to(repo.resolve()))
+    result = []
+    seen = Counter()
+    for match in _DEFINE.finditer(text):
+        kind = "define"
+        body = match.group("body")
+        if body.startswith("(") or not body.strip():
+            continue  # function-like macros and empty include guards
+        expression = body.replace("\\\n", " ").strip()
+        offset = match.start("name")
+        line, column = _line_column(text, offset)
+        name = match.group("name")
+        member = Member(name, line, column, offset, expression)
+        domain = f"<{kind}:{name}>"
+        result.append(Block(
+            _source_enum(rel, domain, line, (member,), seen), domain, kind,
+            "", rel, line, match.start(), match.end(), (member,),
+        ))
+    for match in _CONST.finditer(text):
+        for member in _members(text, match.start("body"), match.end("body")):
+            tail = text[member.offset + len(member.name):match.end("body")].lstrip()
+            if not tail.startswith("="):
+                continue  # another parameter's type is not a comma declarator
+            domain = f"<const-integral:{member.name}>"
+            result.append(Block(
+                _source_enum(rel, domain, member.line, (member,), seen), domain,
+                "const-integral", match.group("prefix") or match.group("postfix"),
+                rel, member.line, match.start(), match.end(), (member,),
+            ))
+    return result
+
+
+def _integral(cidx, ty) -> bool:
+    return ty.get_canonical().kind in {
+        cidx.TypeKind.BOOL, cidx.TypeKind.CHAR_U, cidx.TypeKind.UCHAR,
+        cidx.TypeKind.CHAR_S, cidx.TypeKind.SCHAR, cidx.TypeKind.WCHAR,
+        cidx.TypeKind.USHORT, cidx.TypeKind.UINT, cidx.TypeKind.ULONG,
+        cidx.TypeKind.ULONGLONG, cidx.TypeKind.SHORT, cidx.TypeKind.INT,
+        cidx.TypeKind.LONG, cidx.TypeKind.LONGLONG, cidx.TypeKind.ENUM,
+    }
+
+
+def _evaluate_integer(cidx, node) -> int | None:
+    """Use Clang's target-ABI evaluator; never interpret C++ in Python."""
+    lib = cidx.conf.lib
+    lib.clang_Cursor_Evaluate.argtypes = [cidx.Cursor]
+    lib.clang_Cursor_Evaluate.restype = ctypes.c_void_p
+    for name, result in (("clang_EvalResult_getKind", ctypes.c_int),
+                         ("clang_EvalResult_isUnsignedInt", ctypes.c_uint),
+                         ("clang_EvalResult_getAsLongLong", ctypes.c_longlong),
+                         ("clang_EvalResult_getAsUnsigned", ctypes.c_ulonglong)):
+        function = getattr(lib, name)
+        function.argtypes = [ctypes.c_void_p]
+        function.restype = result
+    lib.clang_EvalResult_dispose.argtypes = [ctypes.c_void_p]
+    lib.clang_EvalResult_dispose.restype = None
+    value = lib.clang_Cursor_Evaluate(node)
+    if not value:
+        return None
+    try:
+        if lib.clang_EvalResult_getKind(value) != 1:  # CXEval_Int
+            return None
+        if lib.clang_EvalResult_isUnsignedInt(value):
+            return lib.clang_EvalResult_getAsUnsigned(value)
+        return lib.clang_EvalResult_getAsLongLong(value)
+    finally:
+        lib.clang_EvalResult_dispose(value)
+
+
+def _runtime_initializer(cidx, node) -> bool:
+    """Recognize runtime dependencies; evaluator failure alone proves none."""
+    for child in node.walk_preorder():
+        if child.kind == cidx.CursorKind.CALL_EXPR:
+            return True  # this target uses C++98, without constexpr functions
+        if child.kind == cidx.CursorKind.MEMBER_REF_EXPR and child.referenced and child.referenced.kind == cidx.CursorKind.FIELD_DECL:
+            return True
+        if child.kind == cidx.CursorKind.DECL_REF_EXPR and child.referenced:
+            target = child.referenced
+            if target.kind == cidx.CursorKind.PARM_DECL:
+                return True
+            if target.kind == cidx.CursorKind.VAR_DECL and (
+                    not target.type.is_const_qualified() or target.type.is_volatile_qualified()):
+                return True
+    return False
 
 
 def _project_files(repo: Path):
@@ -123,7 +236,7 @@ def _project_files(repo: Path):
         if not root.is_dir():
             continue
         for path in sorted(root.rglob("*")):
-            if path.is_file() and path.suffix in (".h", ".hpp", ".inl", ".cpp"):
+            if path.is_file() and path.suffix in (".h", ".hpp", ".inl", ".c", ".cc", ".cpp", ".cxx", ".rc"):
                 yield path
 
 
@@ -199,6 +312,7 @@ def scan_blocks(*, repo: Path = REPO, paths=None) -> list[Block]:
     blocks = []
     seen: Counter = Counter()
     for path in list(paths) if paths is not None else _project_files(repo):
+        blocks.extend(_named_blocks(path, repo))
         if path.resolve() == (repo / "include/Enums.h").resolve():
             continue
         original = path.read_text(errors="replace")
@@ -247,7 +361,8 @@ def _scan_entry(payload):
     except RuntimeError as exc:
         return [], f"{path}: {exc}"
     try:
-        tu = cidx.Index.create().parse(str(path), args=args)
+        tu = cidx.Index.create().parse(str(path), args=args,
+            options=cidx.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
     except cidx.TranslationUnitLoadError as exc:
         return [], f"{path}: libclang could not load TU: {exc}"
     errors = [diag for diag in tu.diagnostics if diag.severity >= cidx.Diagnostic.Error]
@@ -256,16 +371,50 @@ def _scan_entry(payload):
 
     context = str(path.relative_to(repo))
     constants = []
-    for node in tu.cursor.walk_preorder():
-        if node.kind != cidx.CursorKind.ENUM_CONSTANT_DECL or node.location.file is None:
+    relative_paths = {}
+
+    def project_path(name):
+        if name not in relative_paths:
+            try:
+                rel = str(Path(name).resolve().relative_to(repo))
+                relative_paths[name] = rel if rel.startswith(("src/", "include/")) else None
+            except ValueError:
+                relative_paths[name] = None
+        return relative_paths[name]
+
+    nodes = list(tu.cursor.walk_preorder())
+    included = {path.resolve()}
+    for inclusion in tu.get_includes():
+        included.add(Path(inclusion.include.name).resolve())
+    for node in nodes:
+        if node.kind not in (cidx.CursorKind.ENUM_CONSTANT_DECL, cidx.CursorKind.VAR_DECL, cidx.CursorKind.PARM_DECL) or node.location.file is None:
             continue
-        source = Path(node.location.file.name).resolve()
-        try:
-            rel = str(source.relative_to(repo))
-        except ValueError:
+        rel = project_path(node.location.file.name)
+        if rel is None:
             continue
-        if not rel.startswith(("src/", "include/")):
-            continue
+        kind, expression, status, reason = "enum", "", "evaluated", ""
+        if node.kind in (cidx.CursorKind.VAR_DECL, cidx.CursorKind.PARM_DECL):
+            if not node.type.is_const_qualified():
+                continue
+            children = list(node.get_children())
+            if not any(child.kind.is_expression() for child in children):
+                continue  # extern declarations have no defining value
+            kind = "const-integral"
+            tokens = [token.spelling for token in node.get_tokens()]
+            expression = " ".join(tokens[tokens.index("=") + 1:]) if "=" in tokens else ""
+            if node.kind == cidx.CursorKind.PARM_DECL:
+                value, status, reason = None, "excluded", "default parameter is not a named constant definition"
+            elif not _integral(cidx, node.type):
+                value, status, reason = None, "excluded", "const declaration has non-integral type"
+            else:
+                value = _evaluate_integer(cidx, node)
+                if value is None:
+                    if _runtime_initializer(cidx, node):
+                        status, reason = "excluded", "integral const initializer depends on runtime values"
+                    else:
+                        status, reason = "unresolved", "integral const initializer could not be evaluated; runtime status unproven"
+        else:
+            value = node.enum_value
         parent = node.semantic_parent
         parent_file = ""
         parent_offset = -1
@@ -273,24 +422,143 @@ def _scan_entry(payload):
         if parent is not None:
             parent_name = parent.spelling
             if parent.location.file is not None:
-                parent_path = Path(parent.location.file.name).resolve()
-                try:
-                    parent_file = str(parent_path.relative_to(repo))
-                except ValueError:
-                    parent_file = ""
+                parent_file = project_path(parent.location.file.name) or ""
                 parent_offset = parent.location.offset
         constants.append(RawConstant(
-            node.enum_value, node.spelling, rel, node.location.line,
+            value, node.spelling, rel, node.location.line,
             node.location.column, node.location.offset, parent_name,
-            parent_file, parent_offset, context,
+            parent_file, parent_offset, context, kind, expression, status, reason,
         ))
+    constants.extend(_evaluate_macros(cidx, path, args, included, repo, context))
+    use_contexts, macro_roles = _named_uses(cidx, tu, repo,
+        {(row.file, row.offset) for row in constants if row.status != "excluded" or row.kind == "define"})
+    updated = []
+    for row in constants:
+        key = row.file, row.offset
+        row = replace(row, use_contexts=tuple(sorted(use_contexts.get(key, ()))))
+        if row.kind == "define" and row.status != "evaluated" and key in macro_roles:
+            row = replace(row, status="excluded", reason=macro_roles[key])
+        updated.append(row)
+    constants = updated
     return constants, None
+
+
+def _named_uses(cidx, tu, repo, definitions):
+    uses = defaultdict(set)
+    expansions = defaultdict(set)
+    macro_roles = {}
+    relative_paths = {}
+
+    def location(node):
+        if node.location.file is None:
+            return None
+        name = node.location.file.name
+        if name not in relative_paths:
+            try:
+                rel = str(Path(name).resolve().relative_to(repo))
+                relative_paths[name] = rel if rel.startswith(("src/", "include/")) else None
+            except ValueError:
+                relative_paths[name] = None
+        rel = relative_paths[name]
+        if rel is None:
+            return None
+        return rel, node.location.offset
+
+    for node in tu.cursor.get_children():
+        if node.kind == cidx.CursorKind.MACRO_INSTANTIATION and node.referenced:
+            site, definition = location(node), location(node.referenced)
+            if site and definition in definitions:
+                expansions[site].add(definition)
+    visited_expansions = set()
+
+    def walk(node, stack):
+        site = location(node)
+        if site and node.kind == cidx.CursorKind.DECL_REF_EXPR and node.referenced:
+            definition = location(node.referenced)
+            if definition in definitions:
+                key, _label = semantic_context(cidx, node, stack)
+                if key:
+                    uses[definition].add(key)
+        # Preprocessor cursors have no expression ancestors. Attach their
+        # identities to the outermost expansion expression in the AST.
+        if site in expansions and site not in visited_expansions and node.kind.is_expression():
+            visited_expansions.add(site)
+            if not _integral(cidx, node.type):
+                role = "expanded macro has non-integral expression type"
+            elif _evaluate_integer(cidx, node) is None and _runtime_initializer(cidx, node):
+                role = "expanded macro expression depends on runtime values"
+            else:
+                role = ""
+            if role:
+                for definition in expansions[site]:
+                    macro_roles[definition] = role
+            key, _label = semantic_context(cidx, node, stack)
+            if key:
+                for definition in expansions[site]:
+                    uses[definition].add(key)
+        for child in node.get_children():
+            walk(child, (*stack, node))
+
+    walk(tu.cursor, ())
+    return uses, macro_roles
+
+
+def _evaluate_macros(cidx, path, args, included, repo, context):
+    candidates = []
+    rows = []
+    for source in sorted(included):
+        try:
+            rel = str(source.relative_to(repo))
+        except ValueError:
+            continue
+        if not rel.startswith(("src/", "include/")):
+            continue
+        for block in _named_blocks(source, repo):
+            if block.kind != "define":
+                continue
+            member = block.members[0]
+            expression = member.expression
+            row = RawConstant(None, member.name, rel, member.line, member.column,
+                              member.offset, "", "", -1, context, "define", expression)
+            # Statement bodies, initializer lists and literal text are named
+            # code/data macros, not scalar integer constants. Retain the reason.
+            unquoted = re.sub(r"'(?:\\.|[^'\\])*'", "'character'", expression)
+            if expression in {"override", "final", "const", "volatile", "inline", "__inline", "__forceinline", "__cdecl", "__stdcall", "__fastcall"}:
+                rows.append(replace(row, status="excluded", reason="language modifier keyword macro, not a value expression"))
+            elif any(token in unquoted for token in (";", "{", "}")) or expression.startswith(('"', 'L"')):
+                rows.append(replace(row, status="excluded", reason="statement/aggregate/string macro, not an integral scalar"))
+            else:
+                candidates.append(row)
+    if not candidates:
+        return rows
+    original = path.read_text(errors="replace")
+    probe_lines = [f"\n__typeof__(({row.expression})) __gruntz_constant_{index} = ({row.expression});"
+                   for index, row in enumerate(candidates)]
+    probe = cidx.Index.create().parse(str(path), args=args,
+        unsaved_files=[(str(path), original + "\n" + "\n".join(probe_lines))])
+    evaluated = {node.spelling: node for node in probe.cursor.get_children()
+                 if node.kind == cidx.CursorKind.VAR_DECL and node.spelling.startswith("__gruntz_constant_")}
+    error_lines = {diag.location.line for diag in probe.diagnostics
+                   if diag.severity >= cidx.Diagnostic.Error and diag.location.file
+                   and Path(diag.location.file.name).resolve() == path.resolve()}
+    for index, row in enumerate(candidates):
+        node = evaluated.get(f"__gruntz_constant_{index}")
+        if node is None or node.location.line in error_lines:
+            rows.append(replace(row, status="unresolved", reason="macro replacement cannot be evaluated in including TU; requires explicit review"))
+        elif not _integral(cidx, node.type):
+            rows.append(replace(row, status="excluded", reason="macro replacement has non-integral type"))
+        else:
+            value = _evaluate_integer(cidx, node)
+            rows.append(replace(row, value=value,
+                status="evaluated" if value is not None else "unresolved",
+                reason="" if value is not None else "macro replacement is not a compiler-evaluable integer"))
+    return rows
 
 
 def scan_entries(entries: list[dict], *, repo: Path = REPO, jobs: int = 1):
     payloads = [(entry, str(repo.resolve())) for entry in entries]
-    rows: dict[tuple[str, int, int], RawConstant] = {}
-    contexts: dict[tuple[str, int, int], set[str]] = defaultdict(set)
+    rows = {}
+    contexts = defaultdict(set)
     errors = []
     if jobs <= 1:
         results = map(_scan_entry, payloads)
@@ -304,12 +572,30 @@ def scan_entries(entries: list[dict], *, repo: Path = REPO, jobs: int = 1):
                 errors.append(error)
                 continue
             for constant in constants:
-                key = (constant.file, constant.offset, constant.value)
-                rows.setdefault(key, constant)
+                key = (constant.file, constant.offset, constant.value, constant.status)
+                old = rows.get(key)
+                witness = old if old and old.reason.startswith("expanded macro") else constant
+                rows[key] = replace(witness, use_contexts=tuple(sorted(
+                    set(constant.use_contexts) | set(old.use_contexts if old else ()))))
                 contexts[key].add(constant.context)
     finally:
         if pool is not None:
             pool.shutdown()
+    # A macro may be included without being expanded in many TUs. An actual
+    # non-value/runtime expansion is a witness for that same replacement;
+    # do not preserve failures of the deliberately context-free probe from
+    # TUs where it was never used. Conflicting evaluated values stay visible.
+    witnessed_roles = {(row.file, row.offset, row.expression): row.reason
+                       for row in rows.values() if row.kind == "define"
+                       and row.status == "excluded" and row.reason.startswith("expanded macro")}
+    for key, row in list(rows.items()):
+        identity = row.file, row.offset, row.expression
+        if row.kind == "define" and row.status == "unresolved" and identity in witnessed_roles:
+            replacement = replace(row, status="excluded", reason=witnessed_roles[identity])
+            new_key = (*key[:3], "excluded")
+            rows[new_key] = replacement
+            contexts[new_key].update(contexts[key])
+            del rows[key]
     return rows, contexts, errors
 
 
@@ -330,16 +616,36 @@ def _join(raw, contexts, blocks):
             candidates = by_name.get((constant.file, constant.name), [])
             if len(candidates) == 1:
                 match = candidates[0]
+        if match is None and constant.kind != "enum":
+            member = Member(constant.name, constant.line, constant.column,
+                            constant.offset, constant.expression)
+            # Function-local constants may share names. Location-qualified
+            # domains keep those distinct without inventing a shared meaning.
+            owner = constant.parent_name + "::" if constant.parent_name else ""
+            domain = f"<{constant.kind}:{owner}{constant.name}>"
+            identity = f"{constant.file}:{domain}"
+            if any(block.source_enum == identity for block in blocks):
+                identity += f"@{constant.line}:{constant.column}"
+            block = Block(identity, domain, constant.kind, "", constant.file,
+                          constant.line, constant.offset, constant.offset, (member,))
+            blocks.append(block)
+            match = block, member
+            by_member[(constant.file, constant.offset)] = match
         if match is None:
             uncovered_ast.append(constant)
             continue
         block, member = match
+        if constant.status == "unresolved":
+            uncovered_ast.append(constant)
+            continue
         covered_members.add((block.file, member.offset))
+        if constant.status == "excluded":
+            continue
         constants.append(Constant(
             constant.value, constant.name, constant.file, constant.line,
             constant.column, constant.offset, block.source_enum, block.domain,
             block.kind, block.storage, member.expression,
-            tuple(sorted(contexts[key])),
+            tuple(sorted(contexts[key])), constant.use_contexts,
         ))
 
     uncovered_source = [
@@ -349,10 +655,15 @@ def _join(raw, contexts, blocks):
         if (block.file, member.offset) not in covered_members
     ]
     constants.sort(key=lambda row: (row.value, row.file, row.offset))
+    current_domains = {row.source_enum for row in constants}
+    blocks[:] = [block for block in blocks if block.kind not in ("define", "const-integral")
+                 or block.source_enum in current_domains
+                 or any((block.file, member.offset) not in covered_members for member in block.members)]
     return constants, uncovered_source, uncovered_ast
 
 
-def collect(*, cdb: Path = CDB, repo: Path = REPO, jobs: int = 1):
+def collect(*, cdb: Path = CDB, repo: Path = REPO, jobs: int = 1, with_coverage=False):
+    before = source_stamp(repo)
     if not cdb.is_file():
         raise FileNotFoundError(f"{cdb}: no compile database; run gruntz configure")
     entries = json.loads(cdb.read_text())
@@ -366,7 +677,21 @@ def collect(*, cdb: Path = CDB, repo: Path = REPO, jobs: int = 1):
     blocks = scan_blocks(repo=repo)
     raw, contexts, errors = scan_entries(entries, repo=repo, jobs=jobs)
     constants, uncovered_source, uncovered_ast = _join(raw, contexts, blocks)
-    return constants, blocks, uncovered_source, uncovered_ast, errors
+    if source_stamp(repo) != before:
+        errors.append("project source changed during the named-constant census; rerun on a stable tree")
+    result = constants, blocks, uncovered_source, uncovered_ast, errors
+    if with_coverage:
+        coverage = [row for row in raw.values() if row.kind != "enum"]
+        witnessed = {(row.file, row.offset) for row in coverage}
+        for block, member in uncovered_source:
+            if block.kind not in ("define", "const-integral") or (block.file, member.offset) in witnessed:
+                continue
+            coverage.append(RawConstant(None, member.name, block.file,
+                member.line, member.column, member.offset, block.domain, block.file,
+                block.offset, "", block.kind, member.expression, "unresolved",
+                "source definition has no evaluated AST witness (inactive or unreferenced declaration)"))
+        return (*result, coverage)
+    return result
 
 
 def _write_tsv(path: Path, fieldnames: tuple[str, ...], rows) -> None:
@@ -381,13 +706,14 @@ def _write_tsv(path: Path, fieldnames: tuple[str, ...], rows) -> None:
 def write_report(path: Path, constants: list[Constant]) -> None:
     fields = (
         "value", "hex", "name", "file", "line", "column", "offset",
-        "source_enum", "domain", "kind", "storage", "expression", "contexts",
+        "source_enum", "domain", "kind", "storage", "expression", "contexts", "use_contexts",
     )
     rows = []
     for constant in constants:
         row = asdict(constant)
         row["hex"] = hex(constant.value)
         row["contexts"] = ";".join(constant.contexts)
+        row["use_contexts"] = json.dumps(constant.use_contexts)
         rows.append({name: row[name] for name in fields})
     _write_tsv(path, fields, rows)
 
@@ -410,9 +736,16 @@ def write_collision_report(path: Path, constants: list[Constant], literals_path:
     for constant in constants:
         by_value[constant.value].append(constant)
     literals = _literal_counts(literals_path)
+    literal_contexts = defaultdict(set)
+    if literals_path.is_file():
+        with literals_path.open(newline="") as stream:
+            for row in csv.DictReader(stream, dialect="excel-tab"):
+                if row.get("value") and row.get("context_key"):
+                    literal_contexts[int(row["value"])].add(row["context_key"])
     fields = (
         "value", "hex", "declarations", "domains", "members",
-        "function_literal_sites", "literal_groups",
+        "function_literal_sites", "literal_groups", "shared_named_contexts",
+        "shared_literal_contexts",
     )
     rows = []
     for value, declarations in sorted(by_value.items()):
@@ -420,6 +753,10 @@ def write_collision_report(path: Path, constants: list[Constant], literals_path:
         literal_groups = literals.get(value, Counter())
         if len(domains) < 2 and not literal_groups:
             continue
+        context_domains = defaultdict(set)
+        for declaration in declarations:
+            for key in declaration.use_contexts:
+                context_domains[key].add(declaration.source_enum)
         rows.append({
             "value": value,
             "hex": hex(value),
@@ -430,7 +767,12 @@ def write_collision_report(path: Path, constants: list[Constant], literals_path:
             "function_literal_sites": sum(literal_groups.values()),
             "literal_groups": ";".join(f"{name}={count}"
                                        for name, count in sorted(literal_groups.items())),
+            "shared_named_contexts": json.dumps(sorted(key for key, owners in context_domains.items() if len(owners) > 1)),
+            "shared_literal_contexts": json.dumps(sorted(set(context_domains) & literal_contexts[value])),
         })
+    rows.sort(key=lambda row: (
+        not json.loads(row["shared_named_contexts"]),
+        not json.loads(row["shared_literal_contexts"]), row["value"]))
     _write_tsv(path, fields, rows)
 
 
@@ -442,7 +784,7 @@ def write_pair_report(path: Path, constants: list[Constant]) -> None:
     fields = (
         "left", "right", "left_members", "right_members", "shared_values",
         "shared_count", "min_coverage_pct", "exact_value_set",
-        "exact_value_sequence",
+        "exact_value_sequence", "shared_contexts", "direct_shared_contexts",
     )
     rows = []
     for left_name, right_name in combinations(sorted(by_domain), 2):
@@ -452,8 +794,14 @@ def write_pair_report(path: Path, constants: list[Constant]) -> None:
         right_values = {row.value for row in right}
         shared = sorted(left_values & right_values)
         exact_set = left_values == right_values
-        if len(shared) < 2 and not exact_set:
+        if not shared:
             continue
+        shared_contexts = set()
+        for value in shared:
+            left_contexts = {key for row in left if row.value == value for key in row.use_contexts}
+            right_contexts = {key for row in right if row.value == value for key in row.use_contexts}
+            shared_contexts.update(left_contexts & right_contexts)
+        direct = sorted(key for key in shared_contexts if "/via:" not in key)
         coverage = 100.0 * len(shared) / min(len(left_values), len(right_values))
         rows.append({
             "left": left_name,
@@ -468,8 +816,12 @@ def write_pair_report(path: Path, constants: list[Constant]) -> None:
                 "yes" if [row.value for row in left] == [row.value for row in right]
                 else "no"
             ),
+            "shared_contexts": json.dumps(sorted(shared_contexts)),
+            "direct_shared_contexts": json.dumps(direct),
         })
     rows.sort(key=lambda row: (
+        -len(json.loads(row["direct_shared_contexts"])),
+        -len(json.loads(row["shared_contexts"])),
         row["exact_value_sequence"] != "yes",
         row["exact_value_set"] != "yes",
         -float(row["min_coverage_pct"]),
@@ -506,6 +858,40 @@ def init_ledger(path: Path, constants: list[Constant], blocks: list[Block]) -> N
             "reason": "",
         })
     _write_tsv(path, LEDGER_FIELDS, rows)
+
+
+def extend_ledger(path: Path, constants: list[Constant]) -> int:
+    """Add unclaimed current declarations as pending, preserving old decisions."""
+    with path.open(newline="") as stream:
+        reader = csv.DictReader(stream, dialect="excel-tab")
+        if tuple(reader.fieldnames or ()) != LEDGER_FIELDS:
+            raise ValueError(f"{path}: unexpected ledger schema")
+        rows = list(reader)
+    claimed = set()
+    existing = {row["source_enum"] for row in rows}
+    for row in rows:
+        members, findings = _parse_members(row["members"], source_enum=row["source_enum"])
+        reuse, more = _parse_reuse(row["member_reuse"], source_enum=row["source_enum"])
+        if findings or more:
+            raise ValueError("; ".join(findings + more))
+        claimed.update(reuse.get(name, f"{row['source_enum']}::{name}") for name in members)
+    added = 0
+    for domain, members in sorted(_members_by_enum(constants).items()):
+        unclaimed = [row for row in members if f"{domain}::{row.name}" not in claimed]
+        if not unclaimed:
+            continue
+        if domain in existing:
+            # Preserve the starting snapshot and its reviewed decisions.
+            # check_ledger still reports these unclaimed additions; they do
+            # not prevent discovery of independent, wholly new domains.
+            continue
+        rows.append({"source_enum": domain,
+                     "members": ";".join(f"{row.name}={row.value}" for row in unclaimed),
+                     "decision": "pending", "current_enums": domain,
+                     "member_reuse": "", "reason": ""})
+        added += 1
+    _write_tsv(path, LEDGER_FIELDS, rows)
+    return added
 
 
 def _parse_members(text: str, *, source_enum: str) -> tuple[dict[str, int], list[str]]:
@@ -651,27 +1037,57 @@ def main(argv=None) -> int:
                         help="do not write build/gen derived reports")
     parser.add_argument("--init-ledger", action="store_true",
                         help="create the complete pending review ledger; refuse overwrite")
+    parser.add_argument("--extend-ledger", action="store_true",
+                        help="append newly covered domains as pending; never approve them")
     parser.add_argument("--jobs", type=int,
                         default=min(4, multiprocessing.cpu_count()),
                         help="parallel libclang translation-unit workers")
     args = parser.parse_args(argv)
     try:
-        constants, blocks, uncovered_source, uncovered_ast, errors = collect(
-            jobs=max(1, args.jobs))
+        constants, blocks, uncovered_source, uncovered_ast, errors, coverage = collect(
+            jobs=max(1, args.jobs), with_coverage=True)
     except (FileNotFoundError, RuntimeError, ValueError) as exc:
         print(f"[enum-reuse] FATAL: {exc}")
         return 2
-    if errors or uncovered_source or uncovered_ast:
+    if not args.no_report:
+        _write_tsv(NAMED_REPORT,
+            ("file", "line", "column", "name", "kind", "expression", "value", "status", "reason", "context"),
+            ({name: asdict(row)[name] for name in
+              ("file", "line", "column", "name", "kind", "expression", "value", "status", "reason", "context")}
+             for row in sorted(coverage, key=lambda row: (row.file, row.offset, row.status))))
+    incomplete = bool(errors or uncovered_source or uncovered_ast)
+    if not args.no_report:
+        outputs = (REPORT, COLLISION_REPORT, PAIR_REPORT)
+        if incomplete:
+            # Never leave a previous successful census at the canonical paths
+            # while emitting a new partial one.
+            for output in outputs:
+                output.unlink(missing_ok=True)
+            outputs = tuple(output.with_suffix(".partial.tsv") for output in outputs)
+        write_report(outputs[0], constants)
+        write_collision_report(outputs[1], constants, BARE_CONSTANTS)
+        write_pair_report(outputs[2], constants)
+        status_path = REPORT.with_name("enum_reuse_status.json")
+        status_path.write_text(json.dumps({
+            "complete": not incomplete, "evaluated_constants": len(constants),
+            "parsing_errors": errors,
+            "uncovered_source": len(uncovered_source),
+            "uncovered_ast": len(uncovered_ast),
+            "reports": [str(output.relative_to(REPO)) for output in outputs],
+        }, indent=2) + "\n")
+    if incomplete:
         for error in errors[:10]:
             print(f"   {error}")
         for block, member in uncovered_source[:10]:
             print(f"   {block.file}:{member.line}: source member not evaluated: "
                   f"{block.domain}::{member.name}")
         for row in uncovered_ast[:10]:
-            print(f"   {row.file}:{row.line}: evaluated member not inventoried: "
+            print(f"   {row.file}:{row.line}: {row.reason or 'evaluated member not inventoried'}: "
                   f"{row.parent_name}::{row.name}")
         total = len(errors) + len(uncovered_source) + len(uncovered_ast)
         print(f"[enum-reuse] FATAL: {total} coverage/parsing finding(s)")
+        print(f"[enum-reuse] partial inventory: {len(constants)} evaluated constants; "
+              "see named_constant_coverage.tsv and enum_reuse_status.json")
         return 2
 
     by_value = Counter(row.value for row in constants)
@@ -690,10 +1106,6 @@ def main(argv=None) -> int:
         }, indent=2))
     elif args.value or args.duplicates:
         _print_tsv(selected)
-    if not args.no_report:
-        write_report(REPORT, constants)
-        write_collision_report(COLLISION_REPORT, constants, BARE_CONSTANTS)
-        write_pair_report(PAIR_REPORT, constants)
     if args.init_ledger:
         try:
             init_ledger(LEDGER, constants, blocks)
@@ -702,6 +1114,13 @@ def main(argv=None) -> int:
             return 2
         print(f"[enum-reuse] initialized {LEDGER.relative_to(REPO)} with "
               f"{len(blocks)} pending row(s)", file=sys.stderr)
+    if args.extend_ledger:
+        try:
+            count = extend_ledger(LEDGER, constants)
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"[enum-reuse] FATAL: {exc}")
+            return 2
+        print(f"[enum-reuse] appended {count} pending domain(s)", file=sys.stderr)
     findings = check_ledger(LEDGER, constants)
     for finding in findings[:20]:
         print(f"   {finding}", file=sys.stderr)

@@ -44,8 +44,8 @@ all read).
 | `gruntz verify fingerprints` | `gruntz.verify.fingerprints` | refresh the per-function source-fingerprint cache |
 | `gruntz verify selftest` | `gruntz.verify.selftest` | the NEGATIVE controls: feed every gate a known violation, assert it fails |
 | `gruntz verify compiler-artifacts` | `gruntz.verify.compiler_artifacts` | reject explicit allocation/deallocation calls, forced-emission helpers, and unreviewed raw-storage or low-level lifetime seams; `--base-only` prints derived unpaired COFF definitions |
-| `gruntz verify constants` | `gruntz.verify.constants` | AST-backed bare numeric census; `--gate` fails on proven pointer/bool/enum spellings and writes the derived TSV under `build/gen/` |
-| `gruntz verify enum-reuse` | `gruntz.verify.enum_reuse` | evaluated enum-member census and equal-value review leads; cross-checks every source enum block against libclang, ranks overlapping domain pairs, and joins bare function literals into a derived collision report |
+| `gruntz verify constants` | `gruntz.verify.constants` | AST literal census with a lexical coverage backstop for macros, inactive code and unused headers; writes site and destination-group reports. `--gate` checks proven pointer/bool/enum replacements, not completion of the semantic review. See [constant review](constant-review.md). |
+| `gruntz verify enum-reuse` | `gruntz.verify.enum_reuse` | compiler-evaluated enumerators, object-like macros and const integrals; checks source coverage and the existing review ledger, ranks equal-valued names by shared semantic destinations, and reports literal collisions |
 
 `gruntz verify <gate>` runs one gate directly. The tiers
 (`gruntz.verify.tiers`) are:

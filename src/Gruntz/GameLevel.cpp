@@ -116,7 +116,7 @@ void CGameLevel::Unload() {
     m_viewportRect.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
-    memset(&m_header, 0, 1524);
+    memset(&m_header, 0, sizeof(m_header));
 }
 
 // @early-stop

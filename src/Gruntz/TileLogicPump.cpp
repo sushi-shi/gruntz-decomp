@@ -464,11 +464,11 @@ i32 CCheckpointTrigger::SerializeDispatch(
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case SERIAL_LOAD:
-            sa->Read(m_switchKeys, 0x3c);
+            sa->Read(m_switchKeys, sizeof(m_switchKeys));
             sa->Read(&m_switchCount, sizeof(m_switchCount));
             break;
         case SERIAL_SAVE:
-            sa->Write(m_switchKeys, 0x3c);
+            sa->Write(m_switchKeys, sizeof(m_switchKeys));
             sa->Write(&m_switchCount, sizeof(m_switchCount));
             break;
     }
@@ -504,7 +504,10 @@ void CTileTriggerTransition::RegisterActs() {
 }
 
 RVA(0x00110070, 0x71)
-i32 CTileTriggerTransition::StartTransitionAnimation(const char* imageSetName, const char* animationName) {
+i32 CTileTriggerTransition::StartTransitionAnimation(
+    const char* imageSetName,
+    const char* animationName
+) {
     if (SwitchAnimationByName(animationName, 0) == 0) {
         return 0;
     }

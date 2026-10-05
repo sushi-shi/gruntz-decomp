@@ -13,7 +13,7 @@ RVA(0x00193640, 0x40)
 zBitVec* zBitVec::SetBit(u32 idx) {
     if (EnsureSize(idx + 1)) {
         u32* p;
-        if (static_cast<u32>(m_capacity) > 0x20) {
+        if (static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS) {
             p = m_words;
         } else {
             p = &m_inline;
@@ -33,8 +33,8 @@ zBitVec* zBitVec::Or(zBitVec* o) {
         }
     }
     i32 nwords = static_cast<i32>((static_cast<u32>((o->m_capacity + 1)) >> BITARRAY_WORD_SHIFT));
-    u32* obuf = static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : &o->m_inline;
-    u32* tbuf = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
+    u32* obuf = static_cast<u32>(o->m_capacity) > BITARRAY_WORD_BITS ? o->m_words : &o->m_inline;
+    u32* tbuf = static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS ? m_words : &m_inline;
     for (i32 i = 0; i < nwords; i++) {
         tbuf[i] |= obuf[i];
     }
@@ -47,19 +47,19 @@ i32 zBitVec::EnsureSize(i32 nbits) {
     u32 ndwords = ((nbits & BITARRAY_BIT_MASK) != 0 ? 1 : 0)
                   + (static_cast<u32>(nbits) >> BITARRAY_WORD_SHIFT);
     u32* nbuf = NULL;
-    if (static_cast<u32>(m_capacity) > 0x20) {
-        nbuf = static_cast<u32*>(realloc(m_words, ndwords * 4));
+    if (static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS) {
+        nbuf = static_cast<u32*>(realloc(m_words, ndwords * sizeof(*nbuf)));
         if (!nbuf) {
             goto fail;
         }
         u32 oldn = static_cast<u32>(m_capacity) >> BITARRAY_WORD_SHIFT;
-        memset(nbuf + oldn, 0, (ndwords - oldn) * 4);
+        memset(nbuf + oldn, 0, (ndwords - oldn) * sizeof(*nbuf));
     } else {
-        nbuf = static_cast<u32*>(malloc(ndwords * 4));
+        nbuf = static_cast<u32*>(malloc(ndwords * sizeof(*nbuf)));
         if (!nbuf) {
             goto fail;
         }
-        memset(nbuf, 0, ndwords * 4);
+        memset(nbuf, 0, ndwords * sizeof(*nbuf));
         memcpy(nbuf, &m_words, sizeof(m_words));
     }
     m_words = nbuf;

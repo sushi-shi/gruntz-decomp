@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/SoundDevice.h>
+#include <Dsndmgr/VolumeScale.h>
 #include <Gruntz/SoundCueRegistry.h>
 
 class CAmbientSound;
@@ -11,10 +12,6 @@ class CAmbientSound;
 class CAmbientPosSound;
 class CRandomAmbientSound;
 struct AmbientPoint;
-
-enum {
-    kSoundVolumeMax = 100
-};
 
 class CWorldSoundSet {
 public:
@@ -93,7 +90,7 @@ public:
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_cueRegistry = NULL;
-    m_masterVolume = kSoundVolumeMax;
+    m_masterVolume = VOLUME_PCT_MAX;
 }
 
 inline CWorldSoundSet::~CWorldSoundSet() {

@@ -28,7 +28,7 @@ i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
         return 0;
     }
     g_serialCounter = 0;
-    memset(g_saveBuf, 0, 0x90);
+    memset(g_saveBuf, 0, sizeof(g_saveBuf));
     g_saveBuf[0] = 1;
     CGameWorld* world = gameMgr->World();
     if (world == NULL) {

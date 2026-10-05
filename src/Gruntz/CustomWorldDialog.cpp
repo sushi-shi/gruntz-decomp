@@ -165,7 +165,7 @@ i32 FillCustomLevelList(HWND hWnd) {
 
 RVA(0x0003b1a0, 0x118)
 i32 FillLevelInfoDialog(HWND hDlg) {
-    if (!GetDlgItem(hDlg, 0x3fc)) {
+    if (!GetDlgItem(hDlg, CTRL_CUSTOM_WORLD_LIST)) {
         return 0;
     }
     if (!LoadCustomWorldSelection(hDlg)) {
@@ -197,7 +197,7 @@ RVA(0x0003b310, 0x10d)
 i32 LoadCustomWorldSelection(HWND hWnd) {
     char itemText[256];
     char dirBuf[256];
-    HWND lb = GetDlgItem(hWnd, 0x3fc);
+    HWND lb = GetDlgItem(hWnd, CTRL_CUSTOM_WORLD_LIST);
     if (!lb) {
         return 0;
     }
@@ -294,7 +294,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     char szLevel[0x100];
     char szDir[0x100];
 
-    HWND hList = GetDlgItem(hDlg, 0x3fc);
+    HWND hList = GetDlgItem(hDlg, CTRL_CUSTOM_WORLD_LIST);
     if (!hList) {
         return 0;
     }

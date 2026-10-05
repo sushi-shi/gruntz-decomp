@@ -31,11 +31,12 @@ import multiprocessing
 import re
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
 from gruntz.core.paths import BUILD, REPO
 from gruntz.verify.srcscan import blank_comments
+from gruntz.verify.constant_context import semantic_context
 
 
 CDB = BUILD / "clangd/compile_commands.json"
@@ -44,9 +45,13 @@ _NUMBER = re.compile(rb"(?:0[xX][0-9A-Fa-f]+|[0-9]+)(?:[uUlL]*)(?![A-Za-z0-9_.])
 _SUFFIX = re.compile(r"[uUlL]+$")
 _BOOLEAN_TYPE_SPELLINGS = {"BOOL", "b32"}
 _LEGACY_BOOLEAN = re.compile(r"\b(?:FALSE|TRUE)\b")
-_STRING = re.compile(r'"(?:\\.|[^"\\\n])*"')
-_CHAR = re.compile(r"'(?:\\.|[^'\\\n])*'")
-_SOURCE_EXTENSIONS = {".cpp", ".cc", ".cxx", ".h", ".hpp", ".inl"}
+_STRING = re.compile(r'"(?:\\[\s\S]|[^"\\\n])*"')
+_CHAR = re.compile(r"'(?:\\[\s\S]|[^'\\\n])*'")
+_SOURCE_EXTENSIONS = {".cpp", ".cc", ".cxx", ".c", ".h", ".hpp", ".inl", ".rc"}
+
+
+def _blank_literal(match):
+    return "".join("\n" if char == "\n" else " " for char in match.group())
 
 
 @dataclass(frozen=True)
@@ -65,6 +70,9 @@ class Site:
     review_group: str
     review_context: str
     reason: str
+    context_key: str = ""
+    context_label: str = ""
+    coverage: str = "ast"
 
     @property
     def proven(self) -> bool:
@@ -97,7 +105,9 @@ def _source_path(entry: dict, repo: Path) -> Path:
 
 
 def _raw_number(path: Path, offset: int, cache: dict[Path, bytes]):
-    raw = cache.setdefault(path, path.read_bytes())
+    if path not in cache:
+        cache[path] = path.read_bytes()
+    raw = cache[path]
     if offset < 0 or offset >= len(raw):
         return None
     if offset and (chr(raw[offset - 1]).isalnum() or raw[offset - 1] in b"_."):
@@ -108,7 +118,8 @@ def _raw_number(path: Path, offset: int, cache: dict[Path, bytes]):
     spelling = match.group().decode("ascii")
     body = _SUFFIX.sub("", spelling)
     try:
-        value = int(body, 0)
+        value = int(body, 8 if len(body) > 1 and body.startswith("0")
+                    and not body.lower().startswith("0x") else 0)
     except ValueError:
         value = None
     return spelling, value
@@ -518,10 +529,12 @@ def _scan_entry(payload):
                         site_null_available)
                     review_group, review_context = _review_group(
                         cidx, node, stack, scope, value, cls)
+                    key, label = semantic_context(cidx, node, stack)
                     sites.append(Site(
                         str(rel), node.location.line, node.location.column,
                         node.location.offset, function, scope, spelling, value,
-                        cls, repl, context, review_group, review_context, reason))
+                        cls, repl, context, review_group, review_context, reason,
+                        key, label))
         for child in node.get_children():
             walk(child, stack + (node,))
 
@@ -530,6 +543,7 @@ def _scan_entry(payload):
 
 
 def scan_entries(entries: list[dict], *, repo: Path = REPO, jobs: int = 1):
+    before = source_stamp(repo)
     payloads = [(entry, str(repo.resolve())) for entry in entries]
     rows: dict[tuple[str, int], Site] = {}
     errors: list[str] = []
@@ -554,7 +568,17 @@ def scan_entries(entries: list[dict], *, repo: Path = REPO, jobs: int = 1):
     finally:
         if jobs > 1:
             pool.shutdown()
+    if source_stamp(repo) != before:
+        errors.append("project source changed during the constant census; rerun on a stable tree")
     return sorted(rows.values(), key=lambda x: (x.file, x.offset)), errors
+
+
+def source_stamp(repo: Path):
+    """Reject reports assembled from changing files during parallel work."""
+    return {str(path): (path.stat().st_mtime_ns, path.stat().st_size)
+            for root in (repo / "src", repo / "include")
+            for path in root.rglob("*")
+            if path.is_file() and path.suffix in _SOURCE_EXTENSIONS}
 
 
 def scan(*, cdb: Path = CDB, repo: Path = REPO, jobs: int = 1):
@@ -566,20 +590,91 @@ def scan(*, cdb: Path = CDB, repo: Path = REPO, jobs: int = 1):
                and str(entry["file"]).replace("\\", "/").startswith("src/")]
     if not entries:
         raise RuntimeError(f"{cdb}: no project C++ translation units")
-    return scan_entries(entries, repo=repo, jobs=jobs)
+    sites, errors = scan_entries(entries, repo=repo, jobs=jobs)
+    return complete_source_coverage(sites, repo=repo), errors
+
+
+# Preprocessing-number tokens must be consumed whole before asking whether
+# they are integer literals (otherwise 1.5, 2e10 or identifier2 become hits).
+_LEX_TOKEN = re.compile(r"[A-Za-z_]\w*|(?:\d|\.\d)(?:[eEpP][+-]|[\w.])*")
+_ANNOTATION = re.compile(r"\b(?:RVA(?:_\w+)?|DATA(?:_\w+)?)\s*\([^)]*$")
+
+
+def complete_source_coverage(sites: list[Site], *, repo: Path = REPO) -> list[Site]:
+    """Backstop the AST with every source integer token, even inactive macros.
+
+    Lexical-only rows explicitly lack semantic evidence.  They cannot become
+    automatic fixes or disappear from the review total because Clang skipped
+    a conditional branch, unused macro, or unreferenced header.
+    """
+    rows = {(s.file, s.offset): s for s in sites}
+    cache = {}
+    for root in (repo / "src", repo / "include"):
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or path.suffix not in _SOURCE_EXTENSIONS:
+                continue
+            raw = path.read_bytes()
+            # latin1 gives a one-to-one map from characters to byte offsets.
+            code = blank_comments(raw.decode("latin1"))
+            code = _STRING.sub(_blank_literal, code)
+            code = _CHAR.sub(_blank_literal, code)
+            rel = str(path.relative_to(repo))
+            for token in _LEX_TOKEN.finditer(code):
+                offset = token.start()
+                if (rel, offset) in rows or not _NUMBER.fullmatch(token.group().encode()):
+                    continue
+                number = _raw_number(path, offset, cache)
+                if number is None:
+                    continue
+                spelling, value = number
+                start = code.rfind("\n", 0, offset) + 1
+                prefix = code[start:offset]
+                if _ANNOTATION.search(prefix):
+                    group, reason = "source-label", "retail address/size annotation"
+                elif prefix.lstrip().startswith("#"):
+                    group, reason = "preprocessor", "macro or conditional; no expression AST"
+                elif path.suffix == ".rc":
+                    group, reason = "resource-script", "resource compiler input; no C++ expression AST"
+                else:
+                    group, reason = "unparsed-source", "no literal AST at source token; requires review"
+                rows[rel, offset] = Site(
+                    rel, code.count("\n", 0, offset) + 1, offset - start + 1,
+                    offset, "", "lexical-only", spelling, value, "numeric", "", "",
+                    group, reason, reason, "", "", "lexical")
+    return sorted(rows.values(), key=lambda s: (s.file, s.offset))
+
+
+def write_groups(path: Path, sites: list[Site]) -> None:
+    """Derived destination worklist; an absent identity is never a shared key."""
+    import csv
+    groups = {}
+    for site in sites:
+        key = site.context_key or f"source:{site.file}:{site.offset}"
+        groups.setdefault(key, []).append(site)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="") as output:
+        writer = csv.writer(output, delimiter="\t")
+        writer.writerow(["context_key", "context_label", "sites", "values", "sample_locations",
+                         "review_groups", "disposition"])
+        for key, rows in sorted(groups.items(), key=lambda pair: (-len(pair[1]), pair[0])):
+            automatic = all(s.proven for s in rows)
+            defined = all(s.review_group in {"named-definition", "source-label"} for s in rows)
+            writer.writerow([key, rows[0].context_label, len(rows),
+                             ",".join(map(str, sorted({s.value for s in rows if s.value is not None}))),
+                             ";".join(f"{s.file}:{s.line}:{s.column}" for s in rows[:20]),
+                             ",".join(sorted({s.review_group for s in rows})),
+                             "needs-existing-name" if automatic else
+                             "definition-or-label" if defined else "pending-review"])
 
 
 def write_report(path: Path, sites: list[Site]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fields = list(asdict(sites[0]).keys()) if sites else [
-        "file", "line", "column", "offset", "function", "scope",
-        "spelling", "value", "classification", "replacement",
-        "context_type", "review_group", "review_context", "reason"]
-    lines = ["\t".join(fields)]
+    columns = [field.name for field in fields(Site)]
+    lines = ["\t".join(columns)]
     for site in sites:
         row = asdict(site)
         lines.append("\t".join("" if row[name] is None else str(row[name])
-                               for name in fields))
+                               for name in columns))
     path.write_text("\n".join(lines) + "\n")
 
 
@@ -620,8 +715,8 @@ def legacy_boolean_spellings(*, repo: Path = REPO) -> list[str]:
             if not path.is_file() or path.suffix not in _SOURCE_EXTENSIONS:
                 continue
             code = blank_comments(path.read_text(errors="ignore"))
-            code = _STRING.sub(lambda match: " " * len(match.group()), code)
-            code = _CHAR.sub(lambda match: " " * len(match.group()), code)
+            code = _STRING.sub(_blank_literal, code)
+            code = _CHAR.sub(_blank_literal, code)
             for match in _LEGACY_BOOLEAN.finditer(code):
                 line = code.count("\n", 0, match.start()) + 1
                 column = match.start() - code.rfind("\n", 0, match.start())
@@ -673,12 +768,19 @@ def main(argv=None) -> int:
                         default=min(4, multiprocessing.cpu_count()),
                         help="parallel libclang workers (default: up to 4)")
     args = parser.parse_args(argv)
+    def discard_stale_reports():
+        if not args.no_report:
+            REPORT.unlink(missing_ok=True)
+            REPORT.with_name("constant_contexts.tsv").unlink(missing_ok=True)
+
     try:
         sites, errors = scan(jobs=max(1, args.jobs))
     except (FileNotFoundError, RuntimeError) as exc:
+        discard_stale_reports()
         print(f"[constants] FATAL: {exc}")
         return 2
     if errors:
+        discard_stale_reports()
         for error in errors[:20]:
             print(f"   {error}")
         if len(errors) > 20:
@@ -695,6 +797,7 @@ def main(argv=None) -> int:
         return 0
     if not args.no_report:
         write_report(REPORT, sites)
+        write_groups(REPORT.with_name("constant_contexts.tsv"), sites)
     bad = findings(sites)
     legacy_booleans = legacy_boolean_spellings(repo=REPO)
     if args.verbose:

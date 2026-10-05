@@ -500,12 +500,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     SAFE_DELETE(m_resourceArchive);
     m_resourceArchive = new CRezMgr;
-    bool parseFailed = ResourceArchive()->Open(
-                           static_cast<const char*>(GetRezPath()),
-                           true,
-                           false
-                       )
-                       == 0;
+    bool parseFailed =
+        ResourceArchive()->Open(static_cast<const char*>(GetRezPath()), true, false) == 0;
     if (parseFailed) {
         ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
         return 0;
@@ -1311,11 +1307,7 @@ RVA(0x0008dd80, 0x31)
 i32 CDDrawDeviceManager::GetCapsChecked() {
     i32 hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);
     if (hr != 0) {
-        CDDrawDeviceManager::ReportError(
-            "c:\\proj\\incs\\ddrawmgr.h",
-            0x135,
-            hr
-        );
+        CDDrawDeviceManager::ReportError("c:\\proj\\incs\\ddrawmgr.h", 0x135, hr);
     }
     return hr;
 }
@@ -2880,7 +2872,7 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
     if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
-    m_midi->SetCurrentVolumePercent(kSoundVolumeMax, durationMs);
+    m_midi->SetCurrentVolumePercent(VOLUME_PCT_MAX, durationMs);
 }
 
 RVA(0x00091670, 0x2ac)
@@ -3009,12 +3001,8 @@ i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
 
     m_resourceArchive = new CRezMgr;
 
-    bool parseFailed = m_resourceArchive->Open(
-                           static_cast<const char*>(GetRezPath()),
-                           true,
-                           false
-                       )
-                       == 0;
+    bool parseFailed =
+        m_resourceArchive->Open(static_cast<const char*>(GetRezPath()), true, false) == 0;
     if (parseFailed) {
         ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x441);
         return 0;
@@ -3778,13 +3766,13 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
 RVA(0x00093be0, 0x107)
 i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     CFile file;
-    char hdr[0x5f4];
+    char hdr[sizeof(WwdHeader)];
     if (file.Open(path, CFile::modeRead, NULL)) {
-        if (file.GetLength() < 0x5f4) {
+        if (file.GetLength() < sizeof(hdr)) {
             file.Close();
             return 0;
         }
-        file.Read(hdr, 0x5f4);
+        file.Read(hdr, sizeof(hdr));
         file.Close();
         if (strstr(hdr + 0x10, "Battlez")) {
             return 1;

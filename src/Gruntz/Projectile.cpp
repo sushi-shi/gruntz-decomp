@@ -101,7 +101,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner)
     HIDE_OBJECT_INLINE();
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_ACTOR);
-    memset(&m_animations[0], 0, 0x1c);
+    memset(&m_animations[0], 0, sizeof(m_animations));
     m_sound = NULL;
     m_shadow = NULL;
 }
@@ -694,7 +694,7 @@ i32 CProjectile::SerializeDispatch(
             s->Read(&count, sizeof(count));
             for (i32 ci = 0; ci < count; ci++) {
                 Coord* payload = g_coordPool.Pop();
-                s->Read(payload, 8);
+                s->Read(payload, sizeof(Coord));
                 m_hitList.AddTail(payload);
             }
             break;
@@ -740,7 +740,7 @@ i32 CProjectile::SerializeDispatch(
 
             POSITION pos = m_hitList.GetHeadPosition();
             while (pos != NULL) {
-                s->Write(m_hitList.GetNext(pos), 8);
+                s->Write(m_hitList.GetNext(pos), sizeof(Coord));
             }
             break;
         }
