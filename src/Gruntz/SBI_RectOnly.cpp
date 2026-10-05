@@ -322,9 +322,10 @@ i32 CStatusBarMgr::Render() {
             }
         }
 
-        POSITION n = m_tabLists[0].GetHeadPosition();
+        POSITION n = m_tabLists[IDX(TAB_CONTROLS)].GetHeadPosition();
         while (n) {
-            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
+            CStatusBarItem* cur =
+                static_cast<CStatusBarItem*>(m_tabLists[IDX(TAB_CONTROLS)].GetNext(n));
             if (cur) {
                 cur->Render();
             }
@@ -342,9 +343,9 @@ i32 CStatusBarMgr::Render() {
         }
     }
 
-    POSITION k = m_tabLists[6].GetHeadPosition();
+    POSITION k = m_tabLists[IDX(TAB_DIALOG)].GetHeadPosition();
     while (k) {
-        CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
+        CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[IDX(TAB_DIALOG)].GetNext(k));
         if (p) {
             p->RequestRedraw();
             p->Render();
@@ -756,9 +757,10 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     }
     UpdateStatusSystems();
 
-    POSITION n = m_tabLists[0].GetHeadPosition();
+    POSITION n = m_tabLists[IDX(TAB_CONTROLS)].GetHeadPosition();
     while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
+        CStatusBarItem* cur =
+            static_cast<CStatusBarItem*>(m_tabLists[IDX(TAB_CONTROLS)].GetNext(n));
         if (cur) {
             cur->Refresh(deltaMs);
         }
@@ -771,9 +773,9 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
             cur->Refresh(deltaMs);
         }
     }
-    POSITION k = m_tabLists[6].GetHeadPosition();
+    POSITION k = m_tabLists[IDX(TAB_DIALOG)].GetHeadPosition();
     while (k) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[IDX(TAB_DIALOG)].GetNext(k));
         if (cur) {
             cur->Refresh(deltaMs);
         }
@@ -787,9 +789,10 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
 
 RVA(0x000ffcb0, 0xe2)
 CStatusBarItem* CStatusBarMgr::HitTestItems(i32 screenX, i32 screenY) {
-    POSITION itemPosition = m_tabLists[0].GetHeadPosition();
+    POSITION itemPosition = m_tabLists[IDX(TAB_CONTROLS)].GetHeadPosition();
     while (itemPosition) {
-        CStatusBarItem* item = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(itemPosition));
+        CStatusBarItem* item =
+            static_cast<CStatusBarItem*>(m_tabLists[IDX(TAB_CONTROLS)].GetNext(itemPosition));
         if (item) {
             b32 hit = item->IsEnabled();
             if (hit) {
@@ -814,9 +817,10 @@ CStatusBarItem* CStatusBarMgr::HitTestItems(i32 screenX, i32 screenY) {
             }
         }
     }
-    itemPosition = m_tabLists[6].GetHeadPosition();
+    itemPosition = m_tabLists[IDX(TAB_DIALOG)].GetHeadPosition();
     while (itemPosition) {
-        CStatusBarItem* item = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(itemPosition));
+        CStatusBarItem* item =
+            static_cast<CStatusBarItem*>(m_tabLists[IDX(TAB_DIALOG)].GetNext(itemPosition));
         if (item) {
             b32 hit = item->IsEnabled();
             if (hit) {
@@ -855,7 +859,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete dockLeftButton;
         return 0;
     }
-    AddTabItem(0, dockLeftButton);
+    AddTabItem(IDX(TAB_CONTROLS), dockLeftButton);
 
     CSBI_RectOnly* dockRightButton = new CSBI_RectOnly;
     if (!dockRightButton->Setup(
@@ -870,7 +874,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete dockRightButton;
         return 0;
     }
-    AddTabItem(0, dockRightButton);
+    AddTabItem(IDX(TAB_CONTROLS), dockRightButton);
 
     CSBI_RectOnly* hideButton = new CSBI_RectOnly;
     if (!hideButton->Setup(
@@ -885,7 +889,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete hideButton;
         return 0;
     }
-    AddTabItem(0, hideButton);
+    AddTabItem(IDX(TAB_CONTROLS), hideButton);
 
     CSBI_MenuItem* statzTabButton;
     NEW_STATUS_BAR_ITEM(
@@ -899,7 +903,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         -1,
         0
     );
-    AddTabItem(0, statzTabButton);
+    AddTabItem(IDX(TAB_CONTROLS), statzTabButton);
     m_statzTabButton = statzTabButton;
 
     CSBI_MenuItem* gruntzTabButton;
@@ -914,7 +918,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         -1,
         0
     );
-    AddTabItem(0, gruntzTabButton);
+    AddTabItem(IDX(TAB_CONTROLS), gruntzTabButton);
     m_gruntzTabButton = gruntzTabButton;
 
     CSBI_MenuItem* resourceTabButton;
@@ -929,7 +933,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         -1,
         0
     );
-    AddTabItem(0, resourceTabButton);
+    AddTabItem(IDX(TAB_CONTROLS), resourceTabButton);
     m_resourceTabButton = resourceTabButton;
 
     CSBI_MenuItem* multiplayerTabButton;
@@ -944,7 +948,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         -1,
         0
     );
-    AddTabItem(0, multiplayerTabButton);
+    AddTabItem(IDX(TAB_CONTROLS), multiplayerTabButton);
     m_multiTabButton = multiplayerTabButton;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         multiplayerTabButton->m_state = MENUITEM_DISABLED;
@@ -968,7 +972,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         -1,
         0
     );
-    AddTabItem(0, gameTabButton);
+    AddTabItem(IDX(TAB_CONTROLS), gameTabButton);
     m_gameTabButton = gameTabButton;
 
     if (BuildSideTabs() == 0) {
@@ -1152,9 +1156,9 @@ i32 CStatusBarMgr::RequestRedraw() {
         SetCollapsedSpritePosition(w - 0x45, h - 0x30);
     }
 
-    POSITION n = m_tabLists[0].GetHeadPosition();
+    POSITION n = m_tabLists[IDX(TAB_CONTROLS)].GetHeadPosition();
     while (n) {
-        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(m_tabLists[0].GetNext(n));
+        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(m_tabLists[IDX(TAB_CONTROLS)].GetNext(n));
         if (cur) {
             cur->RequestRedraw();
         }
@@ -1404,7 +1408,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                     1,
                     0
                 );
-                AddTabItem(5, missionStatusImage);
+                AddTabItem(IDX(TAB_GAME), missionStatusImage);
             } else {
                 NEW_STATUS_BAR_ITEM(
                     missionStatusImage,
@@ -1417,7 +1421,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                     2,
                     0
                 );
-                AddTabItem(5, missionStatusImage);
+                AddTabItem(IDX(TAB_GAME), missionStatusImage);
             }
             break;
         }
@@ -1435,7 +1439,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                     -1,
                     0
                 );
-                AddTabItem(5, resumeButton);
+                AddTabItem(IDX(TAB_GAME), resumeButton);
                 m_gameResumePauseButton = resumeButton;
             } else {
                 CSBI_MenuItem* pauseButton;
@@ -1450,7 +1454,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                     -1,
                     0
                 );
-                AddTabItem(5, pauseButton);
+                AddTabItem(IDX(TAB_GAME), pauseButton);
                 m_gameResumePauseButton = pauseButton;
             }
 
@@ -1466,7 +1470,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 -1,
                 0
             );
-            AddTabItem(5, loadButton);
+            AddTabItem(IDX(TAB_GAME), loadButton);
             m_gameLoadButton = loadButton;
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
                 loadButton->SetEnabled(0);
@@ -1484,7 +1488,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 -1,
                 0
             );
-            AddTabItem(5, saveButton);
+            AddTabItem(IDX(TAB_GAME), saveButton);
             m_gameSaveButton = saveButton;
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
                 saveButton->SetEnabled(0);
@@ -1502,7 +1506,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 -1,
                 0
             );
-            AddTabItem(5, settingsButton);
+            AddTabItem(IDX(TAB_GAME), settingsButton);
             m_gameSettingsButton = settingsButton;
 
             CSBI_MenuItem* helpButton;
@@ -1517,7 +1521,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 -1,
                 0
             );
-            AddTabItem(5, helpButton);
+            AddTabItem(IDX(TAB_GAME), helpButton);
             m_gameHelpButton = helpButton;
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
                 helpButton->SetEnabled(0);
@@ -1535,7 +1539,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 -1,
                 0
             );
-            AddTabItem(5, quitButton);
+            AddTabItem(IDX(TAB_GAME), quitButton);
             m_gameQuitButton = quitButton;
 
             CSBI_ImageSet* destructButtonImage;
@@ -1550,7 +1554,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 IDX(m_destructButtonFrame),
                 0
             );
-            AddTabItem(5, destructButtonImage);
+            AddTabItem(IDX(TAB_GAME), destructButtonImage);
             m_destructButtonImage = destructButtonImage;
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                 destructButtonImage->SetEnabled(0);
@@ -1573,7 +1577,7 @@ i32 CStatusBarMgr::SetGameTabContent(GameTabContent content, b32 forceReload) {
     if (content == m_gameTabContent && forceReload == false) {
         return 1;
     }
-    DELETE_STATUS_ITEMS(m_tabLists[5])
+    DELETE_STATUS_ITEMS(m_tabLists[IDX(TAB_GAME)])
     m_gameResumePauseButton = NULL;
     m_gameLoadButton = NULL;
     m_gameSaveButton = NULL;
@@ -1645,7 +1649,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(2, imageItem);
+            AddTabItem(IDX(TAB_GRUNTZ), imageItem);
 
             {
                 CSBI_ImageSet** ovenImageSlot = m_gruntOvenImages;
@@ -1664,7 +1668,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         ovenSlot->m_frameIndex,
                         0
                     );
-                    AddTabItem(2, ovenImage);
+                    AddTabItem(IDX(TAB_GRUNTZ), ovenImage);
                     *ovenImageSlot = ovenImage;
                     CShadeTable* shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->m_players[g_curPlayer].GetColor()),
@@ -1691,7 +1695,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(2, imageItem);
+            AddTabItem(IDX(TAB_GRUNTZ), imageItem);
             m_gruntWellBackground = imageItem;
             imageItem->SetEnabled(1);
             NEW_STATUS_BAR_ITEM(
@@ -1705,7 +1709,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(2, imageItem);
+            AddTabItem(IDX(TAB_GRUNTZ), imageItem);
             NEW_STATUS_BAR_ITEM(
                 imageItem,
                 CSBI_Image,
@@ -1717,7 +1721,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(2, imageItem);
+            AddTabItem(IDX(TAB_GRUNTZ), imageItem);
             wellGoo = new CSBI_WellGoo;
             if (!wellGoo->Setup(
                     this,
@@ -1732,7 +1736,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 return 0;
             }
             m_gruntWellGoo = wellGoo;
-            AddTabItem(2, wellGoo);
+            AddTabItem(IDX(TAB_GRUNTZ), wellGoo);
             return 1;
 
         case TAB_RESOURCE:
@@ -1747,7 +1751,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(3, imageItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageItem);
             NEW_STATUS_BAR_ITEM(
                 imageItem,
                 CSBI_Image,
@@ -1759,7 +1763,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(3, imageItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageItem);
             m_resourceMainBackground = imageItem;
             NEW_STATUS_BAR_ITEM(
                 imageItem,
@@ -1772,7 +1776,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(3, imageItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageItem);
             m_resourceUpperBackground = imageItem;
             NEW_STATUS_BAR_ITEM(
                 imageItem,
@@ -1785,7 +1789,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(3, imageItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageItem);
             m_resourceWindowBackground = imageItem;
 
             NEW_STATUS_BAR_ITEM(
@@ -1799,7 +1803,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 m_conveyorSlots[0].m_value,
                 0
             );
-            AddTabItem(3, imageSetItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageSetItem);
             m_conveyorSprites[0] = imageSetItem;
             NEW_STATUS_BAR_ITEM(
                 imageSetItem,
@@ -1812,7 +1816,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 m_conveyorSlots[1].m_value,
                 0
             );
-            AddTabItem(3, imageSetItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageSetItem);
             m_conveyorSprites[1] = imageSetItem;
             NEW_STATUS_BAR_ITEM(
                 imageSetItem,
@@ -1825,7 +1829,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 m_conveyorSlots[2].m_value,
                 0
             );
-            AddTabItem(3, imageSetItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageSetItem);
             m_conveyorSprites[2] = imageSetItem;
 
             NEW_STATUS_BAR_ITEM(
@@ -1844,7 +1848,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 m_deliveryPickupType,
                 0
             );
-            AddTabItem(3, imageSetItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageSetItem);
             m_deliveryItemDisplay = imageSetItem;
             imageSetItem->SetEnabled(0);
 
@@ -1865,7 +1869,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         toySlotValue[-24],
                         0
                     );
-                    AddTabItem(3, toolIcon);
+                    AddTabItem(IDX(TAB_RESOURCE), toolIcon);
                     toyImageSlot[-4] = toolIcon;
                     CSBI_ImageSet* toyIcon;
                     NEW_STATUS_BAR_ITEM(
@@ -1879,7 +1883,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         toySlotValue[0],
                         0
                     );
-                    AddTabItem(3, toyIcon);
+                    AddTabItem(IDX(TAB_RESOURCE), toyIcon);
                     toyImageSlot[0] = toyIcon;
                     CSBI_ImageSet* brickIcon;
                     NEW_STATUS_BAR_ITEM(
@@ -1893,7 +1897,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         toySlotValue[24],
                         0
                     );
-                    AddTabItem(3, brickIcon);
+                    AddTabItem(IDX(TAB_RESOURCE), brickIcon);
                     toyImageSlot[4] = brickIcon;
                     toySlotValue += 6;
                     toyImageSlot += 1;
@@ -1916,7 +1920,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 return 0;
             }
             m_machineDisplay = gruntMachine;
-            AddTabItem(3, gruntMachine);
+            AddTabItem(IDX(TAB_RESOURCE), gruntMachine);
 
             NEW_STATUS_BAR_ITEM(
                 imageItem,
@@ -1929,7 +1933,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(3, imageItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageItem);
             m_resourceMachineFramework = imageItem;
 
             shredderAnimation = new CSBI_ImageSetAni;
@@ -1949,7 +1953,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 delete shredderAnimation;
                 return 0;
             }
-            AddTabItem(3, shredderAnimation);
+            AddTabItem(IDX(TAB_RESOURCE), shredderAnimation);
 
             NEW_STATUS_BAR_ITEM(
                 imageSetItem,
@@ -1967,7 +1971,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 m_grinderPickupType,
                 0
             );
-            AddTabItem(3, imageSetItem);
+            AddTabItem(IDX(TAB_RESOURCE), imageSetItem);
             m_grinderItemDisplay = imageSetItem;
             imageSetItem->SetEnabled(0);
 
@@ -1988,7 +1992,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 delete shredderAnimation;
                 return 0;
             }
-            AddTabItem(3, shredderAnimation);
+            AddTabItem(IDX(TAB_RESOURCE), shredderAnimation);
             return 1;
 
         case TAB_MULTIPLAYER:
@@ -2003,7 +2007,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(4, imageItem);
+            AddTabItem(IDX(TAB_MULTIPLAYER), imageItem);
 
             NEW_STATUS_BAR_ITEM(
                 warlordHead,
@@ -2017,7 +2021,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 0
             );
             m_multiplayerHeadButtons[0] = warlordHead;
-            AddTabItem(4, warlordHead);
+            AddTabItem(IDX(TAB_MULTIPLAYER), warlordHead);
             NEW_STATUS_BAR_ITEM(
                 warlordHead,
                 CSBI_WarlordHead,
@@ -2030,7 +2034,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 0
             );
             m_multiplayerHeadButtons[1] = warlordHead;
-            AddTabItem(4, warlordHead);
+            AddTabItem(IDX(TAB_MULTIPLAYER), warlordHead);
             NEW_STATUS_BAR_ITEM(
                 warlordHead,
                 CSBI_WarlordHead,
@@ -2043,7 +2047,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 0
             );
             m_multiplayerHeadButtons[2] = warlordHead;
-            AddTabItem(4, warlordHead);
+            AddTabItem(IDX(TAB_MULTIPLAYER), warlordHead);
             NEW_STATUS_BAR_ITEM(
                 warlordHead,
                 CSBI_WarlordHead,
@@ -2056,7 +2060,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 0
             );
             m_multiplayerHeadButtons[3] = warlordHead;
-            AddTabItem(4, warlordHead);
+            AddTabItem(IDX(TAB_MULTIPLAYER), warlordHead);
 
             {
                 CSBI_WarlordHead** headButtonSlot = m_multiplayerHeadButtons;
@@ -2101,7 +2105,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         delete gruntBar;
                         return 0;
                     }
-                    AddTabItem(4, gruntBar);
+                    AddTabItem(IDX(TAB_MULTIPLAYER), gruntBar);
                     rowBottom += 0x12;
                 }
             }
@@ -2119,7 +2123,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(1, imageItem);
+            AddTabItem(IDX(TAB_STATZ), imageItem);
 
             {
                 i32 arrowLeftOffset = 0xa;
@@ -2152,7 +2156,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         return 0;
                     }
                     m_unitSampleArrows[i] = sampleArrow;
-                    AddTabItem(1, sampleArrow);
+                    AddTabItem(IDX(TAB_STATZ), sampleArrow);
                     if (m_unitSampleModes[i] != STATUS_SAMPLE_NONE) {
                         sampleArrow->SetSampledDirection(m_position, false);
                     } else {
@@ -2173,7 +2177,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         delete gruntBar;
                         return 0;
                     }
-                    AddTabItem(1, gruntBar);
+                    AddTabItem(IDX(TAB_STATZ), gruntBar);
                     rowBottom += 0x12;
                 }
             }
@@ -2191,7 +2195,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 -1,
                 0
             );
-            AddTabItem(5, imageItem);
+            AddTabItem(IDX(TAB_GAME), imageItem);
 
             NEW_STATUS_BAR_ITEM(
                 imageItem,
@@ -2204,7 +2208,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 1,
                 0
             );
-            AddTabItem(5, imageItem);
+            AddTabItem(IDX(TAB_GAME), imageItem);
             if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                     ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_FIRST)) {
                 NEW_STATUS_BAR_ITEM(
@@ -2218,7 +2222,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                     2,
                     0
                 );
-                AddTabItem(5, imageItem);
+                AddTabItem(IDX(TAB_GAME), imageItem);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                         ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_SECOND)) {
                     NEW_STATUS_BAR_ITEM(
@@ -2232,7 +2236,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         3,
                         0
                     );
-                    AddTabItem(5, imageItem);
+                    AddTabItem(IDX(TAB_GAME), imageItem);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                             ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_THIRD)) {
                         NEW_STATUS_BAR_ITEM(
@@ -2246,7 +2250,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                             4,
                             0
                         );
-                        AddTabItem(5, imageItem);
+                        AddTabItem(IDX(TAB_GAME), imageItem);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                                 ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_FOURTH)) {
                             NEW_STATUS_BAR_ITEM(
@@ -2260,7 +2264,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                                 5,
                                 0
                             );
-                            AddTabItem(5, imageItem);
+                            AddTabItem(IDX(TAB_GAME), imageItem);
                         }
                     }
                 }
@@ -2395,7 +2399,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             delete sideTab;
             return 0;
         }
-        AddTabItem(0, sideTab);
+        AddTabItem(IDX(TAB_CONTROLS), sideTab);
         m_unitSideTabs[unitIndex] = sideTab;
         unitIndex++;
     }
@@ -4064,7 +4068,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, areYouSure);
+        AddTabItem(IDX(TAB_DIALOG), areYouSure);
 
         CSBI_MenuItem* yes;
         NEW_STATUS_BAR_ITEM(
@@ -4078,7 +4082,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, yes);
+        AddTabItem(IDX(TAB_DIALOG), yes);
         m_confirmYesButton = yes;
 
         CSBI_MenuItem* no;
@@ -4093,7 +4097,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, no);
+        AddTabItem(IDX(TAB_DIALOG), no);
         m_confirmNoButton = no;
         return 1;
     }
@@ -4115,7 +4119,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
         -1,
         0
     );
-    AddTabItem(6, dialog);
+    AddTabItem(IDX(TAB_DIALOG), dialog);
 
     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
 
@@ -4131,7 +4135,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             1,
             0
         );
-        AddTabItem(6, status);
+        AddTabItem(IDX(TAB_DIALOG), status);
 
         CSBI_ImageSet* rsn;
         NEW_STATUS_BAR_ITEM(
@@ -4145,7 +4149,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             IDX(reason),
             0
         );
-        AddTabItem(6, rsn);
+        AddTabItem(IDX(TAB_DIALOG), rsn);
 
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             CSBI_MenuItem* next;
@@ -4160,7 +4164,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
                 -1,
                 0
             );
-            AddTabItem(6, next);
+            AddTabItem(IDX(TAB_DIALOG), next);
             m_endPrimaryButton = next;
 
             CSBI_MenuItem* quit;
@@ -4175,7 +4179,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
                 -1,
                 0
             );
-            AddTabItem(6, quit);
+            AddTabItem(IDX(TAB_DIALOG), quit);
             m_endSecondaryButton = quit;
             return 1;
         } else {
@@ -4191,7 +4195,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
                 -1,
                 0
             );
-            AddTabItem(6, statz);
+            AddTabItem(IDX(TAB_DIALOG), statz);
             m_endSecondaryButton = statz;
             return 1;
         }
@@ -4209,7 +4213,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
         2,
         0
     );
-    AddTabItem(6, status);
+    AddTabItem(IDX(TAB_DIALOG), status);
 
     CSBI_ImageSet* rsn;
     NEW_STATUS_BAR_ITEM(
@@ -4223,7 +4227,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
         IDX(reason),
         0
     );
-    AddTabItem(6, rsn);
+    AddTabItem(IDX(TAB_DIALOG), rsn);
 
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         CSBI_MenuItem* replay;
@@ -4238,7 +4242,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, replay);
+        AddTabItem(IDX(TAB_DIALOG), replay);
         m_endPrimaryButton = replay;
 
         CSBI_MenuItem* quit;
@@ -4253,7 +4257,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, quit);
+        AddTabItem(IDX(TAB_DIALOG), quit);
         m_endSecondaryButton = quit;
         return 1;
     }
@@ -4280,7 +4284,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, observe);
+        AddTabItem(IDX(TAB_DIALOG), observe);
         m_endPrimaryButton = observe;
         m_observerTabAvailable = true;
 
@@ -4296,7 +4300,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, statz);
+        AddTabItem(IDX(TAB_DIALOG), statz);
         m_endSecondaryButton = statz;
     } else {
         m_observerTabAvailable = false;
@@ -4312,7 +4316,7 @@ i32 CStatusBarMgr::BuildLevelOverlay() {
             -1,
             0
         );
-        AddTabItem(6, statz);
+        AddTabItem(IDX(TAB_DIALOG), statz);
         m_endSecondaryButton = statz;
     }
     return 1;
@@ -4323,7 +4327,7 @@ void CStatusBarMgr::CloseLevelOverlay() {
     if (m_levelOverlayActive == false) {
         return;
     }
-    DELETE_STATUS_ITEMS(m_tabLists[6])
+    DELETE_STATUS_ITEMS(m_tabLists[IDX(TAB_DIALOG)])
     b32 wasQuitConfirmation = m_quitConfirmationActive;
     m_endPrimaryButton = NULL;
     m_endSecondaryButton = NULL;

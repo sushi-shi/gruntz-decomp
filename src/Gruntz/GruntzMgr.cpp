@@ -655,7 +655,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CRezItm* stream =
             g_gameReg->ResourceArchive()->GetRezFromPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
         // Dead trace: retail keeps two NULL-action unwind states and no conditional-temporary flag.
-        if (0) {
+        if (false) {
             AfxTrace("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
         }
         g_buteMgr.Init(&ButeParseErrorSink);

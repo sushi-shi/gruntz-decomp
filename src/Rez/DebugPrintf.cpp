@@ -34,10 +34,10 @@ BOOLEAN dprintfExcludeRegions::In(u32 Num) {
     u32 Loop;
     for (Loop = 0; Loop < m_numRegions; Loop++) {
         if (Num >= m_ary[Loop].m_from && Num <= m_ary[Loop].m_to) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 
 RVA(0x00184be0, 0x24)

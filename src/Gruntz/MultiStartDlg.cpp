@@ -91,7 +91,7 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
     if (editControl == NULL) {
         return 0;
     }
-    editControl->SetReadOnly(1);
+    editControl->SetReadOnly(true);
     combo->SetCurSel(0);
     HWND editHwnd = editControl->GetSafeHwnd();
     g_savedMultiWndProc = reinterpret_cast<WNDPROC>(GetWindowLongA(editHwnd, GWL_WNDPROC));

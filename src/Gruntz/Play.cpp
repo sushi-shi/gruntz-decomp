@@ -5122,7 +5122,7 @@ i32 CPlay::ValidateLevelTiles() {
     } while (pos != NULL);
 
     // Preserve the dead trace unwind state without conditional-temporary bookkeeping.
-    if (0) {
+    if (false) {
         AfxTrace("%s\n", static_cast<LPCTSTR>(CString("ValidateLevelTiles")));
     }
     return ok;

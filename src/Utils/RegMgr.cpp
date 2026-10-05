@@ -35,24 +35,24 @@ BOOL CRegMgr::Init(
         if (CreateKey(m_hSoftwareKey, company, m_hCompanyKey)) {
             if (CreateKey(m_hCompanyKey, app, m_hAppKey)) {
                 if (CreateKey(m_hAppKey, version, m_hVersionKey)) {
-                    m_bInitialized = TRUE;
+                    m_bInitialized = true;
                     if (SetSubKey(subKey)) {
-                        return TRUE;
+                        return true;
                     } else {
-                        m_bInitialized = FALSE;
-                        return FALSE;
+                        m_bInitialized = false;
+                        return false;
                     }
                 } else {
-                    return FALSE;
+                    return false;
                 }
             } else {
-                return FALSE;
+                return false;
             }
         } else {
-            return FALSE;
+            return false;
         }
     } else {
-        return FALSE;
+        return false;
     }
 }
 
@@ -61,7 +61,7 @@ void CRegMgr::Term() {
     if (!m_bInitialized) {
         return;
     }
-    m_bInitialized = FALSE;
+    m_bInitialized = false;
     RegCloseKey(m_hSoftwareKey);
     RegCloseKey(m_hCompanyKey);
     RegCloseKey(m_hAppKey);
@@ -74,16 +74,16 @@ void CRegMgr::Term() {
 RVA(0x00139370, 0x37)
 BOOL CRegMgr::SetSubKey(const char* subKey) {
     if (!m_bInitialized) {
-        return FALSE;
+        return false;
     }
     if (subKey == NULL) {
         m_hSubKey = m_hVersionKey;
-        return TRUE;
+        return true;
     } else {
         if (CreateKey(m_hVersionKey, subKey, m_hSubKey)) {
-            return TRUE;
+            return true;
         } else {
-            return FALSE;
+            return false;
         }
     }
 }
@@ -91,13 +91,13 @@ BOOL CRegMgr::SetSubKey(const char* subKey) {
 RVA(0x001393b0, 0x58)
 BOOL CRegMgr::Set(const char* key, const char* value) {
     if (!m_bInitialized) {
-        return FALSE;
+        return false;
     }
     if (key == NULL) {
-        return FALSE;
+        return false;
     }
     if (value == NULL) {
-        return FALSE;
+        return false;
     }
     RegBufC data;
     if (RegSetValueExA(
@@ -109,9 +109,9 @@ BOOL CRegMgr::Set(const char* key, const char* value) {
             strlen(value) + 1
         )
         == ERROR_SUCCESS) {
-        return TRUE;
+        return true;
     } else {
-        return FALSE;
+        return false;
     }
 }
 
@@ -120,29 +120,29 @@ BOOL CRegMgr::Set(const char* key, const char* value) {
 RVA(0x00139410, 0x45)
 BOOL CRegMgr::Set(const char* key, void* value, i32 length) {
     if (!m_bInitialized) {
-        return FALSE;
+        return false;
     }
     if (key == NULL) {
-        return FALSE;
+        return false;
     }
     if (value == NULL) {
-        return FALSE;
+        return false;
     }
     if (RegSetValueExA(m_hSubKey, key, 0, REG_BINARY, static_cast<LPBYTE>(value), length)
         == ERROR_SUCCESS) {
-        return TRUE;
+        return true;
     } else {
-        return FALSE;
+        return false;
     }
 }
 
 RVA(0x00139460, 0x33)
 BOOL CRegMgr::Set(const char* key, DWORD value) {
     if (!m_bInitialized) {
-        return FALSE;
+        return false;
     }
     if (key == NULL) {
-        return FALSE;
+        return false;
     }
     RegBuf data;
     if (RegSetValueExA(
@@ -154,9 +154,9 @@ BOOL CRegMgr::Set(const char* key, DWORD value) {
             sizeof(value)
         )
         == ERROR_SUCCESS) {
-        return TRUE;
+        return true;
     } else {
-        return FALSE;
+        return false;
     }
 }
 
@@ -179,7 +179,7 @@ char* CRegMgr::Get(const char* key, char* buffer, DWORD& bufferSize, const char*
     if (RegQueryValueExA(
             m_hSubKey,
             key,
-            0,
+            NULL,
             &dwType,
             (data.m_chars = buffer, data.m_bytes),
             &bufferSize
@@ -227,7 +227,7 @@ void* CRegMgr::Get(
     if (bufferSize <= 0) {
         goto Default;
     }
-    if (RegQueryValueExA(m_hSubKey, key, 0, &dwType, static_cast<LPBYTE>(buffer), &bufferSize)
+    if (RegQueryValueExA(m_hSubKey, key, NULL, &dwType, static_cast<LPBYTE>(buffer), &bufferSize)
         == ERROR_SUCCESS) {
         if (dwType != REG_BINARY) {
             goto Default;
@@ -263,7 +263,7 @@ DWORD CRegMgr::Get(const char* key, DWORD defaultValue) {
     if (RegQueryValueExA(
             m_hSubKey,
             key,
-            0,
+            NULL,
             &dwType,
             (data.m_dword = &dwData, data.m_bytes),
             &cbData
@@ -283,15 +283,15 @@ DWORD CRegMgr::Get(const char* key, DWORD defaultValue) {
 RVA(0x00139620, 0x28)
 BOOL CRegMgr::Delete(const char* key) {
     if (!m_bInitialized) {
-        return FALSE;
+        return false;
     }
     if (key == NULL) {
-        return FALSE;
+        return false;
     }
     if (RegDeleteValueA(m_hSubKey, key) == ERROR_SUCCESS) {
-        return TRUE;
+        return true;
     } else {
-        return FALSE;
+        return false;
     }
 }
 
@@ -310,8 +310,8 @@ BOOL CRegMgr::CreateKey(HKEY key, const char* subKey, HKEY& newKey) {
             &dwDisposition
         )
         == ERROR_SUCCESS) {
-        return TRUE;
+        return true;
     } else {
-        return FALSE;
+        return false;
     }
 }

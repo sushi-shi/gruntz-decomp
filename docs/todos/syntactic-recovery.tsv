@@ -15,6 +15,7 @@ rva	unit	function	lost_max	cur
 0x031610	battlezunitstep	?PursueNearbyEnemy@CBattlezAiController@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
 0x1936e0	bitarray	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	90.8000
 0x077df0	brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	93.2718	92.7476
+0x1704c0	butemgr	?ScanTok@CButeMgr@@QAE_NXZ	100.0000	99.6644
 0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.2786
 0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	98.6087
 0x154750	cimage	?BlitShadeFlipH@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.4067
@@ -100,7 +101,7 @@ rva	unit	function	lost_max	cur
 0x0e7b00	sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	100.0000	99.7333
 0x0e82a0	sbi_menuitem	?Render@CSBI_MenuItem@@UAEHXZ	100.0000	74.0714
 0x0fe910	sbi_rectonly	?HandleClick@CStatusBarMgr@@QAEHHHH@Z	99.7111	97.6338
-0x0fe6b0	sbi_rectonly	?Render@CStatusBarMgr@@QAEHXZ	100.0000	99.8947
+0x0fe6b0	sbi_rectonly	?Render@CStatusBarMgr@@QAEHXZ	100.0000	99.7895
 0x0ea6c0	sbi_statztabgruntbar	?UpdateIcons@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.2857
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	100.0000	96.5811
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985

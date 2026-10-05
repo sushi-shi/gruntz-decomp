@@ -123,7 +123,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
         if (palBpp != bitcount) {
             remap = 1;
         }
-        if (!remap || palBpp != BPP_PALETTED_8 || manager->HasPalette() != 0) {
+        if (!remap || palBpp != BPP_PALETTED_8 || manager->HasPalette() != false) {
             PALETTEENTRY* palette = NULL;
             if (remap && bitcount == BPP_PALETTED_8) {
                 RGBQUAD* src = image->m_info.m_bmiColors;

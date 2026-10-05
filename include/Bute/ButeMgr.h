@@ -286,7 +286,7 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
         return false;
     }
 
-    m_bCrypt = 1;
+    m_bCrypt = true;
     u8* encoded = stream->Load();
     i32 length = stream->GetSize();
     istrstream* input = new istrstream(static_cast<char*>(static_cast<void*>(encoded)), length);
@@ -305,7 +305,7 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
     m_newTagTab.clear();
     bool result = true;
     if (!TagList()) {
-        m_bErrorFlag = 1;
+        m_bErrorFlag = true;
         result = false;
     }
     delete m_pData;

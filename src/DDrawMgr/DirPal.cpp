@@ -569,9 +569,9 @@ i32 BlackoutSystemPalette() {
         }
         HPALETTE hScreenPal = CreatePalette(&sysPal.m_lp);
         if (hScreenPal != NULL) {
-            hScreenPal = SelectPalette(hScreenDC, hScreenPal, FALSE);
+            hScreenPal = SelectPalette(hScreenDC, hScreenPal, false);
             RealizePalette(hScreenDC);
-            hScreenPal = SelectPalette(hScreenDC, hScreenPal, FALSE);
+            hScreenPal = SelectPalette(hScreenDC, hScreenPal, false);
             DeleteObject(hScreenPal);
             ReleaseDC(NULL, hScreenDC);
             return 1;

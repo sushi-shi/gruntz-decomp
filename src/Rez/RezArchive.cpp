@@ -882,7 +882,7 @@ CRezMgr::CRezMgr() : m_hashRezItmFreeList(1) {
     m_bItemByIDUsed = false;
     m_nByNameNumHashBins = REZ_ARCHIVE_DEFAULT_RESOURCE_NAME_BUCKET_COUNT;
     m_nByIDNumHashBins = REZ_ARCHIVE_DEFAULT_RESOURCE_ID_BUCKET_COUNT;
-    m_bRenumberIDCollisions = 1;
+    m_bRenumberIDCollisions = true;
     m_nNextIDNumToUse = REZ_ARCHIVE_FIRST_GENERATED_RESOURCE_ID;
     m_bReadOnly = true;
     m_bIsSorted = true;
@@ -910,7 +910,7 @@ RVA(0x0013abc0, 0x13f)
 CRezMgr::~CRezMgr() {
 
     if (m_bFileOpened) {
-        Close(0);
+        Close(false);
     }
     CBaseRezFile* storage;
     for (storage = m_lstRezFiles.GetFirst(); storage != NULL; storage = m_lstRezFiles.GetFirst()) {

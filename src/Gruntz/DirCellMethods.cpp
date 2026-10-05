@@ -203,7 +203,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
 
     bool result = true;
     if (!TagList()) {
-        m_bErrorFlag = 1;
+        m_bErrorFlag = true;
         result = false;
     }
 
