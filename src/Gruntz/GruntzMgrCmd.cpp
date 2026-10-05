@@ -60,7 +60,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_CONTINUE_AT_MAX_LEVEL:
             m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
-            if (!LoadLevel(IDX(m_saveGame->m_maxLevel), false, 1)) {
+            if (!LoadLevel(IDX(m_saveGame->m_progress.m_maxLevel), false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;

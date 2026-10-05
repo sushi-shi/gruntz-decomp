@@ -40,9 +40,7 @@ CDib* g_previewImage;
 DATA(0x0024c86c)
 CSaveGame* g_saveDlgSink = NULL;
 
-static const i32 s_saveFileHeaderBytes = 0xa1c;
-static const i32 s_savePreviewBytes = 0x3843a;
-static const i32 s_savePreviewBitmapOffset = 0xe;
+static const i32 s_saveFileHeaderBytes = sizeof(SaveGameProgress);
 static const u32 s_saveProgressMagic = 0x42a;
 
 RVA(0x000e4b60, 0x158)
@@ -52,7 +50,7 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
     }
     m_saveDirectory = saveDirectory;
     m_progressFilePath = m_saveDirectory + "Gruntz.sav";
-    memset(m_header, 0, s_saveFileHeaderBytes);
+    memset(&m_progress, 0, s_saveFileHeaderBytes);
     Init();
     Load();
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
@@ -74,7 +72,7 @@ void CSaveGame::Reset() {
 
 RVA(0x000e4d50, 0x2f)
 void CSaveGame::Init() {
-    m_maxLevel = QUESTLEVEL_TRAINING_FIRST;
+    m_progress.m_maxLevel = QUESTLEVEL_TRAINING_FIRST;
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
         SaveSlot* p = GetSlot(i);
         if (p != NULL) {
@@ -89,7 +87,7 @@ i32 CSaveGame::Load() {
     if (!file.Open(m_progressFilePath, CFile::modeRead, NULL)) {
         return 0;
     }
-    file.Read(m_header, s_saveFileHeaderBytes);
+    file.Read(&m_progress, s_saveFileHeaderBytes);
     file.Read(m_slots, sizeof(m_slots));
     file.Close();
     if (!Verify()) {
@@ -110,7 +108,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
         return 0;
     }
     ComputeAll();
-    file.Write(m_header, s_saveFileHeaderBytes);
+    file.Write(&m_progress, s_saveFileHeaderBytes);
     file.Write(m_slots, sizeof(m_slots));
     file.Close();
     Verify();
@@ -143,10 +141,10 @@ i32 CSaveGame::ComputeAll() {
 
         sum += Encode(reinterpret_cast<u8*>(GetSlot(i)));
     }
-    m_header[0] = 0;
-    m_header[1] = 1;
-    m_header[2] = sum;
-    m_header[3] = 0;
+    m_progress.m_header[0] = 0;
+    m_progress.m_header[1] = 1;
+    m_progress.m_header[2] = sum;
+    m_progress.m_header[3] = 0;
     return 1;
 }
 
@@ -157,7 +155,7 @@ i32 CSaveGame::Verify() {
         // Byte-forced checksum view.
         sum += Decode(reinterpret_cast<u8*>(GetSlot(i)));
     }
-    return m_header[2] == sum;
+    return m_progress.m_header[2] == sum;
 }
 
 RVA(0x000e5130, 0x78)
@@ -331,11 +329,11 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
 RVA(0x000e5620, 0x27)
 void CSaveGame::SetMaxLevel(QuestLevel v) {
     if ((v < QUESTLEVEL_CAMPAIGN_END
-         && (static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_maxLevel))
-             || static_cast<u32>(IDX(m_maxLevel)) > IDX(QUESTLEVEL_LAST)))
-        || (static_cast<u32>(IDX(m_maxLevel)) > IDX(QUESTLEVEL_LAST)
-            && static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_maxLevel)))) {
-        m_maxLevel = v;
+         && (static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_progress.m_maxLevel))
+             || static_cast<u32>(IDX(m_progress.m_maxLevel)) > IDX(QUESTLEVEL_LAST)))
+        || (static_cast<u32>(IDX(m_progress.m_maxLevel)) > IDX(QUESTLEVEL_LAST)
+            && static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_progress.m_maxLevel)))) {
+        m_progress.m_maxLevel = v;
     }
 }
 
@@ -344,10 +342,10 @@ void CSaveGame::SetCurLevel(QuestLevel v) {
     if (v >= QUESTLEVEL_CAMPAIGN_END) {
         return;
     }
-    if (v <= m_curLevel) {
+    if (v <= m_progress.m_curLevel) {
         return;
     }
-    m_curLevel = v;
+    m_progress.m_curLevel = v;
     if (v == QUESTLEVEL_CAMPAIGN_LAST) {
         SetMagic();
     }
@@ -355,13 +353,13 @@ void CSaveGame::SetCurLevel(QuestLevel v) {
 
 RVA(0x000e5690, 0xf)
 i32 CSaveGame::CheckMagic() {
-    i32 v = m_magic;
+    i32 v = m_progress.m_magic;
     return v == s_saveProgressMagic;
 }
 
 RVA(0x000e56b0, 0x8)
 void CSaveGame::SetMagic() {
-    m_magic = s_saveProgressMagic;
+    m_progress.m_magic = s_saveProgressMagic;
 }
 
 // @dead-code
