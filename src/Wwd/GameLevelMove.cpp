@@ -39,7 +39,7 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
     if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE)) {
         result |= IDX(MOVE_RESULT_DEATH_TILE);
     }
-    if (objectFlags & 0x10) {
+    if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
         result |= IDX(MOVE_RESULT_ON_CARRIER);
     }
     if (target->m_screenX == prevX && target->m_screenY == prevY) {

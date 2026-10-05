@@ -92,7 +92,7 @@ i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
         return 0;
     }
     g_serialCounter = 0;
-    memset(g_saveBuf, 0, 0x90);
+    memset(g_saveBuf, 0, sizeof(g_saveBuf));
     if (mgr->World() == NULL) {
         return 0;
     }
@@ -119,10 +119,10 @@ i32 __cdecl GameSerializationCallback(
 
     switch (mode) {
         case SERIAL_SNAPSHOT_BEGIN:
-            archive->Write(g_saveBuf, 0x90);
+            archive->Write(g_saveBuf, sizeof(g_saveBuf));
             break;
         case SERIAL_RESTORE_BEGIN:
-            archive->Read(g_saveBuf, 0x90);
+            archive->Read(g_saveBuf, sizeof(g_saveBuf));
             break;
         case SERIAL_CREATE:
             switch (typeId) {

@@ -192,7 +192,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     for (i32 a = 0; a < count; ++a) {
         Coord* item = g_coordPool.Pop();
-        ar->Read(item, 8);
+        ar->Read(item, sizeof(Coord));
         AddTailCoord(item);
     }
 

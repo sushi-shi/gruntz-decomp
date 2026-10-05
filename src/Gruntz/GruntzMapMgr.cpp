@@ -40,7 +40,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
             m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 Coord* elem = g_coordPool.Pop();
-                ar->Read(elem, 8);
+                ar->Read(elem, sizeof(Coord));
                 m_arr.SetAt(ri, elem);
             }
             break;
@@ -55,7 +55,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
                 if (elem == NULL) {
                     return 0;
                 }
-                ar->Write(elem, 8);
+                ar->Write(elem, sizeof(Coord));
             }
             break;
         }

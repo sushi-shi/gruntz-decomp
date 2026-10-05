@@ -906,12 +906,12 @@ i32 CImageSet::BuildFramesFromArchive(CRezDir* tab) {
                 count++;
             }
             val = tab->GetNextItem(val);
-            if ((GetWorld()->m_flags & 0x100) && count > 0) {
+            if ((GetWorld()->m_flags & SURFACEMGR_SINGLE_FRAME_IMAGE_SETS) && count > 0) {
                 val = NULL;
             }
         }
         sym = tab->GetNextType(sym);
-        if ((GetWorld()->m_flags & 0x100) && count > 0) {
+        if ((GetWorld()->m_flags & SURFACEMGR_SINGLE_FRAME_IMAGE_SETS) && count > 0) {
             sym = NULL;
         }
     }

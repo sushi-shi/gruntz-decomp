@@ -13,6 +13,7 @@ rva	unit	function	lost_max	cur
 0x0358a0	battlezretarget	?RetargetIdleUnit@CBattlezAiController@@QAEHPAVCGrunt@@@Z	91.3524	90.8018
 0x032060	battlezunitstep	?AdvanceToEnemyBase@CBattlezAiController@@QAEHPAVCGrunt@@@Z	83.5371	80.4525
 0x031610	battlezunitstep	?PursueNearbyEnemy@CBattlezAiController@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
+0x1936e0	bitarray	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	90.8000
 0x077df0	brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	93.2718	92.7476
 0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.2786
 0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	98.6087

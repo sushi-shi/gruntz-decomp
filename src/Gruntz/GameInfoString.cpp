@@ -73,7 +73,7 @@ i32 CGameInfo::FormatGameInfoString() {
         return 0;
     }
     if (!ValidateGameTime(t)) {
-        memset(t, 0, 28);
+        memset(t, 0, sizeof(*t));
     }
 
     int a = 0, b = 0, c = 0;

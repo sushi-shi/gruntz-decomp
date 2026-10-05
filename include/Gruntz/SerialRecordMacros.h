@@ -7,7 +7,7 @@
     do {                                                                                           \
         i32 id;                                                                                    \
         ++g_serialCounter;                                                                         \
-        ar->Read(&id, 4);                                                                          \
+        ar->Read(&id, sizeof(id));                                                                 \
         CWwdSpriteObject* r =                                                                      \
             LookupSpriteObjectById(dir->ChildGroup()->m_registeredGameObjectsById, id);            \
         (field) = r;                                                                               \

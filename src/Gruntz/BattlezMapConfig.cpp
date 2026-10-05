@@ -1810,13 +1810,13 @@ i32 CBattlezAiController::Serialize(CFileMemBase* ar) {
     n = GetAttackWaypointCount();
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
-        ar->Write(GetAttackWaypoint(i), 8);
+        ar->Write(GetAttackWaypoint(i), sizeof(Coord));
     }
 
     n = m_spawnTiles.GetSize();
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
-        ar->Write(m_spawnTiles[i], 8);
+        ar->Write(m_spawnTiles[i], sizeof(Coord));
     }
     return 1;
 }
@@ -1913,7 +1913,7 @@ i32 CBattlezAiController::Deserialize(CFileMemBase* ar) {
     m_attackWaypoints.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         Coord* payload = g_coordPool.Pop();
-        ar->Read(payload, 8);
+        ar->Read(payload, sizeof(Coord));
         m_attackWaypoints[i] = payload;
     }
 
@@ -1928,7 +1928,7 @@ i32 CBattlezAiController::Deserialize(CFileMemBase* ar) {
     m_spawnTiles.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         Coord* payload = g_coordPool.Pop();
-        ar->Read(payload, 8);
+        ar->Read(payload, sizeof(Coord));
         m_spawnTiles[i] = payload;
     }
     return 1;

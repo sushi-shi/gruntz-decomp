@@ -1226,10 +1226,10 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         } while (c != 0);
         r--;
     } while (r != 0);
-    ar->Write(m_unitCountByPlayer, 0x10);
-    ar->Write(m_unitExited, 0xf0);
-    ar->Write(m_gruntzExitedByPlayer, 0x10);
-    ar->Write(m_gruntzLostByPlayer, 0x10);
+    ar->Write(m_unitCountByPlayer, sizeof(m_unitCountByPlayer));
+    ar->Write(m_unitExited, sizeof(m_unitExited));
+    ar->Write(m_gruntzExitedByPlayer, sizeof(m_gruntzExitedByPlayer));
+    ar->Write(m_gruntzLostByPlayer, sizeof(m_gruntzLostByPlayer));
     u32 n = static_cast<u32>(m_collectedWarpStoneFragments.GetSize());
     ar->Write(&n, sizeof(n));
     for (u32 i = 0; i < n; i++) {
@@ -1240,7 +1240,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     ar->Write(&n, sizeof(n));
     POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        ar->Write(m_selectedUnitIds.GetNext(pos), 8);
+        ar->Write(m_selectedUnitIds.GetNext(pos), sizeof(Coord));
     }
     CPtrList* list = m_selectionGroups;
     i32 k = 10;
@@ -1249,7 +1249,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         ar->Write(&n, sizeof(n));
         POSITION selPos = list->GetHeadPosition();
         while (selPos != NULL) {
-            ar->Write(list->GetNext(selPos), 8);
+            ar->Write(list->GetNext(selPos), sizeof(Coord));
         }
         list++;
         k--;
@@ -1266,7 +1266,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         objId = ov->GetSpriteObject()->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
-    ar->Write(m_reserved274, 0x10);
+    ar->Write(m_reserved274, sizeof(m_reserved274));
     n = static_cast<u32>(m_puddles.GetCount());
     ar->Write(&n, sizeof(n));
     b32 hasOv;
@@ -1341,10 +1341,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(m_unitCountByPlayer, 0x10);
-    ar->Read(m_unitExited, 0xf0);
-    ar->Read(m_gruntzExitedByPlayer, 0x10);
-    ar->Read(m_gruntzLostByPlayer, 0x10);
+    ar->Read(m_unitCountByPlayer, sizeof(m_unitCountByPlayer));
+    ar->Read(m_unitExited, sizeof(m_unitExited));
+    ar->Read(m_gruntzExitedByPlayer, sizeof(m_gruntzExitedByPlayer));
+    ar->Read(m_gruntzLostByPlayer, sizeof(m_gruntzLostByPlayer));
 
     i32 count;
     u32 ci;
@@ -1361,7 +1361,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         Coord* node = g_coordPool.Pop();
-        ar->Read(node, 8);
+        ar->Read(node, sizeof(Coord));
         m_selectedUnitIds.AddTail(node);
     }
 
@@ -1371,7 +1371,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&count, sizeof(count));
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
             Coord* node = g_coordPool.Pop();
-            ar->Read(node, 8);
+            ar->Read(node, sizeof(Coord));
             sel->AddTail(node);
         }
         sel++;
@@ -1412,7 +1412,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(m_reserved274, 0x10);
+    ar->Read(m_reserved274, sizeof(m_reserved274));
     m_puddles.RemoveAll();
     ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {

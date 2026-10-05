@@ -121,7 +121,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     if (m_state != NETSLOT_ACTIVE) {
         return 1;
     }
-    if (opcode & 0x80) {
+    if (opcode & NET_PACKET_APPLICATION) {
         return m_owner->DispatchRecvMsg(m_player->GetNetworkPlayerId(), packet, packetSize);
     }
     if (isDrainPacket == false) {

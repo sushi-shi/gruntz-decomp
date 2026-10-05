@@ -349,9 +349,9 @@ i32 SoundStream::ParseWave(
     u32 riffTag;
     u32 chunkId;
     u32 chunkSize;
-    source->Read(&riffTag, 4, -1);
-    source->Read(&chunkSize, 4, -1);
-    source->Read(&chunkId, 4, -1);
+    source->Read(&riffTag, sizeof(riffTag), -1);
+    source->Read(&chunkSize, sizeof(chunkSize), -1);
+    source->Read(&chunkId, sizeof(chunkId), -1);
     if (riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
@@ -359,17 +359,17 @@ i32 SoundStream::ParseWave(
         return 0;
     }
 
-    u32 riffEnd = source->GetSeekPos() + chunkSize - 4;
+    u32 riffEnd = source->GetSeekPos() + chunkSize - sizeof(chunkId);
     if (riffEnd > source->GetSize()) {
         riffEnd = source->GetSize();
     }
     while (source->GetSeekPos() < riffEnd) {
-        source->Read(&chunkId, 4, -1);
-        source->Read(&chunkSize, 4, -1);
+        source->Read(&chunkId, sizeof(chunkId), -1);
+        source->Read(&chunkSize, sizeof(chunkSize), -1);
         if (chunkId == mmioFOURCC('f', 'm', 't', ' ')) {
             i32 nextChunk = source->GetSeekPos() + chunkSize;
 
-            u32 formatBytes = 0x12;
+            u32 formatBytes = sizeof(*outFormat);
             formatBytes = min(chunkSize, formatBytes);
             source->Read(outFormat, static_cast<i32>(formatBytes), -1);
             source->Seek(nextChunk);

@@ -6065,7 +6065,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
         strcpy(buf, static_cast<const char*>(m_messageText));
-        s->Write(buf, 0x200);
+        s->Write(buf, sizeof(buf));
     }
 
     s->Write(&m_lastMessageId, sizeof(m_lastMessageId));
@@ -6139,7 +6139,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     for (i32 fi = 0; fi < CameraBookmarkCount(); fi++) {
         Coord* el = CameraBookmarkAt(fi);
         if (el != NULL) {
-            s->Write(el, 8);
+            s->Write(el, sizeof(Coord));
         }
     }
 
@@ -6207,7 +6207,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     g_serialCounter++;
     {
         char messageTextBuffer[0x200];
-        ar->Read(messageTextBuffer, 0x200);
+        ar->Read(messageTextBuffer, sizeof(messageTextBuffer));
         m_messageText = messageTextBuffer;
     }
     ar->Read(&m_lastMessageId, sizeof(m_lastMessageId));
@@ -6274,7 +6274,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         m_cameraBookmarks.SetSize(count, -1);
         for (u32 j = 0; j < static_cast<u32>(count); j++) {
             Coord* node = g_coordPool.Pop();
-            ar->Read(node, 8);
+            ar->Read(node, sizeof(Coord));
             SetCameraBookmarkAt(j, node);
         }
     }

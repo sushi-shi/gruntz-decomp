@@ -77,7 +77,7 @@
 #define GS_IDXREF(field)                                                                           \
     g_serialCounter++;                                                                             \
     s->Read(buf, SERIAL_NAME_LEN);                                                                 \
-    s->Read(&idx, 4);                                                                              \
+    s->Read(&idx, sizeof(idx));                                                                    \
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \

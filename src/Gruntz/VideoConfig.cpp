@@ -350,7 +350,7 @@ void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
     HWND h = GetDlgItem(hDlg, id);
     if (h) {
         SCROLLINFO si;
-        si.cbSize = 0x1c;
+        si.cbSize = sizeof(si);
         si.fMask = SIF_POS;
         si.nPos = pos;
         SetScrollInfo(h, SB_CTL, &si, true);
@@ -364,7 +364,7 @@ i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
         return 0;
     }
     SCROLLINFO si;
-    si.cbSize = 0x1c;
+    si.cbSize = sizeof(si);
     si.fMask = SIF_POS;
     GetScrollInfo(h, SB_CTL, &si);
     return si.nPos;
@@ -377,7 +377,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
         if (hCombo) {
             CSliderCtrl* pCtrl = static_cast<CSliderCtrl*>(CWnd::FromHandle(hCombo));
             if (pCtrl) {
-                pCtrl->SetRange(1, 3, true);
+                pCtrl->SetRange(IDX(RES_640X480), IDX(RES_1024X768), true);
                 pCtrl->SetPos(IDX(nSel));
 
                 HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
@@ -432,7 +432,7 @@ void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
     if (h) {
         SCROLLINFO si;
         si.nMax = max;
-        si.cbSize = 0x1c;
+        si.cbSize = sizeof(si);
         si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS;
         si.nMin = 1;
         si.nPage = 0xa;

@@ -16,20 +16,20 @@ i32 CDibPal::InitBmp(const char* path, u32 flags) {
     }
 
     char fileHdr[14];
-    if (f.Read(fileHdr, 0xe) == 0) {
+    if (f.Read(fileHdr, sizeof(fileHdr)) == 0) {
         return 0;
     }
     char infoHdr[40];
-    if (f.Read(infoHdr, 0x28) == 0) {
+    if (f.Read(infoHdr, sizeof(infoHdr)) == 0) {
         return 0;
     }
     u8 raw[0x400];
-    if (f.Read(raw, 0x400) == 0) {
+    if (f.Read(raw, sizeof(raw)) == 0) {
         return 0;
     }
 
     Palette256 out;
-    for (i32 i = 0; i < 0x400; i += 4) {
+    for (i32 i = 0; i < static_cast<i32>(sizeof(raw)); i += 4) {
         out.m_bytes[i + 0] = raw[i + 2];
         out.m_bytes[i + 1] = raw[i + 1];
         out.m_bytes[i + 2] = raw[i + 0];
