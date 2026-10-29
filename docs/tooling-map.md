@@ -82,10 +82,14 @@ certification (trading one cross-jump for another) raised it.
 | `gruntz walls diagnose <fn>` | `gruntz.walls.diagnose` | classify one wall: referent → inline/call-set → cfg → regalloc |
 | `gruntz walls switchmap <fn>` | `gruntz.walls.switchmap` | switch jump tables: cases whose arm mapping differs from retail (`--all`: every sub-100 row) |
 | `gruntz walls inline-model` | `gruntz.walls.inline_model` | the cl 5.0 inline-budget model (`--gap`, `--measure-cb`) |
+| `gruntz walls inline-trace` | `gruntz.walls.inline_trace` | record a unit's inline decisions through the traced `c2.exe` ([inline solver](inline-solver.md)) |
+| `gruntz walls inline-solve` | `gruntz.walls.inline_solve` | replay a traced root and search the edits that give retail's call set (`--what-if`, `--check`) |
+| `gruntz walls inline-reach` | `gruntz.walls.inline_reach` | force retail's inline decisions through the traced `c2.exe` and score: is a wall inline-budget alone? |
 | `gruntz walls aggregate-copies` | `gruntz.walls.aggregate_copies` | `rep movs` count sieve — source/CFG lead; rule out merged duplicate blocks before inferring an object |
 | `gruntz walls eh-frame` | `gruntz.walls.eh_frame` | `/GX` frame-presence + unwind-state sieve, cause-tagged |
 | `gruntz walls global-refs` | `gruntz.walls.global_refs` | global read-COUNT sieve (the cached-global bug class) |
 | `gruntz walls stale-markers` | `gruntz.walls.stale_markers` | `@early-stop` markers sitting on 100% bodies |
+| `gruntz walls patterns <cc\|flags\|inline\|loops\|ctors>` | `gruntz.walls.patterns` | image-wide sweeps for mechanisms that closed a wall once; `flags --try` is the profile A/B control ([pattern sweeps](pattern-sweeps.md)) |
 
 There is **no hand-kept wall ledger**. The worklist is re-derived from the
 compare report on every invocation. Blind random hill-climbing remains removed;
