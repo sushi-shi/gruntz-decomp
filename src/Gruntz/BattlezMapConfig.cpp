@@ -207,27 +207,15 @@ i32 CBattlezAiController::LoadConfig(
         case BZDIFF_NORMAL: {
             i32 r = g_buteMgr.GetInt("Battlez", "NormalDifficulty", 50);
             g_battlezWandUseChanceDenominator = 10;
-            m_gruntCreationTime = static_cast<i32>(
-                (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<u32>(m_gruntCreationTime)) * g_diffScale))
-            );
-            m_resourceCreationTime = static_cast<i32>(
-                (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<u32>(m_resourceCreationTime)) * g_diffScale))
-            );
+            m_gruntCreationTime = static_cast<u32>(r * (m_gruntCreationTime * g_diffScale));
+            m_resourceCreationTime = static_cast<u32>(r * (m_resourceCreationTime * g_diffScale));
             break;
         }
         case BZDIFF_HARD: {
             i32 r = g_buteMgr.GetInt("Battlez", "HardDifficulty", 25);
             g_battlezWandUseChanceDenominator = 5;
-            m_gruntCreationTime = static_cast<i32>(
-                (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<u32>(m_gruntCreationTime)) * g_diffScale))
-            );
-            m_resourceCreationTime = static_cast<i32>(
-                (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<u32>(m_resourceCreationTime)) * g_diffScale))
-            );
+            m_gruntCreationTime = static_cast<u32>(r * (m_gruntCreationTime * g_diffScale));
+            m_resourceCreationTime = static_cast<u32>(r * (m_resourceCreationTime * g_diffScale));
             break;
         }
         default:
