@@ -817,12 +817,13 @@ i32 CBattlezAiController::UpdateUnits() {
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->IsEntranceCommitted() != false
                         && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
-                        && unit->IsInCombat() == false) {
-                        if (BattlezActDiffersFromIGLPJCR(unit)) {
-                            if (unit->GetBattlezTask() != BZTASK_UNASSIGNED) {
-                                if (RouteToNearbyEnemy(unit) != 0) {
-                                    hit = 1;
-                                }
+                        && unit->IsInCombat() == false && unit->IsNotAnimationAct("I")
+                        && unit->IsNotAnimationAct("G") && unit->IsNotAnimationAct("L")
+                        && unit->IsNotAnimationAct("P") && unit->IsNotAnimationAct("J")
+                        && unit->IsNotAnimationAct("C") && unit->IsNotAnimationAct("R")) {
+                        if (unit->GetBattlezTask() != BZTASK_UNASSIGNED) {
+                            if (RouteToNearbyEnemy(unit) != 0) {
+                                hit = 1;
                             }
                         }
                     }
@@ -1067,7 +1068,7 @@ bottomRowProbeHit: {
 spellHit: {
     i32 hx = unit->m_lastTilePx.m_x;
     i32 hy = unit->m_lastTilePx.m_y;
-    m_triggerMgr->UseEquippedToolAt(unit->m_playerIndex, unit->m_unitIndex, hx, hy);
+    m_triggerMgr->UseEquippedToolAt(unit->GetPlayerIndex(), unit->GetUnitIndex(), hx, hy);
     return 1;
 }
 
