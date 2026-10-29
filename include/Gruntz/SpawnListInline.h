@@ -5,6 +5,9 @@
 
 inline CResourceNameEntry* CResourceNameList::FirstEntry() {
     m_cursor = m_entries.GetHeadPosition();
+    if (m_cursor == NULL) {
+        return NULL;
+    }
     return NextEntry();
 }
 
