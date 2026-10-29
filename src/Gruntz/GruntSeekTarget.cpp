@@ -114,7 +114,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (this->m_attackQueued != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_COMBAT_STATE
+                    RESET_GRUNT_COMBAT_STATE(this)
                     return 1;
                 } else {
                     if (atTarget) {
@@ -126,7 +126,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (this->m_attackQueued != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_COMBAT_STATE
+                    RESET_GRUNT_COMBAT_STATE(this)
                     return 1;
                 }
             } else {
