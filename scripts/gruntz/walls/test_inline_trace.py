@@ -39,7 +39,7 @@ end
 CONTROL = """inline int leafAlpha(int x) { return x * 3 + 1; }
 inline int midBravo(int x) { return leafAlpha(x) + leafAlpha(x + 1); }
 int rootCharlie(int x) { return midBravo(x) + leafAlpha(x); }
-namespace { int hidden; }
+namespace { int hidden = 1; }
 static int zeroed[4];
 int readHidden() { return hidden + zeroed[readHidden() & 3]; }
 """
@@ -89,6 +89,8 @@ class TracedBackEnd(unittest.TestCase):
             traced = directory / "traced.obj"
             text = inline_trace.compile_traced(source, flags, traced)
             # The anonymous namespace's per-compile number differs; nothing else may.
+            # (Its name also orders uninitialized storage, so the control keeps
+            # the anonymous datum initialized and the .bss array alone.)
             self.assertEqual(inline_trace._comparable(plain.read_bytes()),
                              inline_trace._comparable(traced.read_bytes()))
             sites = inline_trace.parse(text)["roots"][0]["sites"]
