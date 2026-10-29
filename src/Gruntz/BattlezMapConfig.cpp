@@ -1002,7 +1002,9 @@ arriveHead:
     return 1;
 
 perimSweep: {
-    for (i32 col = unit->ScanCell().m_x - 2; col < unit->ScanCell().m_x + 3; col++) {
+    i32 col = unit->ScanCell().m_x - 2;
+    (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
+    while (col < scratch.m_x + 3) {
         i32 rt = unit->ScanCell().m_y - 2;
         if (static_cast<u32>(col) < m_tileGrid->m_width
             && static_cast<u32>(rt) < m_tileGrid->m_height) {
@@ -1017,8 +1019,12 @@ perimSweep: {
                 goto bottomRowProbeHit;
             }
         }
+        col++;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
     }
-    for (i32 row = unit->ScanCell().m_y - 2; row < unit->ScanCell().m_y + 3; row++) {
+    i32 row = unit->ScanCell().m_y - 2;
+    (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
+    while (row < scratch.m_y + 3) {
         i32 xl = unit->ScanCell().m_x - 2;
         if (static_cast<u32>(xl) < m_tileGrid->m_width
             && static_cast<u32>(row) < m_tileGrid->m_height) {
@@ -1032,6 +1038,8 @@ perimSweep: {
                 goto secondColumnProbeHit;
             }
         }
+        row++;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
     }
     {
         CMapMgr* fb = m_tileGrid;
