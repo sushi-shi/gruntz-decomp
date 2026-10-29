@@ -215,7 +215,7 @@ i32 CGameWorld::SaveSnapshot(
     char* snapshotName,
     LogicTypeId typeId
 ) {
-    if (path == NULL) {
+    if (!path) {
         return 0;
     }
     SetSerializationCallback(callback);
@@ -282,7 +282,7 @@ i32 CGameWorld::SaveSnapshot(
 
 RVA(0x00156530, 0x557)
 i32 CGameWorld::LoadSnapshot(WorldSerializationCallback callback, char* path, LogicTypeId typeId) {
-    if (path == NULL) {
+    if (!path) {
         return 0;
     }
     SetSerializationCallback(callback);
