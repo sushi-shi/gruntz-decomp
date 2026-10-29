@@ -936,7 +936,6 @@ i32 RestoreGameGraphics() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32) {
     TRACE("TransitionState %d\n", stateId);
