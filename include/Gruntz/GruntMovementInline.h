@@ -42,8 +42,8 @@ inline void CGrunt::SetAiAttackTarget(CGrunt* target) {
 }
 
 inline void CGrunt::ResetToSeek() {
-    UNSET_COORD(m_arrivalCell);
     SetAiState(AISTATE_SEEK);
+    UNSET_COORD(m_arrivalCell);
 }
 
 inline void CGrunt::RepathToward(CGrunt* target) {

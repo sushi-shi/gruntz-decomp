@@ -432,10 +432,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
-        GruntDirectionCell cell = m_facing;
-        i32 colv = cell.m_column + cell.m_row * 2;
-        i32 basev = cell.m_row + colv;
-        char* nm = m_directionData[basev].WalkName().GetBuffer(0);
+        char* nm = FacingData()->WalkName().GetBuffer(0);
         SetImageSetByName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
