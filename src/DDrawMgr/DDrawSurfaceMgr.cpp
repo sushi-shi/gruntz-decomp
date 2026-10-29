@@ -238,20 +238,20 @@ i32 CGameWorld::SaveSnapshot(
     header.m_day = now.GetDay();
     header.m_year = now.GetYear();
     strcpy(header.m_name, snapshotName);
-    header.m_childCount = ChildGroup()->CountSerializableObjects();
+    header.m_childCount = m_childGroup->CountSerializableObjects();
     header.m_objIdCounter = g_wwdObjIdCounter;
     archive.Write(&header, sizeof(header));
 
     if (!InvokeSerializationCallback(&archive, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->WriteObjectSnapshots(&archive, typeId)) {
+    if (!m_childGroup->WriteObjectSnapshots(&archive, typeId)) {
         return 0;
     }
     if (!InvokeSerializationCallback(&archive, SERIAL_PRESAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_PRESAVE, typeId)) {
+    if (!m_childGroup->DispatchSerializationToObjects(&archive, SERIAL_PRESAVE, typeId)) {
         return 0;
     }
     if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
@@ -260,7 +260,7 @@ i32 CGameWorld::SaveSnapshot(
     if (!InvokeSerializationCallback(&archive, SERIAL_SAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->SerializeObjects(&archive, typeId)) {
+    if (!m_childGroup->SerializeObjects(&archive, typeId)) {
         return 0;
     }
     if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_SAVE, LOGIC_UNSET, 0)) {
@@ -269,7 +269,7 @@ i32 CGameWorld::SaveSnapshot(
     if (!InvokeSerializationCallback(&archive, SERIAL_POSTSAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_POSTSAVE, typeId)) {
+    if (!m_childGroup->DispatchSerializationToObjects(&archive, SERIAL_POSTSAVE, typeId)) {
         return 0;
     }
     if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
@@ -303,14 +303,14 @@ i32 CGameWorld::LoadSnapshot(WorldSerializationCallback callback, char* path, Lo
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
-    ChildGroup()->ClearChildren();
-    if (!ChildGroup()->LoadObjects(&archive, header.m_childCount, typeId)) {
+    m_childGroup->ClearChildren();
+    if (!m_childGroup->LoadObjects(&archive, header.m_childCount, typeId)) {
         return 0;
     }
     if (!InvokeSerializationCallback(&archive, SERIAL_PRELOAD, typeId, &header)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_PRELOAD, typeId)) {
+    if (!m_childGroup->DispatchSerializationToObjects(&archive, SERIAL_PRELOAD, typeId)) {
         return 0;
     }
     if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
@@ -319,7 +319,7 @@ i32 CGameWorld::LoadSnapshot(WorldSerializationCallback callback, char* path, Lo
     if (!InvokeSerializationCallback(&archive, SERIAL_LOAD, typeId, &header)) {
         return 0;
     }
-    if (!ChildGroup()->DeserializeObjects(&archive, header.m_childCount, typeId)) {
+    if (!m_childGroup->DeserializeObjects(&archive, header.m_childCount, typeId)) {
         return 0;
     }
     if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_LOAD, LOGIC_UNSET, 0)) {
@@ -328,7 +328,7 @@ i32 CGameWorld::LoadSnapshot(WorldSerializationCallback callback, char* path, Lo
     if (!InvokeSerializationCallback(&archive, SERIAL_POSTLOAD, typeId, &header)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_POSTLOAD, typeId)) {
+    if (!m_childGroup->DispatchSerializationToObjects(&archive, SERIAL_POSTLOAD, typeId)) {
         return 0;
     }
     if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
