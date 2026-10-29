@@ -47,7 +47,7 @@ public:
     }
 
     void PlayCue(const char* key) {
-        if (m_silentMode == false) {
+        if (!m_silentMode) {
             SoundCue* found = MapFind<SoundCue>(m_cues, key);
             if (found != NULL) {
                 found->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
