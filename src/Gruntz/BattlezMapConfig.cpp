@@ -3037,8 +3037,8 @@ i32 CBattlezAiController::ChooseIdleBehavior(CGrunt* unit) {
             mode = PICKUP_GOLDBRICK;
         }
         if (mode >= PICKUP_BRICKZ_FIRST) {
-            unit->m_brickPickupType = mode;
-            unit->m_pendingPickupType = PICKUP_INVALID;
+            unit->SetBrickPickupType(mode);
+            unit->SetPendingPickupType(PICKUP_INVALID);
         }
         return 1;
     }

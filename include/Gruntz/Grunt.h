@@ -196,6 +196,12 @@ public:
     PickupType GetBrickPickupType() const {
         return m_brickPickupType;
     }
+    void SetBrickPickupType(PickupType brickPickupType) {
+        m_brickPickupType = brickPickupType;
+    }
+    void SetPendingPickupType(PickupType pendingPickupType) {
+        m_pendingPickupType = pendingPickupType;
+    }
     inline void BuildUnitSearchBox(RECT* box, i32 radius);
     inline Coord ScanCell();
     i32 GetPlayerIndex() const {
