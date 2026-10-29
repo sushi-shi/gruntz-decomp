@@ -198,7 +198,6 @@ public:
     }
     inline void SetBrickPickupType(PickupType brickPickupType);
     inline void SetPendingPickupType(PickupType pendingPickupType);
-    inline void BuildUnitSearchBox(RECT* box, i32 radius);
     inline Coord ScanCell();
     i32 GetPlayerIndex() const {
         return m_playerIndex;

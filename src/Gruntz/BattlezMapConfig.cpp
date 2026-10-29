@@ -637,25 +637,23 @@ i32 CBattlezAiController::UpdateUnits() {
                         }
                         {
                             PickupType st = unit->GetEquippedToolType();
-                            if (st == PICKUP_BRICK && unit->m_battlezTask == BZTASK_UNASSIGNED) {
-                                unit->m_battlezTask = BZTASK_CARRY_BRICK;
-                                if (!unit->CoordsEmpty()) {
-                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                                }
+                            if (st == PICKUP_BRICK && unit->GetBattlezTask() == BZTASK_UNASSIGNED) {
+                                unit->SetBattlezTask(BZTASK_CARRY_BRICK);
+                                unit->RecycleCoords();
                             }
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
-                            && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                            && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
                             && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->GetEquippedToolType();
                                 if (st2 == PICKUP_BRICK && unit->GetAiType() == AI_DEFENDER
-                                    && unit->m_aiState == AISTATE_BATTLEZ_ROUTE_TARGET) {
+                                    && unit->GetAiState() == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->BeginPickupAnimation(PICKUP_NONE, 1, 0, 0, 1);
                                 }
                             }
                         }
-                        if (unit->m_battlezTask == BZTASK_SEEK_SWITCH) {
+                        if (unit->GetBattlezTask() == BZTASK_SEEK_SWITCH) {
                             Coord s1;
                             (static_cast<CUserLogic*>(unit))->GetScreenPos((&s1));
                             s1.m_x >>= 5;
@@ -669,24 +667,20 @@ i32 CBattlezAiController::UpdateUnits() {
                             i32 tile = m_tileGrid->CellFlagsAt(s2.m_x, qy);
                             if (!(tile & 4)) {
                                 UNSET_COORD(unit->m_arrivalCell);
-                                unit->m_battlezTask = BZTASK_ADVANCE;
-                                if (!unit->CoordsEmpty()) {
-                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                                }
+                                unit->SetBattlezTask(BZTASK_ADVANCE);
+                                unit->RecycleCoords();
                                 unit->SetRoutePassableMask(0);
-                                unit->m_aiState = AISTATE_SEEK;
+                                unit->SetAiState(AISTATE_SEEK);
                             }
                         }
                         {
                             PickupType st = unit->GetEquippedToolType();
-                            if (st != PICKUP_SPY && unit->m_battlezTask == BZTASK_CARRY_SPY) {
+                            if (st != PICKUP_SPY && unit->GetBattlezTask() == BZTASK_CARRY_SPY) {
                                 UNSET_COORD(unit->m_arrivalCell);
-                                unit->m_battlezTask = BZTASK_ADVANCE;
-                                if (!unit->CoordsEmpty()) {
-                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                                }
+                                unit->SetBattlezTask(BZTASK_ADVANCE);
+                                unit->RecycleCoords();
                                 unit->SetRoutePassableMask(0);
-                                unit->m_aiState = AISTATE_SEEK;
+                                unit->SetAiState(AISTATE_SEEK);
                             }
                         }
                         {
@@ -695,34 +689,31 @@ i32 CBattlezAiController::UpdateUnits() {
                                 BattlezTask battleTask = unit->m_battlezTask;
                                 if (battleTask != BZTASK_CARRY_GOOBER
                                     && battleTask != BZTASK_ASSIGNED_TARGET) {
-                                    if (!unit->CoordsEmpty()) {
-                                        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                                    }
+                                    unit->RecycleCoords();
                                     UNSET_COORD(unit->m_arrivalCell);
-                                    unit->m_battlezTask = BZTASK_CARRY_GOOBER;
+                                    unit->SetBattlezTask(BZTASK_CARRY_GOOBER);
                                 }
                             }
                         }
                         {
                             PickupType st = unit->GetEquippedToolType();
-                            if (st != PICKUP_GOOBER && unit->m_battlezTask == BZTASK_CARRY_GOOBER) {
+                            if (st != PICKUP_GOOBER
+                                && unit->GetBattlezTask() == BZTASK_CARRY_GOOBER) {
                                 UNSET_COORD(unit->m_arrivalCell);
-                                unit->m_battlezTask = BZTASK_ADVANCE;
-                                if (!unit->CoordsEmpty()) {
-                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                                }
+                                unit->SetBattlezTask(BZTASK_ADVANCE);
+                                unit->RecycleCoords();
                                 unit->SetRoutePassableMask(0);
-                                unit->m_aiState = AISTATE_SEEK;
+                                unit->SetAiState(AISTATE_SEEK);
                             }
                         }
                         if (unit->CoordsEmpty()) {
-                            if (unit->m_aiState == AISTATE_RETREAT) {
-                                unit->m_aiState = AISTATE_SEEK;
+                            if (unit->GetAiState() == AISTATE_RETREAT) {
+                                unit->SetAiState(AISTATE_SEEK);
                             }
                         }
-                        if (unit->m_aiState == AISTATE_RETREAT) {
+                        if (unit->GetAiState() == AISTATE_RETREAT) {
                             if (PathCrossesMarkedTile(unit) == 0) {
-                                unit->m_aiState = AISTATE_SEEK;
+                                unit->SetAiState(AISTATE_SEEK);
                             }
                         }
                         {
@@ -731,28 +722,24 @@ i32 CBattlezAiController::UpdateUnits() {
                                     && unit->GetSpriteObject()->m_screenY == unit->m_lastTilePx.m_y
                                     && unit->IsEntranceCommitted() != false
                                     && unit->IsDeathAnimationStarted() == false
-                                    && unit->m_busy == false) {
-                                    RECT box;
-                                    unit->BuildUnitSearchBox(&box, 4);
-                                    Coord c5;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c5));
-                                    Coord c6;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c6));
-                                    Coord c7;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c7));
-                                    c7.m_y >>= 5;
-                                    c7.m_x >>= 5;
-                                    Coord c8;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c8));
-                                    i32 rowEnd = c5.m_y + 2;
-                                    i32 colEnd = c6.m_x + 2;
-                                    i32 rowBeg = c7.m_y - 1;
-                                    i32 colBeg = c8.m_x - 1;
+                                    && unit->IsBusy() == false) {
+                                    CRect box(
+                                        unit->ScanCell().m_x - 4,
+                                        unit->ScanCell().m_y - 4,
+                                        unit->ScanCell().m_x + 4,
+                                        unit->ScanCell().m_y + 4
+                                    );
+                                    CRect scan(
+                                        unit->ScanCell().m_x - 1,
+                                        unit->ScanCell().m_y - 1,
+                                        unit->ScanCell().m_x + 2,
+                                        unit->ScanCell().m_y + 2
+                                    );
                                     CMapMgr* board = m_tileGrid;
                                     board->Clip(&box);
-                                    for (i32 row = rowBeg; row < rowEnd; row++) {
+                                    for (i32 row = scan.top; row < scan.bottom; row++) {
                                         CMapMgr* b = m_tileGrid;
-                                        for (i32 col = colBeg; col < colEnd; col++) {
+                                        for (i32 col = scan.left; col < scan.right; col++) {
                                             if (static_cast<u32>(col) < b->m_width
                                                 && static_cast<u32>(row) < b->m_height) {
                                                 if (b->CellFlagsAtUnchecked(col, row)
@@ -780,7 +767,7 @@ i32 CBattlezAiController::UpdateUnits() {
                             if (unit->IsDeathAnimationStarted() != false) {
                                 special = 0;
                             }
-                            if (unit->m_busy != false) {
+                            if (unit->IsBusy() != false) {
                                 special = 0;
                             }
                             if (!UpdateBattlezSpecialEligibility(unit, special)) {
@@ -800,7 +787,7 @@ i32 CBattlezAiController::UpdateUnits() {
                             }
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
-                            && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                            && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
                             && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
@@ -839,10 +826,10 @@ i32 CBattlezAiController::UpdateUnits() {
                 BattlezTask battleTask = unit->m_battlezTask;
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->IsEntranceCommitted() != false
-                        && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                        && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
                         && unit->IsInCombat() == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
-                            if (unit->m_battlezTask != BZTASK_UNASSIGNED) {
+                            if (unit->GetBattlezTask() != BZTASK_UNASSIGNED) {
                                 if (RouteToNearbyEnemy(unit) != 0) {
                                     hit = 1;
                                 }
@@ -854,7 +841,7 @@ i32 CBattlezAiController::UpdateUnits() {
         }
         if (unit != NULL) {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->IsEntranceCommitted() != false
-                && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
                 && unit->IsInCombat() == false) {
                 if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
@@ -900,9 +887,9 @@ i32 CBattlezAiController::UpdateUnits() {
                         if (PathToNearbyUnit(unit) != 0) {
                             return 1;
                         }
-                        if (unit->CoordsEmpty() && unit->m_aiState == AISTATE_COOLDOWN) {
+                        if (unit->CoordsEmpty() && unit->GetAiState() == AISTATE_COOLDOWN) {
                             UNSET_COORD(unit->m_unusedBattleCell);
-                            unit->m_aiState = AISTATE_SEEK;
+                            unit->SetAiState(AISTATE_SEEK);
                         }
                         {
                             bool nd;
@@ -914,7 +901,7 @@ i32 CBattlezAiController::UpdateUnits() {
                         if (unit->GetSpriteObject()->m_screenX == unit->m_lastTilePx.m_x
                             && unit->GetSpriteObject()->m_screenY == unit->m_lastTilePx.m_y
                             && unit->IsEntranceCommitted() != false
-                            && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                            && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
                             && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
@@ -1012,9 +999,7 @@ i32 CBattlezAiController::UpdateUnits() {
                     }
                     continue;
                 dropCoords:
-                    if (!unit->CoordsEmpty()) {
-                        RECYCLE_GRUNT_COORDS(unit)
-                    }
+                    unit->RecycleCoords();
                 }
             }
         }
@@ -1033,66 +1018,39 @@ resetEntrance: {
 }
 
 arriveHead:
-    if (!unit->CoordsEmpty()) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-    }
+    unit->RecycleCoords();
     return 1;
 
 perimSweep: {
-    Coord q0;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&q0));
-    i32 col = (q0.m_x >> TILE_SHIFT_PX) - 2;
-    (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
-    while (col < scratch.m_x + 3) {
-        Coord qa;
-        GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(unit), qa)
-        i32 rt = qa.m_y - 2;
+    for (i32 col = unit->ScanCell().m_x - 2; col < unit->ScanCell().m_x + 3; col++) {
+        i32 rt = unit->ScanCell().m_y - 2;
         if (static_cast<u32>(col) < m_tileGrid->m_width
             && static_cast<u32>(rt) < m_tileGrid->m_height) {
             if (unit->MoveToTile(col, rt, 0, 0x2000098b, 1, 0) != 0) {
                 goto topRowProbeHit;
             }
         }
-        Coord qc;
-        GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(unit), qc)
-        i32 rb = qc.m_y + 2;
+        i32 rb = unit->ScanCell().m_y + 2;
         if (static_cast<u32>(col) < m_tileGrid->m_width
             && static_cast<u32>(rb) < m_tileGrid->m_height) {
             if (unit->MoveToTile(col, rb, 0, 0x2000098b, 1, 0) != 0) {
                 goto bottomRowProbeHit;
             }
         }
-        col++;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
     }
-    {
-        Coord u0;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&u0));
-        i32 row = (u0.m_y >> TILE_SHIFT_PX) - 2;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
-        while (row < scratch.m_y + 3) {
-            Coord ua;
-            (static_cast<CUserLogic*>(unit))->GetScreenTile((&ua));
-            i32 xl = ua.m_x - 2;
-            if (static_cast<u32>(xl) < m_tileGrid->m_width
-                && static_cast<u32>(row) < m_tileGrid->m_height) {
-                if (unit->MoveToTile(xl, row, 0, 0x2000098b, 1, 0) != 0) {
-                    goto firstColumnProbeHit;
-                }
+    for (i32 row = unit->ScanCell().m_y - 2; row < unit->ScanCell().m_y + 3; row++) {
+        i32 xl = unit->ScanCell().m_x - 2;
+        if (static_cast<u32>(xl) < m_tileGrid->m_width
+            && static_cast<u32>(row) < m_tileGrid->m_height) {
+            if (unit->MoveToTile(xl, row, 0, 0x2000098b, 1, 0) != 0) {
+                goto firstColumnProbeHit;
             }
-            Coord uc;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&uc));
-            uc.m_y >>= 5;
-            uc.m_x >>= 5;
-            if (static_cast<u32>(uc.m_x + 2) < m_tileGrid->m_width
-                && static_cast<u32>(row) < m_tileGrid->m_height) {
-
-                if (unit->MoveToTile(xl, row, 0, 0x2000098b, 1, 0) != 0) {
-                    goto secondColumnProbeHit;
-                }
+        }
+        if (static_cast<u32>(unit->ScanCell().m_x + 2) < m_tileGrid->m_width
+            && static_cast<u32>(row) < m_tileGrid->m_height) {
+            if (unit->MoveToTile(xl, row, 0, 0x2000098b, 1, 0) != 0) {
+                goto secondColumnProbeHit;
             }
-            row++;
-            (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
         }
     }
     {
@@ -1102,30 +1060,17 @@ perimSweep: {
     }
 }
 
-// These four reset/start expansions share the caller's nested inline population.
 topRowProbeHit: {
-    unit->m_arrivalRerollTiming.m_startLo = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0x1f40;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
+    unit->m_arrivalRerollTiming.Clear();
+    unit->m_arrivalRerollTiming.Start(0x1f40);
     CMapMgr* hb = m_tileGrid;
     hb->Clip(NULL);
     return 1;
 }
 
 bottomRowProbeHit: {
-    unit->m_arrivalRerollTiming.m_startLo = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0x1f40;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
+    unit->m_arrivalRerollTiming.Clear();
+    unit->m_arrivalRerollTiming.Start(0x1f40);
     CMapMgr* hb = m_tileGrid;
     hb->Clip(NULL);
     return 1;
@@ -1179,28 +1124,16 @@ tailArm2: {
 }
 
 firstColumnProbeHit: {
-    unit->m_arrivalRerollTiming.m_startLo = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0x1f40;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
+    unit->m_arrivalRerollTiming.Clear();
+    unit->m_arrivalRerollTiming.Start(0x1f40);
     CMapMgr* hb = m_tileGrid;
     hb->Clip(NULL);
     return 1;
 }
 
 secondColumnProbeHit: {
-    unit->m_arrivalRerollTiming.m_startLo = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_intervalLo = 0x1f40;
-    unit->m_arrivalRerollTiming.m_intervalHi = 0;
-    unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
-    unit->m_arrivalRerollTiming.m_startHi = 0;
+    unit->m_arrivalRerollTiming.Clear();
+    unit->m_arrivalRerollTiming.Start(0x1f40);
     CMapMgr* hb = m_tileGrid;
     hb->Clip(NULL);
     return 1;
