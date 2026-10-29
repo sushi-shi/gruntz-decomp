@@ -341,11 +341,8 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_reserved18c = 0;
     m_reserved418 = 0;
 
-    m_timePerTile = g_buteMgr.GetDword(
-        static_cast<const char*>(m_animSetName),
-        "TimePerTile",
-        1000
-    );
+    m_timePerTile =
+        g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "TimePerTile", 1000);
 
     if (m_powerupType == GRUNT_SUPERSPEED) {
         m_timePerTile >>= 1;
@@ -661,11 +658,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
         SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
             DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
-            i32 row = facing.m_row;
-            i32 column = facing.m_column;
-            i32 index = 3 * row + column;
-
-            const char* nm = m_directionData[index].IdleName().GetBuffer(0);
+            const char* nm = DirectionData(facing)->IdleName().GetBuffer(0);
             SetImageFrameByName(nm, frame);
         }
         goto store;
@@ -675,11 +668,7 @@ walk:
 
     SwitchAnimation(m_poseWalk);
     {
-        i32 row = facing.m_row;
-        i32 column = facing.m_column;
-        i32 index = 3 * row + column;
-
-        const char* nm = m_directionData[index].WalkName().GetBuffer(0);
+        const char* nm = DirectionData(facing)->WalkName().GetBuffer(0);
         SetImageSetByName(nm);
     }
 

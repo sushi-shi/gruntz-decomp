@@ -607,9 +607,11 @@ public:
         return m_deathAnimStarted;
     }
 
+    CGruntDirectionData* DirectionData(GruntDirectionCell direction) {
+        return &m_directionData[3 * direction.m_row + direction.m_column];
+    }
     CGruntDirectionData* FacingData() {
-        GruntDirectionCell c = m_facing;
-        return &m_directionData[3 * c.m_row + c.m_column];
+        return DirectionData(m_facing);
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
