@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import csv
+import functools
 import hashlib
 import io
 import json
@@ -1316,6 +1317,18 @@ def _assert_only_eh_changes(original: CoffObject, before: bytes, after: bytes,
                 "EH canonicalization changed section bytes outside push operands")
 
 
+@functools.lru_cache(maxsize=1)
+def _oldnames_aliases() -> dict[str, str]:
+    """The pinned toolchain's OLDNAMES aliases; none outside the dev shell."""
+    root = os.environ.get("MSVC_DIR")
+    if not root:
+        return {}
+    from gruntz.delink.implib import oldnames_aliases
+    library = next((p for p in (Path(root) / "lib").glob("*") if p.name.lower() == "oldnames.lib"),
+                   None)
+    return oldnames_aliases(library) if library else {}
+
+
 def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     """Return a normalized comparison copy and its readable rename records."""
     payload, materialized = materialize_commons(payload)
@@ -1616,6 +1629,34 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
             symbol.name, symbol.name, "weak", "undefined", 0, 0, 0, 0, 0, "-",
             "weak-external-resolved-to-" + default.name, "",
         ))
+    # OLDNAMES.LIB, which every /MT object default-links, declares each old CRT
+    # name as a weak external defaulting to the underscored definition
+    # (`_stricmp` -> `__stricmp`). The linker resolves both spellings to one
+    # function, but retail's label carries only one of them, so a call written
+    # the other way (MFC's inline CompareNoCase calls `_stricmp()` while game
+    # code calls `stricmp()`) reported a referent difference nothing in the
+    # source could fix. Resolve the alias as the linker does, on every object.
+    aliases = _oldnames_aliases()
+    if aliases:
+        defined = {s.name for s in coff.symbols.values() if s.section > 0}
+        undefined = {s.name: s.index for s in coff.symbols.values()
+                     if s.section == 0 and s.value == 0
+                     and s.storage_class == EXTERNAL_STORAGE}
+        for symbol in coff.symbols.values():
+            real = aliases.get(symbol.name)
+            if (real is None or symbol.index in renames or symbol.index in dup_retargets
+                    or symbol.section != 0 or symbol.value != 0
+                    or symbol.storage_class != EXTERNAL_STORAGE
+                    or symbol.name in defined or real in defined):
+                continue
+            if real in undefined:
+                dup_retargets[symbol.index] = undefined[real]
+            else:
+                renames[symbol.index] = real
+            rows.append(CanonicalRow(
+                symbol.name, real, "oldnames", "undefined", 0, 0, 0, 0, 0, "-",
+                "oldnames-alias-resolved-to-" + real, ""))
+
     # A default may itself be an undefined duplicate that the pass above retargeted.
     for index in list(dup_retargets):
         seen, target = {index}, dup_retargets[index]

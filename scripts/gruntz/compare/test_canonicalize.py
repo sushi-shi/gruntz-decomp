@@ -67,3 +67,48 @@ class FloatPoolWidthControls(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def calls(*names: str) -> bytes:
+    """One `.text` calling each named undefined external in turn."""
+    code = b"".join(b"\xe8" + bytes(4) for _ in names) + b"\xc3"
+    rawptr = 20 + 40
+    relptr = rawptr + len(code)
+    symptr = relptr + 10 * len(names)
+    strings = bytearray(bytes(4))
+    symbols = bytearray()
+    for name, section, typ in (("_entry", 1, 0x20), *((n, 0, 0x20) for n in names)):
+        symbols += struct.pack("<II", 0, len(strings))
+        strings += name.encode("latin1") + b"\0"
+        symbols += struct.pack("<IhHBB", 0, section, typ, 2, 0)
+    struct.pack_into("<I", strings, 0, len(strings))
+    header = struct.pack("<HHIIIHH", 0x14c, 1, 0, symptr, 1 + len(names), 0, 0)
+    text = struct.pack("<8sIIIIIIHHI", b".text", 0, 0, len(code), rawptr,
+                       relptr, 0, len(names), 0, 0x60500020)
+    relocs = b"".join(struct.pack("<IIH", 5 * k + 1, k + 1, 0x14) for k in range(len(names)))
+    return header + text + bytes(code) + relocs + symbols + strings
+
+
+class OldnamesAliasControls(unittest.TestCase):
+    def setUp(self):
+        from unittest import mock
+        from gruntz.compare import canonicalize
+        patch = mock.patch.object(canonicalize, "_oldnames_aliases",
+                                  return_value={"_stricmp": "__stricmp"})
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def targets(self, data: bytes) -> list[str]:
+        from gruntz.compare.canonicalize import CoffObject
+        coff = CoffObject(canonicalize_coff(data).data)
+        return [coff.symbols[r.symbol_index].name for r in coff.relocations]
+
+    def test_an_old_name_call_names_the_real_crt_function(self):
+        self.assertEqual(self.targets(calls("_stricmp")), ["__stricmp"])
+
+    def test_both_spellings_in_one_object_reach_one_symbol(self):
+        self.assertEqual(self.targets(calls("_stricmp", "__stricmp")),
+                         ["__stricmp", "__stricmp"])
+
+    def test_other_names_are_untouched(self):
+        self.assertEqual(self.targets(calls("_strlen")), ["_strlen"])

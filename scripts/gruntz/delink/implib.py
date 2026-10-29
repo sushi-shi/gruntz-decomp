@@ -183,6 +183,39 @@ def collect_ordinal_decorations(lib_paths: list[Path]) -> dict:
     return {k: v for k, v in table.items() if v}
 
 
+def oldnames_aliases(path: Path) -> dict[str, str]:
+    """`alias -> real name` for the weak externals of OLDNAMES.LIB.
+
+    `/MT` objects default-link OLDNAMES, whose members each declare one
+    old name (`_stricmp`) as a weak external defaulting to the CRT's
+    underscored definition (`__stricmp`): the linker resolves both to one
+    function. Its members are machine-0 COFF objects."""
+    aliases: dict[str, str] = {}
+    for name, body in _ar_members(path):
+        if name in ("/", "//") or len(body) < 20 \
+                or struct.unpack_from("<H", body, 0)[0] not in (0, 0x014C):
+            continue
+        symoff, nsym = struct.unpack_from("<II", body, 8)
+        stroff = symoff + nsym * 18
+
+        def symbol_name(index: int) -> str:
+            raw = body[symoff + index * 18:symoff + index * 18 + 8]
+            zero, offset = struct.unpack("<II", raw)
+            if zero:
+                return raw.rstrip(b"\0").decode("latin1")
+            start = stroff + offset
+            return body[start:body.index(b"\0", start)].decode("latin1")
+        k = 0
+        while k < nsym:
+            o = symoff + k * 18
+            storage, aux = body[o + 16], body[o + 17]
+            if storage == 105 and aux:  # IMAGE_SYM_CLASS_WEAK_EXTERNAL
+                aliases[symbol_name(k)] = symbol_name(
+                    struct.unpack_from("<I", body, o + 18)[0])
+            k += 1 + aux
+    return aliases
+
+
 def era_import_libs() -> list[Path]:
     """The MSVC 5.0 + DX SDK import libraries (non-recursive on purpose: the
     DX SDK ships a Borland/ subdir with another toolchain's conventions)."""
