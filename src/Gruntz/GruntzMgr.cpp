@@ -936,10 +936,8 @@ i32 RestoreGameGraphics() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0008b960, 0x808)
-i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused) {
-    static_cast<void>(unused);
+i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32) {
     TRACE("TransitionState %d\n", stateId);
     GameStateId previousState = GAMESTATE_NONE;
     if (m_curState != NULL) {
@@ -951,9 +949,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
             areaArg = savedSub;
             m_curState = NULL;
         } else {
-            if (m_curState != NULL) {
-                delete m_curState;
-            }
+            delete m_curState;
             m_curState = NULL;
             ClearStateStack();
             m_curState = NULL;
@@ -1007,25 +1003,17 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
         return 0;
     }
     RefreshGameClock();
-    {
-        CState* st = m_curState;
-
-        b32 ok = st->LoadGameAssetNamespaces(this, areaArg, IDX(previousState));
-        st = m_curState;
-        if (ok == false) {
-            if (st != NULL) {
-                delete st;
-            }
-            m_curState = NULL;
-            return 0;
-        }
-        st->EnterState(previousState);
-        m_owner->SetRunning(true);
-        g_inputMgr->ReadAll();
-        RefreshGameClock();
-        TRACE("TransitionState %d done\n", stateId);
-        return 1;
+    if (!m_curState->LoadGameAssetNamespaces(this, areaArg, IDX(previousState))) {
+        delete m_curState;
+        m_curState = NULL;
+        return 0;
     }
+    m_curState->EnterState(previousState);
+    m_owner->SetRunning(true);
+    g_inputMgr->ReadAll();
+    RefreshGameClock();
+    TRACE("TransitionState %d done\n", stateId);
+    return 1;
 }
 
 RVA_COMPGEN(0x0008c3d0, 0x1e, ??_GCRgn@@UAEPAXI@Z)

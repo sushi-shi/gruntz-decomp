@@ -161,7 +161,7 @@ gruntreticlescan	1	0
 gruntscantarget	1	0
 gruntseektarget	1	0
 gruntselectedsprite	9	9
-gruntspawnconfig	21	18
+gruntspawnconfig	21	19
 gruntstaminasprite	5	5
 gruntstartingpoint	8	8
 gruntstaterec	1	1
@@ -177,7 +177,7 @@ gruntwingztimesprite	5	5
 gruntzapp	16	16
 gruntzcmdmgr	44	44
 gruntzmapmgr	5	5
-gruntzmgr	174	167
+gruntzmgr	174	168
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	36
@@ -1079,9 +1079,9 @@ ddrawsurfacemgr	?EnsureSoundInitialized@CGameWorld@@QAEHXZ	100.0000	100.0000	5	8
 ddrawsurfacemgr	?Init@CGameWorld@@UAEHPAUHWND__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	17	88d2be96b30b	0x155900	100.0000	
 ddrawsurfacemgr	?IsReady@CGameWorld@@UAEHXZ	100.0000	100.0000	7	3f411eb38226	0x155f00	100.0000	
 ddrawsurfacemgr	?LoadRecordFile@@YGHPBDPAUCSnapshotHeader@@PAXIH@Z	100.0000	100.0000	3	14c9a6078188	0x156ad0	100.0000	
-ddrawsurfacemgr	?LoadSnapshot@CGameWorld@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD3@Z	97.1442	97.1442	8	5376f5838216	0x156530	97.1442	
+ddrawsurfacemgr	?LoadSnapshot@CGameWorld@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD3@Z	97.8374	97.8374	9	203eab873b49	0x156530	97.8374	
 ddrawsurfacemgr	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	9dae9c02a324	0x157a50	100.0000	
-ddrawsurfacemgr	?SaveSnapshot@CGameWorld@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD63@Z	93.8248	93.8248	13	4836677f4a9e	0x156020	93.8248	
+ddrawsurfacemgr	?SaveSnapshot@CGameWorld@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD63@Z	96.7166	96.7166	14	08f8042a6bdc	0x156020	96.7166	
 ddrawsurfacemgr	?SetDimensions@CGameWorld@@QAEHHHW4ColorDepth@@@Z	100.0000	100.0000	7	f197c533b22d	0x155f60	100.0000	
 ddrawsurfacemgr	?SetRestoreHandler@CGameWorld@@QAEXP6AHXZ@Z	100.0000	100.0000	2	a6b1bb0611aa	0x155f50	100.0000	
 ddrawsurfacemgr	?ShutdownSound@CGameWorld@@QAEXXZ	100.0000	100.0000	6	d6cc8e4df4ad	0x155fc0	100.0000	
@@ -2185,7 +2185,7 @@ gruntspawnconfig	?PlayVoice@CVoiceManager@@QAEHPAVCGrunt@@HHHHH@Z	100.0000	100.0
 gruntspawnconfig	?ResetVoiceSelections@CVoiceManager@@QAEXXZ	100.0000	100.0000	5	8e495963c8d2	0x11c7f0	100.0000	
 gruntspawnconfig	?ResolveGruntVoiceGroup@CVoiceManager@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	9	5a91467a3760	0x11bba0	100.0000	
 gruntspawnconfig	?SelectVoiceVariant@CVoiceManager@@QAEPAUCRezItm@@H@Z	100.0000	100.0000	11	5962fbc069b9	0x11bec0	100.0000	
-gruntspawnconfig	?SelectVoiceVariant@CVoiceManager@@QAEPAUCRezItm@@HH@Z	95.8696	95.8696	12	5962fbc069b9	0x11bee0	100.0000	
+gruntspawnconfig	?SelectVoiceVariant@CVoiceManager@@QAEPAUCRezItm@@HH@Z	100.0000	100.0000	12	5962fbc069b9	0x11bee0	100.0000	
 gruntspawnconfig	?StopVoice@CVoiceManager@@QAEXH@Z	100.0000	100.0000	2	cc915ec9b65c	0x11c730	100.0000	
 gruntstaminasprite	??0CGruntStaminaSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	7	cc33846b72cf	0x7fae0	100.0000	
 gruntstaminasprite	??1CGruntStaminaSprite@@UAE@XZ	100.0000	100.0000	1	cpp:83f6d75bfd2c	0x12070	100.0000	
@@ -2493,7 +2493,7 @@ gruntzmgr	?ToggleHeightLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	93ce41377af9
 gruntzmgr	?ToggleMonolithOverlay@CGruntzMgr@@QAEHXZ	100.0000	100.0000	21	bcd592917424	0x90d10	100.0000	
 gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	9	90349048489a	0x8efe0	100.0000	
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	4	64154921bc23	0x90980	100.0000	
-gruntzmgr	?TransitionState@CGruntzMgr@@QAEHW4GameStateId@@HHH@Z	99.1921	99.1921	9	f315e60bc324	0x8b960	99.1921	
+gruntzmgr	?TransitionState@CGruntzMgr@@QAEHW4GameStateId@@HHH@Z	100.0000	100.0000	10	532e9cd04e35	0x8b960	100.0000	
 gruntzmgr	?TryNextResolution@CGruntzMgr@@QAEHXZ	100.0000	100.0000	7	87abfc076dc6	0x8e1d0	100.0000	
 gruntzmgr	?TryPreviousResolution@CGruntzMgr@@QAEHXZ	100.0000	100.0000	9	d69e0a853aff	0x8e2b0	100.0000	
 gruntzmgr	?UnusedPlayQuery@CMulti@@UAEHXZ	100.0000	100.0000	1	34aee77b66bb	0x8d200	100.0000	
@@ -3784,7 +3784,7 @@ sbi_rectonly	?EmptyGruntOven@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	95a0e33e
 sbi_rectonly	?FinishGruntPlacement@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	5	e94d42ad1d4c	0x106790	100.0000	
 sbi_rectonly	?FinishResourcePlacement@CStatusBarMgr@@QAEXHH@Z	100.0000	100.0000	4	91ea9758ff01	0x106820	100.0000	
 sbi_rectonly	?GetNextResourcePickup@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	7	d5639def234f	0x10bbe0	100.0000	
-sbi_rectonly	?HandleClick@CStatusBarMgr@@QAEHHHH@Z	97.6338	97.6338	47	3736b5bdf5a2	0xfe910	99.7111	
+sbi_rectonly	?HandleClick@CStatusBarMgr@@QAEHHHH@Z	99.7111	99.7111	47	3736b5bdf5a2	0xfe910	99.7111	
 sbi_rectonly	?HandleDoubleClick@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	20	c37567c615ca	0xff850	100.0000	
 sbi_rectonly	?HandlePointerDrag@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	12	164e1d7d2950	0xff9f0	100.0000	
 sbi_rectonly	?HideStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	6	1c2ff7b63640	0xfe600	100.0000	
