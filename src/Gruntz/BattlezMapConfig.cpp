@@ -654,17 +654,8 @@ i32 CBattlezAiController::UpdateUnits() {
                             }
                         }
                         if (unit->GetBattlezTask() == BZTASK_SEEK_SWITCH) {
-                            Coord s1;
-                            (static_cast<CUserLogic*>(unit))->GetScreenPos((&s1));
-                            s1.m_x >>= 5;
-                            i32 qx = s1.m_x;
-                            s1.m_y >>= 5;
-                            i32 qy = s1.m_y;
-                            Coord s2;
-                            (static_cast<CUserLogic*>(unit))->GetScreenPos((&s2));
-                            s2.m_y >>= 5;
-                            s2.m_x >>= 5;
-                            i32 tile = m_tileGrid->CellFlagsAt(s2.m_x, qy);
+                            i32 tile =
+                                m_tileGrid->CellFlagsAt(unit->ScanCell().m_x, unit->ScanCell().m_y);
                             if (!(tile & 4)) {
                                 UNSET_COORD(unit->m_arrivalCell);
                                 unit->SetBattlezTask(BZTASK_ADVANCE);
