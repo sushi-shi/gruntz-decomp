@@ -44,7 +44,7 @@ must also pass an identity check: the traced compile has to reproduce the
 unit's build object byte for byte (TimeDateStamp and the per-compile
 number in anonymous-namespace names masked) or the trace is
 refused. Rebuild the unit first if it is stale. Traces are cached in
-`build/inline-trace/<unit>.json` and keyed by the build object's hash.
+`build/inline-trace/<unit>.json`, keyed by the build object, the unit source and the newest header.
 
 ## The replay rule
 

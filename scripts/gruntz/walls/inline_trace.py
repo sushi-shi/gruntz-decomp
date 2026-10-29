@@ -20,7 +20,8 @@ whether every gate passed (`admit`) and the nested walk of an expanded body.
 `gruntz walls inline-solve` replays and edits these trees.
 
 The overlay lives under build/c2-shim/ and is rebuilt when the shim source
-changes. The trace is written to build/inline-trace/<unit>.json.
+changes. The trace is written to build/inline-trace/<unit>.json and reused
+while the build object, the unit's source and the headers are unchanged.
 """
 
 from __future__ import annotations
@@ -235,6 +236,13 @@ def _object_sha(path: Path) -> str:
     return hashlib.sha256(repr(_comparable(path.read_bytes())).encode()).hexdigest()
 
 
+def _input_key(src: Path) -> str:
+    """What a cached trace was made from. Front-end costs can change while
+    the object does not, so the source and the newest header count too."""
+    newest = max((p.stat().st_mtime_ns for p in (REPO / "include").rglob("*.h")), default=0)
+    return hashlib.sha256(src.read_bytes() + str(newest).encode()).hexdigest()
+
+
 def trace_unit(unit: str) -> dict:
     """Trace one unit; refuse unless the traced object is the build object."""
     from gruntz import graph
@@ -253,7 +261,7 @@ def trace_unit(unit: str) -> dict:
                          f"{unit}`) before tracing")
     report = parse(text)
     report.update(unit=unit, source=str(src.relative_to(REPO)), flags=flags,
-                  shim_sha256=_shim_sha(),
+                  shim_sha256=_shim_sha(), input_sha256=_input_key(src),
                   object_sha256=_object_sha(expected))
     (TRACES / f"{unit}.json").write_text(json.dumps(report, indent=1) + "\n")
     return report
@@ -268,7 +276,8 @@ def load(unit: str, *, refresh: bool = False) -> dict:
     if not refresh and path.is_file() and expected.is_file():
         report = json.loads(path.read_text())
         if report.get("shim_sha256") == _shim_sha() \
-                and report.get("object_sha256") == _object_sha(expected):
+                and report.get("object_sha256") == _object_sha(expected) \
+                and report.get("input_sha256") == _input_key(unit_source(unit)[0]):
             return report
     return trace_unit(unit)
 
