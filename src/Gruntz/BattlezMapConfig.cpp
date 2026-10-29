@@ -842,30 +842,22 @@ i32 CBattlezAiController::UpdateUnits() {
                             if (st3 == PICKUP_WAND && unit->GetHealth() > 0x1a) {
                                 if (rand() % g_battlezWandUseChanceDenominator == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
-                                    RECT spell;
-                                    i32 px = unit->GetSpriteObject()->m_screenX;
-                                    i32 py = unit->GetSpriteObject()->m_screenY;
-                                    SET_RECT_COMPONENTS(
-                                        spell,
-                                        (px >> TILE_SHIFT_PX) - r,
-                                        (py >> TILE_SHIFT_PX) - r,
-                                        (px >> TILE_SHIFT_PX) + r,
-                                        (py >> TILE_SHIFT_PX) + r
+                                    CRect spell(
+                                        unit->GetScreenTileX() - r,
+                                        unit->GetScreenTileY() - r,
+                                        unit->GetScreenTileX() + r,
+                                        unit->GetScreenTileY() + r
                                     );
                                     for (i32 j2 = 0; j2 < 4; j2++) {
                                         if (j2 != m_playerIndex) {
                                             for (i32 k2 = 0; k2 < TM_UNITS_PER_PLAYER; k2++) {
                                                 CGrunt* o = m_triggerMgr->UnitAt(j2, k2);
                                                 if (o != NULL) {
-                                                    POINT pt;
-                                                    SET_POINT_COMPONENTS(
-                                                        pt,
-                                                        o->GetSpriteObject()->m_screenX
-                                                            >> TILE_SHIFT_PX,
-                                                        o->GetSpriteObject()->m_screenY
-                                                            >> TILE_SHIFT_PX
+                                                    CPoint pt(
+                                                        o->GetScreenTileX(),
+                                                        o->GetScreenTileY()
                                                     );
-                                                    if (PtInRect(&spell, pt) != false) {
+                                                    if (spell.PtInRect(pt)) {
                                                         goto spellHit;
                                                     }
                                                 }
