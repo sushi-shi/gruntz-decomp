@@ -95,6 +95,24 @@ class TracedBackEnd(unittest.TestCase):
             self.assertEqual([(s["depth"], s["budget"], s["expanded"]) for s in sites],
                              [(1, 1000, True), (2, 500, True), (2, 500, True), (1, 1000, True)])
 
+    def test_forcing_is_inert_without_rules_and_keeps_a_forced_call(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            source = directory / "control.cpp"
+            source.write_text(CONTROL)
+            flags = ["/nologo", "/c", "/O2", "/MT"]
+            plain, empty, kept = (directory / f"{n}.obj" for n in ("plain", "empty", "kept"))
+            inline_trace.compile_traced(source, flags, plain)
+            inline_trace.compile_traced(source, flags, empty, rules=[])
+            self.assertEqual(inline_trace._comparable(plain.read_bytes()),
+                             inline_trace._comparable(empty.read_bytes()))
+            text = inline_trace.compile_traced(
+                source, flags, kept, rules=["?rootCharlie@@YAHH@Z\t*\tleafAlpha\t1\tK"])
+            sites = inline_trace.parse(text)["roots"][0]["sites"]
+            self.assertEqual([(s.get("forced"), s["expanded"]) for s in sites],
+                             [(None, True), ("K", False), (None, True), (None, True)])
+            self.assertIn(b"?leafAlpha@@YAHH@Z", kept.read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()

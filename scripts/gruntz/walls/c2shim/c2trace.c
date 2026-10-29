@@ -5,9 +5,17 @@
    logging hooks into the /Ob inline pass (c2.exe has no relocations, so its
    code sits at fixed addresses); each hook re-executes the instructions it
    displaced and resumes, so the traced compile emits the same object.
-   Without the variable the DLL only forwards. */
+   Without the variable the DLL only forwards.
+
+   GRUNTZ_C2_FORCE (tracing only) names a rule file that overrides chosen
+   inline decisions at the budget compare, one rule per line:
+   root<TAB>owner<TAB>callee<TAB>occurrence<TAB>E|K. Root is a mangled name
+   or `*`; owner and callee are substrings of mangled names (`*` matches
+   any); occurrence counts the matching budget compares within the root
+   from 1 (0: every one). E takes C2's admit path, K its decline path. */
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* c2.exe function record fields (FUN_0042491e / FUN_004249cb). */
@@ -28,10 +36,27 @@
 static FILE *g_log;
 static const unsigned char *g_root;
 
+#define MAX_RULES 64
+
+struct Rule {
+    char root[512];
+    char owner[256];
+    char callee[256];
+    long occurrence;
+    char action;
+    long seen;
+};
+
+static struct Rule g_rules[MAX_RULES];
+static int g_ruleCount;
+static long g_forceAction;
+
 static unsigned long g_resumeRoot = 0x424933;
 static unsigned long g_resumeSite = 0x424ef5;
 static unsigned long g_resumeArgsMatch = 0x424f1d;
 static unsigned long g_resumeDecline = 0x424a67;
+static unsigned long g_resumeBudget = 0x424f3e;
+static unsigned long g_admitPath = 0x424f59;
 static unsigned long g_resumeAdmit = 0x424f5e;
 static unsigned long g_resumeCharge = 0x424f7f;
 static unsigned long g_resumeBody = 0x424c10;
@@ -50,7 +75,10 @@ static void logSymbol(const unsigned char *record)
 
 static void __cdecl logRoot(const unsigned char *const *function)
 {
+    int i;
     g_root = *function;
+    for (i = 0; i < g_ruleCount; i++)
+        g_rules[i].seen = 0;
     logSymbol(g_root);
     fprintf(g_log, "main %08lx cb=%d handle=%lx flags=%lx\n", (unsigned long)g_root,
             *(const short *)(g_root + RECORD_CB),
@@ -78,6 +106,70 @@ static void __cdecl logSite(const unsigned char *callee, const unsigned char *tu
 static void __cdecl logArgs(long actual, long formal)
 {
     fprintf(g_log, "args actual=%ld formal=%ld\n", actual, formal);
+}
+
+static int matches(const char *pattern, const char *name)
+{
+    return !strcmp(pattern, "*") || strstr(name, pattern) != NULL;
+}
+
+/* 0: C2 decides; 1: expand; 2: keep the call. */
+static long __cdecl forceDecision(const unsigned char *callee, const unsigned char *frame)
+{
+    const unsigned char *owner = **(const unsigned char *const *const *)(frame + FRAME_OWNER);
+    const char *rootName = recordName(g_root);
+    long action = 0;
+    int i;
+    for (i = 0; i < g_ruleCount; i++) {
+        struct Rule *rule = &g_rules[i];
+        if ((strcmp(rule->root, "*") && strcmp(rule->root, rootName))
+            || !matches(rule->owner, recordName(owner))
+            || !matches(rule->callee, recordName(callee)))
+            continue;
+        rule->seen++;
+        if (!action && (!rule->occurrence || rule->seen == rule->occurrence))
+            action = rule->action == 'E' ? 1 : 2;
+    }
+    if (action)
+        fprintf(g_log, "force action=%c\n", action == 1 ? 'E' : 'K');
+    return action;
+}
+
+static int loadRules(const char *path)
+{
+    FILE *file = fopen(path, "r");
+    char line[1400];
+    if (!file)
+        return 0;
+    while (fgets(line, sizeof line, file)) {
+        struct Rule *rule = &g_rules[g_ruleCount];
+        char *field[5];
+        char *cursor = line;
+        int n;
+        line[strcspn(line, "\r\n")] = 0;
+        if (!*line)
+            continue;
+        for (n = 0; n < 5 && cursor; n++) {
+            field[n] = cursor;
+            cursor = strchr(cursor, '\t');
+            if (cursor)
+                *cursor++ = 0;
+        }
+        if (n != 5 || g_ruleCount == MAX_RULES || strlen(field[0]) >= sizeof rule->root
+            || strlen(field[1]) >= sizeof rule->owner || strlen(field[2]) >= sizeof rule->callee
+            || (field[4][0] != 'E' && field[4][0] != 'K')) {
+            fclose(file);
+            return 0;
+        }
+        strcpy(rule->root, field[0]);
+        strcpy(rule->owner, field[1]);
+        strcpy(rule->callee, field[2]);
+        rule->occurrence = atol(field[3]);
+        rule->action = field[4][0];
+        g_ruleCount++;
+    }
+    fclose(file);
+    return 1;
 }
 
 static void __cdecl logAdmit(void)
@@ -164,6 +256,35 @@ static __declspec(naked) void hookAdmit(void)
     }
 }
 
+/* The budget compare, after the argument-count and depth gates: a rule may
+   take the admit or the decline path instead. */
+static __declspec(naked) void hookBudget(void)
+{
+    __asm {
+        pushad
+        pushfd
+        lea eax, [esp+36]
+        push eax
+        push ebx
+        call forceDecision
+        add esp, 8
+        mov g_forceAction, eax
+        popfd
+        popad
+        mov ax, word ptr [ebx+0x64]
+        mov ecx, dword ptr [esp+0x48]
+        cmp g_forceAction, 1
+        je expand
+        cmp g_forceAction, 2
+        je keep
+        jmp dword ptr [g_resumeBudget]
+    expand:
+        jmp dword ptr [g_admitPath]
+    keep:
+        jmp dword ptr [g_resumeDecline]
+    }
+}
+
 /* The running-size add every charged site passes (the budget charge of a
    cost over 40 precedes it). */
 static __declspec(naked) void hookCharge(void)
@@ -209,6 +330,7 @@ static const struct Hook g_hooks[] = {
     { 0x42492d, "\x8b\x06\x0f\xbf\x40\x64", 6, hookRoot },
     { 0x424eef, "\x8b\x53\x3a\x8a\x4b\x36", 6, hookSite },
     { 0x424f15, "\x3b\xf2\x0f\x85\x4a\xfb\xff\xff", 8, hookArgs },
+    { 0x424f36, "\x66\x8b\x43\x64\x8b\x4c\x24\x48", 8, hookBudget },
     { 0x424f59, "\x8a\x47\x12\x84\xc0", 5, hookAdmit },
     { 0x424f79, "\x8b\x0d\x70\x0e\x49\x00", 6, hookCharge },
     { 0x424c0b, "\xe8\xbb\xfd\xff\xff", 5, hookBody },
@@ -295,6 +417,11 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
         g_log = fopen(path, "a");
         if (!g_log)
             return FALSE;
+        if (GetEnvironmentVariable("GRUNTZ_C2_FORCE", path, sizeof path) && !loadRules(path)) {
+            fprintf(g_log, "refused unreadable or malformed force rules\n");
+            fclose(g_log);
+            return FALSE;
+        }
         if (!install()) {
             fprintf(g_log, "refused c2.exe differs at a hook site\n");
             fclose(g_log);

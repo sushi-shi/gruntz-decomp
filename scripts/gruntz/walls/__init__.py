@@ -20,6 +20,9 @@
     gruntz walls inline-solve <fn>
                                   replay the traced root and search the
                                   edits that give retail's call set
+    gruntz walls inline-reach <fn>
+                                  force retail's inline decisions and score:
+                                  is the wall inline-budget alone?
     gruntz walls semdiff <fn>     OPERAND-LEVEL adjudication of one pair:
                                   exclusive fp/disp/store/imm keys, plus the
                                   ordered referent sequence a masked diff
@@ -67,6 +70,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "inline-model": "gruntz.walls.inline_model",
          "inline-trace": "gruntz.walls.inline_trace",
          "inline-solve": "gruntz.walls.inline_solve",
+         "inline-reach": "gruntz.walls.inline_reach",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "aggscan": "gruntz.walls.aggscan",

@@ -12,6 +12,7 @@ gruntz walls inline-solve 0x101580                     # rva, mangled or Class::
 gruntz walls inline-solve 0x101580 --max-edits 3 --seconds 120
 gruntz walls inline-solve 0x101580 --what-if --cb 700 --add 12:2 --remove 7 \
     --cost '?GetAt@CPtrArray:60'
+gruntz walls inline-reach 0x11bee0                     # force retail's decisions, score
 gruntz walls inline-solve --check sbi_rectonly         # replay == trace, per root
 gruntz walls inline-solve --check-all
 ```
@@ -32,6 +33,7 @@ addresses are fixed:
 | `0x42492d` | inline pass entry (`FUN_0042491e`) | the root and its front-end cost `cb` |
 | `0x424eef` | each candidate site (`FUN_004249cb`) | callee, `cb`, depth, depth allowance, budget, sites remaining, running size |
 | `0x424f15` | argument-count compare | actual and formal argument counts |
+| `0x424f36` | the budget compare, after the argument-count and depth gates | forced decisions (`GRUNTZ_C2_FORCE`) |
 | `0x424f59` | every gate passed | admit |
 | `0x424f79` | the running-size add (after the budget charge) | charge |
 | `0x424c0b` | recursive walk of an expanded body | the nested budget share |
@@ -93,3 +95,36 @@ A fit names a place and a kind of difference to look for, such as a missing
 accessor, an open-coded helper, or a heavier caller. It is not source to adopt.
 Budget-steering code is forbidden; restore the original structure that the fit
 points to, then confirm with `gruntz match`.
+
+## Forcing retail's decisions
+
+`gruntz walls inline-reach` answers whether a wall is an inline-budget wall
+at all, before any search for source. `GRUNTZ_C2_FORCE` names a rule file the
+shim reads, one rule per line:
+`root<TAB>owner<TAB>callee<TAB>occurrence<TAB>E|K`. The root is a mangled name
+or `*`; owner and callee are substrings (`*` matches any); occurrence counts
+the matching budget compares within the root from 1 (0 means every one). At
+the budget compare, `E` takes C2's admit path and `K` its decline path. Sites
+refused earlier, by argument count or depth, cannot be forced. An empty rule
+list must reproduce the build object, the same identity check as tracing.
+
+Each round aligns our call stream with retail's from the canonicalized retail
+object, so the score matches what `gruntz permute` reports. It proposes rules
+at the differences: `E` on a site of a callee that we call and retail does
+not, and `K` on an expansion of a callee that retail calls. It compiles each
+proposal and keeps the one that most shrinks the traced call difference,
+using the score to break ties. When no single rule helps, it tries
+two-rule chains, since an expansion brings its own nested sites along. The
+verdict is one of:
+
+- **inline-budget wall:** retail's decisions make the function exact;
+- **partial:** forcing moves the score toward retail, and the rest is another
+  wall class;
+- **not inline:** the traced calls already agree, or forcing does not help.
+
+Each rule's `need` is the budget change at that site that would make C2
+decide the same way unforced, or the reason a budget change cannot (a cost
+of 40 or less is exempt; the running size is over 35000). A forced object is
+a diagnostic: never bank it and never write source that steers the budget.
+Use `inline-solve` to find the source difference that produces the need.
+

@@ -85,23 +85,34 @@ def overlay() -> Path:
     return OVERLAY / "c2.exe"
 
 
-def compile_traced(src: Path, flags: list[str], out: Path) -> str:
-    """Compile `src` through the traced back end; returns the trace text."""
+def compile_traced(src: Path, flags: list[str], out: Path,
+                   rules: list[str] | None = None) -> str:
+    """Compile `src` through the traced back end; returns the trace text.
+
+    `rules` (shim rule lines: root, owner, callee, occurrence, E|K) force
+    those inline decisions; an empty list forces nothing."""
     from gruntz.tool import cl
     from gruntz.tool.wine import winepath
 
     c2 = overlay()
     log = out.with_suffix(".trace")
     log.unlink(missing_ok=True)
-    previous = os.environ.get("GRUNTZ_C2_TRACE")
-    os.environ["GRUNTZ_C2_TRACE"] = winepath(log)
+    env = {"GRUNTZ_C2_TRACE": winepath(log)}
+    if rules is not None:
+        rule_file = out.with_suffix(".rules")
+        rule_file.write_text("".join(f"{line}\n" for line in rules))
+        env["GRUNTZ_C2_FORCE"] = winepath(rule_file)
+    previous = {key: os.environ.get(key) for key in ("GRUNTZ_C2_TRACE", "GRUNTZ_C2_FORCE")}
+    os.environ.pop("GRUNTZ_C2_FORCE", None)
+    os.environ.update(env)
     try:
         cl.compile(src, out, [*flags, f"/B2{winepath(c2)}"])
     finally:
-        if previous is None:
-            os.environ.pop("GRUNTZ_C2_TRACE", None)
-        else:
-            os.environ["GRUNTZ_C2_TRACE"] = previous
+        for key, value in previous.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
     if not log.is_file():
         raise ValueError("the traced c2.exe wrote no log")
     return log.read_text(encoding="latin1")
@@ -157,6 +168,10 @@ def parse(text: str) -> dict:
                 raise ValueError("an argument-count record follows no site")
             fields = _fields(rest.split())
             site["args_match"] = fields["actual"] == fields["formal"]
+        elif kind == "force":
+            if site is None:
+                raise ValueError("a force record follows no site")
+            site["forced"] = _fields(rest.split())["action"]
         elif kind == "admit":
             if site is None:
                 raise ValueError("an admit record follows no site")
