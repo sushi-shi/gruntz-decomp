@@ -24,6 +24,9 @@ For an actual profile change, retain a same-source control with the pinned
 compiler. Compare complete code, data, calling conventions, ordered relocations,
 and runtime-library directives across affected owners. Byte-neutral output on
 one function does not establish that a flag is globally harmless.
+`gruntz walls patterns flags --try` runs that control: it compiles the units
+with the changed profile and scores every body with the build's normalization
+(see [pattern sweeps](pattern-sweeps.md)).
 
 See [compiler identification](compiler-detection.md) for binary provenance,
 [the build system](build-system.md) for generated commands, and

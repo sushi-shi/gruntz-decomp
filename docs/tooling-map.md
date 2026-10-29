@@ -89,6 +89,7 @@ certification (trading one cross-jump for another) raised it.
 | `gruntz walls eh-frame` | `gruntz.walls.eh_frame` | `/GX` frame-presence + unwind-state sieve, cause-tagged |
 | `gruntz walls global-refs` | `gruntz.walls.global_refs` | global read-COUNT sieve (the cached-global bug class) |
 | `gruntz walls stale-markers` | `gruntz.walls.stale_markers` | `@early-stop` markers sitting on 100% bodies |
+| `gruntz walls patterns <cc\|flags\|inline\|loops\|ctors>` | `gruntz.walls.patterns` | image-wide sweeps for mechanisms that closed a wall once; `flags --try` is the profile A/B control ([pattern sweeps](pattern-sweeps.md)) |
 
 There is **no hand-kept wall ledger**. The worklist is re-derived from the
 compare report on every invocation. Blind random hill-climbing remains removed;

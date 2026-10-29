@@ -44,6 +44,10 @@
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
                                   bug class; --calibrate = detector-bug rate)
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
+    gruntz walls patterns <sweep> image-wide sweeps for mechanisms that closed
+                                  a wall once: cc (calling convention), flags
+                                  (x87 profile shape; --try = profile A/B),
+                                  inline, loops (rotation), ctors (store order)
     gruntz walls review           source-hash-scoped reviewer ledger
     gruntz walls recheck          re-measure the counts a review certifies
                                   against today's pair
@@ -58,8 +62,9 @@ hash changes; it is not evidence that a reconstruction is correct.
 Input surface: the Model, the compare out-dir (report.json + normalized
 objs), config/match_baseline.tsv, tool.objdump/tool.cl, delink.coffx (the
 shared COFF topology reader). Read-only except inline-model's scratch
-harness compiles under build/inline-model/ and inline-trace's build/c2-shim/
-and build/inline-trace/.
+harness compiles under build/inline-model/, inline-trace's build/c2-shim/ and
+build/inline-trace/, inline-reach's build/inline-reach/, and `patterns flags
+--try`'s under build/patterns/.
 """
 
 from __future__ import annotations
@@ -81,6 +86,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "semsweep": "gruntz.walls.semdiff",
          "switchmap": "gruntz.walls.switchmap",
          "stale-markers": "gruntz.walls.stale_markers",
+         "patterns": "gruntz.walls.patterns",
          "priors": "gruntz.walls.priors",
          "recheck": "gruntz.walls.recheck",
          "review": "gruntz.walls.reviews"}
