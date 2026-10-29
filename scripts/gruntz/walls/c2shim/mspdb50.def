@@ -1,0 +1,18 @@
+LIBRARY mspdb50
+EXPORTS
+    StreamAppend = forwardStreamAppend
+    StreamReplace = forwardStreamReplace
+    ILModGetILVer = forwardILModGetILVer
+    ILModGetIL = forwardILModGetIL
+    StreamQueryCb = forwardStreamQueryCb
+    StreamRead = forwardStreamRead
+    ILModRelease = forwardILModRelease
+    ILStoreRelease = forwardILStoreRelease
+    StreamRelease = forwardStreamRelease
+    PDBCommit = forwardPDBCommit
+    SigForPbCb = forwardSigForPbCb
+    PDBClose = forwardPDBClose
+    ILStoreGetILMod = forwardILStoreGetILMod
+    PDBOpen = forwardPDBOpen
+    PDBOpenStream = forwardPDBOpenStream
+    ILStoreOpen = forwardILStoreOpen

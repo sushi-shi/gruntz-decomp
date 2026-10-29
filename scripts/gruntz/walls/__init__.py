@@ -15,6 +15,11 @@
                                   `--gap <spec.json>` quantifies the deficit
                                   once cb is known; --measure-cb titrates cb
                                   with the real compiler
+    gruntz walls inline-trace <u> record the unit's inline decisions through
+                                  the traced c2.exe (identity-checked)
+    gruntz walls inline-solve <fn>
+                                  replay the traced root and search the
+                                  edits that give retail's call set
     gruntz walls semdiff <fn>     OPERAND-LEVEL adjudication of one pair:
                                   exclusive fp/disp/store/imm keys, plus the
                                   ordered referent sequence a masked diff
@@ -50,7 +55,8 @@ hash changes; it is not evidence that a reconstruction is correct.
 Input surface: the Model, the compare out-dir (report.json + normalized
 objs), config/match_baseline.tsv, tool.objdump/tool.cl, delink.coffx (the
 shared COFF topology reader). Read-only except inline-model's scratch
-harness compiles under build/inline-model/.
+harness compiles under build/inline-model/ and inline-trace's build/c2-shim/
+and build/inline-trace/.
 """
 
 from __future__ import annotations
@@ -59,6 +65,8 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "abstractions": "gruntz.walls.abstractions",
          "diagnose": "gruntz.walls.diagnose",
          "inline-model": "gruntz.walls.inline_model",
+         "inline-trace": "gruntz.walls.inline_trace",
+         "inline-solve": "gruntz.walls.inline_solve",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "aggscan": "gruntz.walls.aggscan",
