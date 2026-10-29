@@ -1990,7 +1990,7 @@ i32 CBattlezAiController::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->GetPowerupType() != GRUNT_NORMAL) {
         return 0;
     }
-    PickupType prim = unit->GetEquippedToolType();
+    PickupType prim = EQUIPPED_TOOL_TERNARY_LE(unit);
     if (prim != PICKUP_NONE) {
         return 0;
     }
