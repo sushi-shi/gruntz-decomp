@@ -73,6 +73,14 @@ static inline bool UpdateBattlezSpecialEligibility(CGrunt* unit, i32& eligible) 
     return true;
 }
 
+inline void CGrunt::SetBrickPickupType(PickupType brickPickupType) {
+    m_brickPickupType = brickPickupType;
+}
+
+inline void CGrunt::SetPendingPickupType(PickupType pendingPickupType) {
+    m_pendingPickupType = pendingPickupType;
+}
+
 inline void CGrunt::BuildUnitSearchBox(RECT* box, i32 radius) {
     i32 bottom;
     i32 right;
