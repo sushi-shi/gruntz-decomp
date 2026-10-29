@@ -657,8 +657,8 @@ i32 CBattlezAiController::UpdateUnits() {
                             i32 tile =
                                 m_tileGrid->CellFlagsAt(unit->ScanCell().m_x, unit->ScanCell().m_y);
                             if (!(tile & 4)) {
-                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->SetBattlezTask(BZTASK_ADVANCE);
+                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->RecycleCoords();
                                 unit->SetRoutePassableMask(0);
                                 unit->SetAiState(AISTATE_SEEK);
@@ -667,8 +667,8 @@ i32 CBattlezAiController::UpdateUnits() {
                         {
                             PickupType st = unit->GetEquippedToolType();
                             if (st != PICKUP_SPY && unit->GetBattlezTask() == BZTASK_CARRY_SPY) {
-                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->SetBattlezTask(BZTASK_ADVANCE);
+                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->RecycleCoords();
                                 unit->SetRoutePassableMask(0);
                                 unit->SetAiState(AISTATE_SEEK);
@@ -690,8 +690,8 @@ i32 CBattlezAiController::UpdateUnits() {
                             PickupType st = unit->GetEquippedToolType();
                             if (st != PICKUP_GOOBER
                                 && unit->GetBattlezTask() == BZTASK_CARRY_GOOBER) {
-                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->SetBattlezTask(BZTASK_ADVANCE);
+                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->RecycleCoords();
                                 unit->SetRoutePassableMask(0);
                                 unit->SetAiState(AISTATE_SEEK);
