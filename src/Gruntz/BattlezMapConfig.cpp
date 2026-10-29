@@ -709,8 +709,7 @@ i32 CBattlezAiController::UpdateUnits() {
                         }
                         {
                             if (BattlezActDiffersFromCRCGLPJ(unit)) {
-                                if (unit->GetSpriteObject()->m_screenX == unit->m_lastTilePx.m_x
-                                    && unit->GetSpriteObject()->m_screenY == unit->m_lastTilePx.m_y
+                                if (IsGruntAtSavedScreenPos(unit)
                                     && unit->IsEntranceCommitted() != false
                                     && unit->IsDeathAnimationStarted() == false
                                     && unit->IsBusy() == false) {
@@ -749,7 +748,7 @@ i32 CBattlezAiController::UpdateUnits() {
                     }
                         {
                             i32 special = 1;
-                            if (GRUNT_NOT_AT_SAVED_SCREEN_POS(unit)) {
+                            if (!IsGruntAtSavedScreenPos(unit)) {
                                 special = 0;
                             }
                             if (unit->IsEntranceCommitted() == false) {
@@ -881,9 +880,7 @@ i32 CBattlezAiController::UpdateUnits() {
                                 ResolveArrival(unit);
                             }
                         }
-                        if (unit->GetSpriteObject()->m_screenX == unit->m_lastTilePx.m_x
-                            && unit->GetSpriteObject()->m_screenY == unit->m_lastTilePx.m_y
-                            && unit->IsEntranceCommitted() != false
+                        if (IsGruntAtSavedScreenPos(unit) && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false && unit->IsBusy() == false
                             && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
@@ -947,8 +944,8 @@ i32 CBattlezAiController::UpdateUnits() {
                 Coord* gc = unit->GetHeadCoord();
                 i32 gx = gc->m_x;
                 i32 gy = gc->m_y;
-                i32 sx = unit->GetSpriteObject()->m_screenX >> TILE_SHIFT_PX;
-                i32 sy = unit->GetSpriteObject()->m_screenY >> TILE_SHIFT_PX;
+                i32 sx = unit->GetScreenTileX();
+                i32 sy = unit->GetScreenTileY();
                 if (abs(gx - sx) >= 2 || abs(gy - sy) >= 2) {
                     goto dropCoords;
                 }
