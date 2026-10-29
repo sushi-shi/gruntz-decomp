@@ -73,32 +73,12 @@ static inline bool UpdateBattlezSpecialEligibility(CGrunt* unit, i32& eligible) 
     return true;
 }
 
-inline void CGrunt::BuildUnitSearchBox(RECT* box, i32 radius) {
-    i32 bottom;
-    i32 right;
-    i32 top;
-    i32 left;
-    {
-        Coord bottomProbe;
-        Coord rightProbe;
-        Coord topProbe;
-        Coord leftProbe;
-        GetScreenTile(&bottomProbe);
-        leftProbe.m_x = bottomProbe.m_x;
-        bottom = bottomProbe.m_y;
-        GetScreenTile(&rightProbe);
-        leftProbe.m_y = rightProbe.m_y;
-        right = rightProbe.m_x;
-        GetScreenTile(&topProbe);
-        leftProbe.m_x = topProbe.m_x;
-        top = topProbe.m_y;
-        GetScreenTile(&leftProbe);
-        left = leftProbe.m_x;
-    }
-    box->left = left - radius;
-    box->top = top - radius;
-    box->right = right + radius;
-    box->bottom = bottom + radius;
+inline void CGrunt::SetBrickPickupType(PickupType brickPickupType) {
+    m_brickPickupType = brickPickupType;
+}
+
+inline void CGrunt::SetPendingPickupType(PickupType pendingPickupType) {
+    m_pendingPickupType = pendingPickupType;
 }
 
 #endif // GRUNTZ_GRUNTZ_BATTLEZGRUNTINLINE_H

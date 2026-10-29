@@ -21,7 +21,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordInline.h>
-#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -56,11 +56,7 @@ i32 CBattlezAiController::CanIssueAiOrders(CGrunt* unit) {
     if (unit == NULL) {
         return 0;
     }
-    CGameObject* object = unit->GetSpriteObject();
-    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(object, unit)) {
-        goto fail;
-    }
-    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(object, unit)) {
+    if (!IsGruntAtSavedScreenPos(unit)) {
         return 0;
     }
     if (unit->IsEntranceCommitted() == false) {
@@ -85,31 +81,16 @@ i32 CBattlezAiController::CanIssueAiOrders(CGrunt* unit) {
     if (unit->IsAnimationAct("L")) {
         return 0;
     }
-
-    CString* actName;
-    CString* finalActName;
-    i32 actCode;
-
-    actName = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    if (*actName == "P") {
+    if (unit->IsAnimationAct("P")) {
         return 0;
     }
-
-    actName = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    if (*actName == "J") {
+    if (unit->IsAnimationAct("J")) {
         return 0;
     }
-
-    actName = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    if (*actName == "C") {
-        goto fail;
+    if (unit->IsAnimationAct("C")) {
+        return 0;
     }
-
-    actCode = unit->m_logicRecord->EventCode();
-    finalActName = &g_typeColl[actCode];
-    return *finalActName != "R";
-fail:
-    return 0;
+    return !unit->IsAnimationAct("R");
 }
 
 RVA_COMPGEN(0x00034960, 0x24, ?handle_inl@zErrHandling@@QBEXPBDH@Z)
